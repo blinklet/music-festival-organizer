@@ -1,5 +1,9 @@
 # Requirements
 
+## TODO
+
+Add "ensembles" registration type, like duets and trios where the participants are identified (unlike "groups" that just use the group name so can be treated the same as an individual participant)
+
 ## Question
 
 * Who pays? Is there a need to track who pays? Or do you assume the participant pays and track all payments against the participant ID?
