@@ -143,23 +143,18 @@ Does not work and, even if it did, it does not seem useful.
 * Participants without Teachers
 * Teacher Types
 * Venues
-
 * Cities
 * Merge Cities, Teachers, and Accompanists
-
 * Provincial Associations
 * Member Festivals
 * Local Festival
-
 * Music Selections
 * Syllabus
 * Syllabus - Multi-Class View
 * Standings
-
 * Preferences
 * Labels
 * Reports
-
 * Rollover
 
 ### Accompanists
@@ -606,6 +601,69 @@ To create awards:
 
 
 ## Volunteers
+
+* Add/Edit/Delete volunteers
+* Assign volunteers
+* Reports
+
+### Add/Edit/Delete volunteers
+
+![](./images/MFO-func-057.png)
+
+### Assign volunteers
+
+![](./images/MFO-func-058.png)
+
+### Reports
+
+* Duty roster per session
+* Duty roster per volunteer
+* Duty roster for one volunteer
+* Volunteer list reports
+  * Alpha by first name
+  * Numeric by volunteer ID#
+  * Comment summary
+  * Detailed phoning list
+  * Emergency callout list
+  * Volunteers by function
+
+#### Duty roster per session
+
+![](./images/MFO-func-059.png)
+
+![](./images/MFO-func-060.png)
+
+#### Duty roster per volunteer
+
+![](./images/MFO-func-061.png)
+
+#### Duty roster for one volunteer
+
+Nothing happens
+
+#### Volunteer list reports
+
+*Alpha by first name*
+
+![](./images/MFO-func-062.png)
+
+![](./images/MFO-func-063.png)
+
+*Numeric by volunteer ID#* is the same, just printed in order by ID
+
+*Comment summary*
+
+![](./images/MFO-func-064.png)
+
+*Detailed phoning list*
+
+![](./images/MFO-func-065.png)
+
+*Emergency callout list*
+
+![](./images/MFO-func-066.png)
+
+*Volunteers by function* does not seem to work.
 
 ## Help
 
