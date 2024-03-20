@@ -383,9 +383,11 @@ Find a session (which seems to be a time period in a venue)
 
 ![](./images/MFO-func-029.png)
 
-Opens session builder
+Click on ellipsis after "Session Code" field opens session builder
 
 ![](./images/MFO-func-028.png)
+
+
 
 ### Re-assign sections
 
@@ -410,6 +412,38 @@ Asks if I want to delete all sessions. I said "no". Then nothing happened.
 ### Labels
 
 More mailing labels for partipants
+
+* Participant Labels
+* Participant Entry Labels
+* Class Folder Labels
+* Session Folder Labels
+* Festival Address Labels
+
+#### Participant Labels
+
+![](./images/MFO-func-046.png)
+
+![](./images/MFO-func-053.png)
+
+#### Participant Entry Labels
+
+![](./images/MFO-func-047.png)
+
+![](./images/MFO-func-048.png)
+
+#### Class Folder Labels
+
+![](./images/MFO-func-049.png)
+
+#### Session Folder Labels
+
+![](./images/MFO-func-050.png)
+
+#### Festival Address Labels
+
+![](./images/MFO-func-051.png)
+
+![](./images/MFO-func-052.png)
 
 ### Reports
 
@@ -442,21 +476,87 @@ Most reports do not work. The menu shows the intent of this section. The bold te
 * Venue schedules
 * Worksheets by session
 
+#### Check for errors
+
+None of these reports work. I assumne they will print relevant results. Some of the dialogue boxes appear to suggest how they work
+
+#####Conflicts
+
+Participant conflicts
+
+![](./images/MFO-func-040.png)
+
+Accompanist conflicts
+
+![](./images/MFO-func-041.png)
+
+##### Duplicate schedules
+
+![](./images/MFO-func-038.png)
+
+##### Unscheduled classes
+
+![](./images/MFO-func-039.png)
+
 #### Adjudicator schedules
 
-For each adjudicator, their daily responsibilities. As seen below:
+For each adjudicator, their daily responsibilities. 
+
+![](./images/MFO-func-036.png)
+
+As seen below:
 
 ![](./images/MFO-func-022.png)
 
-#### Local MFO report
+It is not clear how the actual schedule is built
+
+#### Adjudicator's music selections
+
+Select adjudicator name, get report.
+
+![](./images/MFO-func-037.png)
+
+Report does not work. It is also not clear how this information is created in the first place.
+
+#### Festival Program Local MFO report
+
+![](./images/MFO-func-056.png)
 
 A preliminary view of the schedule for each day as shown below:
 
 ![](./images/MFO-func-021.png)
 
+This is used by Queens County festival to create their schedule
+
+#### Festival Program Local text report
+
+![](./images/MFO-func-054.png)
+
+![](./images/MFO-func-055.png)
+
+#### Participant letters
+
+all participants
+
+![](./images/MFO-func-042.png)
+
+one participant
+
+![](./images/MFO-func-043.png)
+
+Teachers
+
+![](./images/MFO-func-044.png)
+
+Click on Modify Layout or Edit in any of the above screens to see the letter layout:
+
+![](./images/MFO-func-045.png)
+
 #### Teacher summary - one, many, or all to PDF
 
 ![](./images/MFO-func-031.png)
+
+![](./images/MFO-func-031a.png)
 
 #### Adjudicator's sheets
 
@@ -483,7 +583,11 @@ A summary per festival. Does not work
 
 ### Marks
 
-Forms to award marks
+Forms to award marks.
+
+#### Enter marks by session
+
+![](./images/MFO-func-035.png)
 
 ### Awards
 
