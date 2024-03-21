@@ -28,21 +28,20 @@ I am first developing a requirements document and needed to choose the tools I w
 ## Potential development tools
 
 * [HTMX](https://htmx.org/) + [Flask](): Add interactivity to web pages without Javascript
+* Bootstrap CSS framework
 * [Pydantic](https://pydantic.dev/)
 
 ## Learning
 
 Things I need to learn now or later:
 
-* Mermaid diagram markup
 * Type hints in Python
   * [Python type hints](https://docs.python.org/3/library/typing.html)
-  * 
 * Using a debugger
   * [pdb](https://docs.python.org/3/library/pdb.html), the official Python debugger
   * [VSCode tutorial](https://code.visualstudio.com/docs/python/debugging)
   * [DigitalOcean PBD tutorial](https://www.digitalocean.com/community/tutorials/how-to-use-the-python-debugger)
-* Python unit tests (PyTest?)
+* Python unit tests (PyTest)
 * More advanced Flask usage
 * Database design
 
@@ -51,6 +50,7 @@ Probably should eventually learn
 * Modern HTML
 * CSS
 * DOM
+* Mermaid diagram markup (for docs)
 
 Courses or books that might help me get started:
 

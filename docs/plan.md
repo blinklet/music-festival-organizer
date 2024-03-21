@@ -1,14 +1,19 @@
 # Development plan
 
+0) More info needed
+
+* Get the Word form they currently use
+
 1) Take the training courses
 
-* one week
+* two weeks
 * 15 hours training plus excercises
 
 2) Account creation
 
 * Login window
-* User account form (userid, password)
+* New user account form (userid, password)
+  * Choose role(s) when creating or updating profile
 
 3) Data entry for roles
 
