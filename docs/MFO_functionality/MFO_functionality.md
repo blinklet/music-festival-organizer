@@ -245,6 +245,13 @@ Opens a window that lets you edit classes in the syllabus.
 
 ![](./images/MFO-func-016.png)
 
+Need to know about:
+
+* Add Sections button?
+* Edit Test Pieces
+* Add New Class (assume it just takes what's in form)
+* Delete Multiple Sections
+
 ### Syllabus - Multi-Class View
 
 Opens a window that lets you edit classes in the syllabus in groups.
