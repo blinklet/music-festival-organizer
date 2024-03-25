@@ -18,6 +18,11 @@ I am first developing a requirements document and needed to choose the tools I w
 * GitHub
 * Docker
 
+## Design tools
+
+* [Penpot](https://penpot.app/)  (like Figma -- free and open-source)
+* [Bootstrap Studio](https://bootstrapstudio.io/)   (lets you build interfaces with Bootstrap -- $US29)
+
 ## Development tools
 
 * Python
