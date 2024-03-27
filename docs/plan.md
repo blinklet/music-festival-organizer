@@ -2,7 +2,7 @@
 
 0) More info needed
 
-* Get the Word form they currently use
+* do i need to change the form? maybe start with the back-end excel and focus on reports????
 
 1) Take the training courses
 
