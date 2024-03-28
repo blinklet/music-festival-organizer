@@ -1,21 +1,33 @@
 # Development plan
 
-0) More info needed
+0) Start with importing from the Excel file.
 
-* do i need to change the form? maybe start with the back-end excel and focus on reports????
+Because this is where they feel the pain right now and because creating a new sign-up experience will be a big change for users.
 
-1) Take the training courses
-
-* two weeks
-* 15 hours training plus excercises
-
-2) Account creation
+1) Account creation
 
 * Login window
 * New user account form (userid, password)
   * Choose role(s) when creating or updating profile
+    * Key role, for now, is "scheduler"
+    * Other roles not needed for importing and reporting
+      * (Maybe put them in form as "greyed out")
 
-3) Data entry for roles
+2) Data entry for scheduler
+
+* Import spreadsheet
+
+  a) Step 1: Read in and create unique profiles from spreadsheet
+  b) Step 2: How to read in columns where many columns have the same name?
+  c) For small ensembles, add extra participants in profiles if they do not already exist there
+
+
+
+
+
+
+
+x) Other roles
 
 After logged in, create, edit, or view profile info
 * teacher profile
