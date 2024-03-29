@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quick test site</title>
+    <link rel="stylesheet" href="/static/css/site.css" />
+</head>
+
+<body style="background-color:{{ color }};">
+
+<div class="main_content">
+    The background color is {{ color }}!
+
+    <div class="form-container">
+        <form method="POST">
+            {{ form.csrf_token }}
+            {{ form.color }}
+            <input type="submit">
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

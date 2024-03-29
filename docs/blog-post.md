@@ -98,6 +98,21 @@ Create virtual environment. Go to the top-level *project* folder.
 
 Enter the following "hello world" text into the *mfo/app.py* file.
 
+```python
+import flask
+
+app = flask.Flask(__name__)
+
+
+@app.route('/<color>')
+def index(color):
+    return 'Hello world'
+
+
+if __name__ == "__main__":
+    app.run()
+```
+
 Run the app from the top-level prohect folder:
 
 ```text
