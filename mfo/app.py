@@ -20,20 +20,27 @@ def index():
     form = MyForm()
 
     if form.validate_on_submit():
-        color = form.color.value
-        print(f'################ {color}')
-        return flask.redirect(flask.url_for('/', color=color))
+        color = form.color.data
+        print(flask.url_for('colors', newcolor=color))
+        return flask.redirect(flask.url_for('colors', newcolor=color))
 
     return flask.render_template(
         'home/index.html', 
         form=form, 
+        color='white'
         )
 
 
-@app.route("/<color>", methods=('GET','POST'))
-def colors(color):
+@app.route("/<newcolor>", methods=('GET','POST'))
+def colors(newcolor):
     form = MyForm()
-    return flask.render_template("home/index.html", form=form, color=color)
+    if form.validate_on_submit():
+        newcolor = form.color.data
+
+    return flask.render_template("home/index.html", form=form, color=newcolor)
+
+
+
 
 if __name__ == "__main__":
     app.run()
