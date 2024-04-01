@@ -21,6 +21,8 @@ def hello():
 # set of code that could be re-used by other apps
 # https://realpython.com/flask-blueprint/
 
+
+
 # Could organize blueprints as packages where the
 # folder name is what's imported and the blueprint
 # views are in __init__.py in the folder
@@ -30,5 +32,19 @@ def hello():
 
 # BUT, that's assuming we will want to reuse cide and
 # what about using shared templates for common element??
+# See: https://stackoverflow.com/questions/70838016/flask-include-common-template-to-multiple-blueprints
+# https://fewstreet.com/2015/01/16/flask-blueprint-templates.html
 
+# Structuring large Flask applications
+# https://www.digitalocean.com/community/tutorials/how-to-structure-a-large-flask-application-with-flask-blueprints-and-flask-sqlalchemy
+# https://www.freecodecamp.org/news/how-to-use-blueprints-to-organize-flask-apps/
+# https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure
 
+# see Digital Ocean tutorials
+# https://www.digitalocean.com/community/tags/flask
+
+# Making blueprints installable
+# https://stackoverflow.com/questions/74990683/flask-blueprint-as-a-package-setuptools
+#
+# app factiory in flask
+# https://flask.palletsprojects.com/en/3.0.x/patterns/appfactories/
