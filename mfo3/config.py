@@ -1,30 +1,34 @@
-from dotenv import load_dotenv
+# Flask APP configuration file
 import os
-
-if os.path.isfile(".env"):
-    load_dotenv()
-else:
-    load_dotenv("dotenv.example")
-
-database_server = os.getenv('DB_SERVER')
-database_name = os.getenv('DB_NAME')
-database_userid = os.getenv('DB_UID')
-database_password = os.getenv('DB_PWD')
-app_testing = os.getenv('TESTING')
-app_debug = os.getenv('DEBUG')
+import dotenv
 
 
-class Config(object):
-    TESTING = False
+# Load variables from `.env` file, if it exists
+basedir = os.path.abspath(os.path.dirname(__file__))
+dotenv.load_dotenv(os.path.join(basedir, ".env"))
 
-class ProductionConfig(Config):
-    DATABASE_URI = 'mysql://user@localhost/foo'
 
-class DevelopmentConfig(Config):
-    DATABASE_URI = "sqlite:////tmp/foo.db"
-    DEBUG = True
-    SECRET_KEY = 'fake-key'
+# General Config
+# 
+ENVIRONMENT = os.environ.get("ENVIRONMENT")
+FLASK_APP = os.environ.get("FLASK_APP")
+FLASK_DEBUG = os.environ.get("FLASK_DEBUG")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+SERVER_NAME = os.environ.get("SERVER_NAME")
 
-class TestingConfig(Config):
-    DATABASE_URI = 'sqlite:///:memory:'
-    TESTING = True
+# Flask-SQLAlchemy variables
+# The connection string of the app's database.
+SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+# Print database-related actions to the console for debugging purposes.
+SQLALCHEMY_ECHO = os.environ.get("SQLALCHEMY_ECHO")
+
+
+# Flask-Session variables
+# Session information can be handled via Redis, Memcached, filesystem, MongoDB, or SQLAlchemy.
+SESSION_TYPE = os.environ.get("SESSION_TYPE")
+# A True/False value that states whether or not user sessions should last forever.
+SESSION_PERMANENT = os.environ.get("SESSION_PERMANENT")
+# Modifies the key names in session key/value pairs to always have a particular prefix.
+SESSION_KEY_PREFIX = os.environ.get("SESSION_KEY_PREFIX")
+# URI of a database to store session information.
+SESSION_SQLALCHEMY = os.environ.get("SESSION_SQLALCHEMY")

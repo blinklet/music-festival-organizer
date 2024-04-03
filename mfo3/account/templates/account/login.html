@@ -1,0 +1,16 @@
+{% extends "shared_layout.html" %}
+{% block title %}Login to your account{% endblock %}
+
+{% block main_content %}
+    <div>
+        <h1>Login form</h1>
+
+        <div>
+            Placeholder for a login form
+        </div>
+    </div>
+{% endblock %}
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('account.static', filename='css/account.css') }}" >
+{% endblock %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Music Festival Website{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/shared_styles.css" />
+    {% block additional_css %}{% endblock %}
+</head>
+
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/admin">Admin</a>
+        <a href="/account">Account</a>
+    </nav>
+
+    <div class="acct_content">
+        {% block acct_content %}{% endblock %}
+    </div>
+
+    <div class="main_content">
+        {% block main_content %}{% endblock %}
+    </div>
+</body>
+</html>
