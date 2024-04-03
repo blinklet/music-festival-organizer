@@ -48,3 +48,8 @@ def hello():
 #
 # app factiory in flask
 # https://flask.palletsprojects.com/en/3.0.x/patterns/appfactories/
+
+# https://prettyprinted.com/tutorials/automatically_load_environment_variables_in_flask/
+
+# https://packaging.python.org/en/latest/guides/packaging-namespace-packages/
+
