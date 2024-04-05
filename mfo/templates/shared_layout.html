@@ -10,8 +10,8 @@
 <body>
     <nav>
         <a href="/">Home</a>
-        <a href="/admin">Admin</a>
-        <a href="/account">Account</a>
+        <a href="{{ url_for('admin.index') }}">Admin</a>
+        <a href="{{ url_for('account.index') }}">Account</a>
     </nav>
 
     <div class="acct_content">

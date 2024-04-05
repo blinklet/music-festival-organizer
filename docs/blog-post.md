@@ -1,10 +1,13 @@
-title: User authentication in a Flask web app
-slug: flask-authentication-web-app
-summary: Build a basic web app that can store accounts for different users, using helpful Flask plugins
+title: Use blueprints to organize a Flask application
+slug: flask-blueprints-python
+summary: I am starting a large Flask project so I need to define the project structure. I discovered that there are many different opinions about how a large Flask project should be organized. After some consideration and testing, I decided on the structure I describe in this post.
 date: 2024-04-01
 modified: 2024-04-01
 category: Flask
 status: Draft
+
+# Look into Flask-AppBuilder extension
+
 
 <!--
 A bit of extra CSS code to centre all images in the post
@@ -19,30 +22,67 @@ img
 }
 </style>
 
+I am starting a large Flask project so I needed to define the project structure. I discovered that there are many different opinions about how a large Flask project should be organized. After some consideration and testing, I decided on the structure I describe in this post.
+
 # Project structure
 
-Based on what I learned in my [previous](https://learningwithcode.com/flask-web-app-tutorial) [projects](https://learningwithcode.com/python-packaging-modern), and also incorporating some new patterns I learned from the [Flask Web App course](https://training.talkpython.fm/courses/details/building-data-driven-web-applications-in-python-with-flask-sqlalchemy-and-bootstrap) from [TalkPython Training](https://training.talkpython.fm/), I organized my Flask project in the following way:
+To get started, I need a home page, and account page, and an admin page. I decided that each page will have its own blueprint and each blueprint will be fuly self-contained with its own resource files.
+
+The high-level folder structure looks like below. In the application's root folder, I have the main flask app, *app.py*, a config file *config.py*, a [*dotenv* file](https://learningwithcode.com/use-environment-variables-python), and the standard Flask resource folders, *static* and *templates*. Then, I have three blueprint folders named *account*, *admin*, and *home*.  
 
 ```text
-project
-├── mfo
-|   ├── .env
-│   ├── app.py
-│   ├── bin
-│   ├── models
-│   ├── static
-│   |   ├── css
-│   |   └── img
-│   ├── templates
-│   |   ├── account
-│   |   ├── home
-|   |   └── shared
-|   └── views
-├── tests
-├── docs
-├── requirements.txt
-└── venv
+mfo
+├── account
+│   ├── account.py
+│   ├── static
+│   └── templates
+|
+├── admin
+│   ├── admin.py
+│   ├── static
+│   └── templates
+|
+├── home
+│   ├── home.py
+│   ├── static
+│   └── templates
+|
+├── static
+├── templates
+│
+├── app.py
+├── config.py
+└── .env
 ```
+
+## Why not create packages?
+
+The Flask documentation [recommends implementing large applications as packages](https://flask.palletsprojects.com/en/3.0.x/patterns/packages/). I may do that later but, for now, I will implement the application as a set of modules because I think it makes it easier to undersatnd the structure of the project.
+
+If I implemented the application as packages, I would add an *\_\_init\_\_.py* in the application directory and in each blueprint directory. Then I would move the logic in the app file and in each blueprint view file into the *\_\_init\_\_.py*. I would have to change some of the import statements in the app's *\_\_init\_\_.py* file now that I am importing packages instead of modules. See the [Flask tutorial](https://flask.palletsprojects.com/en/3.0.x/tutorial/layout/) for an example of implementing a Flask app as a package.
+
+## Why this structure?
+
+I wanted to create a structure that followed the generally-accepted practices of Flask app organization. So I am using the [blueprint structure recommended in the Flask documentation](https://flask.palletsprojects.com/en/3.0.x/blueprints/)
+
+# Building the base files
+
+Most Flask sites need a base template that defines the common look of the web site. Blueprint templates will extend the base template to create specific web pages.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Below, I made some notes about the files and folders in the project.
 
@@ -146,44 +186,51 @@ or,
 
 
 
-
-
+Based on what I learned in my [previous](https://learningwithcode.com/flask-web-app-tutorial) [projects](https://learningwithcode.com/python-packaging-modern), and also incorporating some new patterns I learned from the [Flask Web App course](https://training.talkpython.fm/courses/details/building-data-driven-web-applications-in-python-with-flask-sqlalchemy-and-bootstrap) from [TalkPython Training](https://training.talkpython.fm/), 
 
 
 
 
 
 ```text
-project
-├── pyproject.toml
-├── mfo
-|   ├── .env
-|   ├── __init__.py
-│   ├── app.py
-│   ├── bin
-│   │   └── import_data.py
-│   ├── models
-│   |   ├── association.py
-│   |   └── users.py
-│   ├── static
-│   |   ├── css
-│   |   └── img
-│   ├── templates
-│   |   ├── account
-│   |   │   ├── index.html
-│   |   │   ├── login.html
-|   |   |   └── register.html
-│   |   ├── home
-│   |   |   ├── index.html
-|   |   |   └── about.html
-|   |   └── shared
-|   |       └── _layout.html
-|   └── views
-│       ├── account_views.py
-│       └── home_views.py
-├── tests
-├── docs
-|   └── dotenv.example
-├── requirements.txt
-└── venv
+mfo
+├── account
+│   ├── account.py
+│   ├── static
+│   │   └── account
+│   │       ├── css
+│   │       │   └── styles.css
+│   │       └── img
+│   └── templates
+│       └── account
+│           ├── index.html
+│           ├── login.html
+│           └── register.html
+├── admin
+│   ├── admin.py
+│   ├── static
+│   │   └── admin
+│   │       └── css
+│   └── templates
+│       └── admin
+│           └── index.html
+├── home
+│   ├── home.py
+│   ├── static
+│   │   └── home
+│   │       └── css
+│   └── templates
+│       └── home
+│           └── index.html
+├── static
+│   ├── css
+│   │   └── shared_styles.css
+│   └── img
+│
+├── templates
+│   └── shared_layout.html
+│
+├── app.py
+├── config.py
+└── .env
 ```
