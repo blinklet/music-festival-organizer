@@ -1,0 +1,23 @@
+FLASK_ENVIRONMENT = development
+FLASK_APP = app
+FLASK_DEBUG = True
+FLASK_SECRET_KEY = abcd
+FLASK_SERVER_NAME = test.com
+FLASK_EXPLAIN_TEMPLATE_LOADING = True
+
+# Flask-SQLAlchemy variables
+# The connection string of the app's database.
+SQLALCHEMY_DATABASE_URI = ""
+# Print database-related actions to the console for debugging purposes.
+SQLALCHEMY_ECHO = False
+
+
+# Flask-Session variables
+# Session information can be handled via Redis, Memcached, filesystem, MongoDB, or SQLAlchemy.
+SESSION_TYPE = ""
+# A True/False value that states whether or not user sessions should last forever.
+SESSION_PERMANENT = ""
+# Modifies the key names in session key/value pairs to always have a particular prefix.
+SESSION_KEY_PREFIX = ""
+# URI of a database to store session information.
+SESSION_SQLALCHEMY = ""
