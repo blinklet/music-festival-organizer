@@ -1,0 +1,6 @@
+Copyright 2024 Brian Linkletter
+
+All rights retained
+
+My intention is to adopt an open-source license when the project is released for public use
+But, until then, I reserve all rights for myself
