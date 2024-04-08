@@ -1,5 +1,6 @@
 flask
 Flask-WTF
-flask-Login
+Flask-SQLAlchemy
+Flask-Security-Too[fsqla,common]
 
 python-dotenv
