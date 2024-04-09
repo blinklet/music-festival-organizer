@@ -106,3 +106,7 @@ if __name__ == "__main__":
     app.run()
 ```
 
+
+
+see:
+https://flask-security-too.readthedocs.io/en/stable/quickstart.html#basic-sqlalchemy-application

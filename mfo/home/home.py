@@ -2,6 +2,8 @@ import flask
 from mfo.database.models.users import User
 from mfo.database.setup import db
 from mfo.home import home
+from flask_security import Security, current_user, auth_required, hash_password, \
+     SQLAlchemySessionUserDatastore, permissions_accepted
 
 bp = flask.Blueprint(
     'home',
@@ -12,8 +14,9 @@ bp = flask.Blueprint(
     )
 
 @bp.route('/')
+@auth_required()
 def index():
-    return flask.render_template('/home/index.html')
+    return flask.render_template('/home/index.html', name=current_user.email)
 
 @bp.route('/test/<email>/<first>/<last>')
 def test(email, first, last):
