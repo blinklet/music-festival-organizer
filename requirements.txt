@@ -2,5 +2,6 @@ flask
 Flask-WTF
 Flask-SQLAlchemy
 Flask-Security-Too[fsqla,common]
+bcrypt==4.0.1
 
 python-dotenv

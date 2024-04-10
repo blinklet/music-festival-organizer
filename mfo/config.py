@@ -26,6 +26,8 @@ SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
 # Flask-Security variables
 SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
+SECURITY_ANONYMOUS_USER_DISABLED = True # See: https://flask-security-too.readthedocs.io/en/stable/changelog.html#notes
+SECURITY_REGISTERABLE = True
 
 # Flask-Session variables
 SESSION_TYPE = os.environ.get("SESSION_TYPE")

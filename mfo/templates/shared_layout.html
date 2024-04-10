@@ -13,7 +13,8 @@
     <nav>
         <a href="/">Home</a>
         <a href="{{ url_for('admin.index') }}">Admin</a>
-        <a href="{{ url_for('account.index') }}">Account</a>
+        <a href="{{ url_for('security.login') }}">Login</a>
+        <a href="{{ url_for('security.register') }}">Register</a>
     </nav>
     <div class="main_content">
         {% block main_content %}
