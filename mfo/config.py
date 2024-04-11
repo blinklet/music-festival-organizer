@@ -32,6 +32,7 @@ SECURITY_ANONYMOUS_USER_DISABLED = True # See: https://flask-security-too.readth
 SECURITY_REGISTERABLE = True
 SECURITY_SEND_REGISTER_EMAIL = False
 
+
 # Flask-Session variables
 SESSION_TYPE = os.environ.get("SESSION_TYPE")
 SESSION_PERMANENT = os.environ.get("SESSION_PERMANENT")

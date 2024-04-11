@@ -14,9 +14,13 @@
         <a href="/">Home</a>
         <a href="{{ url_for('admin.index') }}">Admin</a>
         <a href="{{ url_for('account.index') }}">Account</a>
+        {% if not _fs_is_user_authenticated(current_user) %}
         <a href="{{ url_for_security('login') }}">Login</a>
         <a href="{{ url_for_security('register') }}">Register</a>
+        {% endif %}
+        {% if _fs_is_user_authenticated(current_user) %}
         <a href="{{ url_for_security('logout') }}">Logout</a>
+        {% endif %}
     </nav>
     <div class="main_content">
         {% block main_content %}

@@ -11,7 +11,7 @@ app.config.from_pyfile('config.py', silent=True)
 # Register Flask-SQLAlchemy
 db.init_app(app)
 
-# Register Flask_Security_Too
+# Register Flask-Security-Too
 app.security = Security(app, user_datastore)
 
 # Register blueprints
