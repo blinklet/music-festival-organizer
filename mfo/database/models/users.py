@@ -20,5 +20,3 @@ class Role(db.Model, fsqla.FsRoleMixin):
 
 class User(db.Model, fsqla.FsUserMixin):
     pass
-
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)

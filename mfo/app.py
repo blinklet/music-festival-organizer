@@ -12,8 +12,10 @@ from flask_security import Security, SQLAlchemyUserDatastore
 app = flask.Flask(__name__)
 app.config.from_pyfile('config.py', silent=True)
 
-# Configure Flask_Security
+# Configure Flask-SQLAlchemy
 db.init_app(app)
+
+# Configure Flask_Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 app.security = Security(app, user_datastore)
 

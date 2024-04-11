@@ -22,7 +22,9 @@ SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")\
      or 'sqlite:///' + os.path.join(project_dir, 'app.sqlite')
 SQLALCHEMY_ECHO = os.environ.get("SQLALCHEMY_ECHO")
 SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS")
-SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True} # From Flask-Security-Too configuration recommendations. 
+# See: https://flask-security-too.readthedocs.io/en/stable/quickstart.html#sqlalchemy-application
+# See: https://docs.sqlalchemy.org/en/20/core/pooling.html#disconnect-handling-pessimistic
 
 # Flask-Security variables
 SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
