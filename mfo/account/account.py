@@ -16,12 +16,4 @@ bp = flask.Blueprint(
 def index():
     return flask.render_template('/account/index.html')
 
-@bp.route('/login')
-@auth_required()
-def login():
-    return flask.render_template('/account/login.html')
 
-@bp.route('/register')
-@auth_required()
-def register():
-    return flask.render_template('/account/register.html')

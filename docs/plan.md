@@ -13,6 +13,12 @@ Because this is where they feel the pain right now and because creating a new si
     * Other roles not needed for importing and reporting
       * (Maybe put them in form as "greyed out")
 
+2) Add user profile
+
+Create model for profile, linked to each user ID
+https://blog.appseed.us/how-to-use-flask-security-too-into-a-flask-project/
+
+
 2) Data entry for scheduler
 
 * Import spreadsheet
