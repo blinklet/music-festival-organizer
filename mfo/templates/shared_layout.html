@@ -4,32 +4,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>{% block title %}Music Festival Website{% endblock %}</title>
+
     <link rel="stylesheet" href="/static/css/styles.css" />
+    {{ bootstrap.load_css() }}
+
     {% block additional_css %}{% endblock %}
 </head>
 
 <body>
-    <nav>
-        <a href="{{ url_for('home.index') }}">Home</a>
-        {% if "Admin" in current_user.roles %}
-        <a href="{{ url_for('admin.index') }}">Admin</a>
-        {% endif %}
-        {% if ("User" in current_user.roles) or ("Admin" in current_user.roles) %}
-        <a href="{{ url_for('account.index') }}">Account</a>
-        {% endif %}
-        {% if not _fs_is_user_authenticated(current_user) %}
-        <a href="{{ url_for_security('login') }}">Login</a>
-        <a href="{{ url_for_security('register') }}">Register</a>
-        {% endif %}
-        {% if _fs_is_user_authenticated(current_user) %}
-        <a href="{{ url_for_security('logout') }}">Logout</a>
-        {% endif %}
-    </nav>
+    {% include "navbar.html" %}
     <div class="main_content">
         {% block main_content %}
         <h1>This is a simple example page</h1>
         {% endblock %}
     </div>
+
+    {{ bootstrap.load_js() }}
+
 </body>
 </html>

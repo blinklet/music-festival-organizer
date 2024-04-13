@@ -4,10 +4,14 @@ from flask_security import Security
 from mfo.database import setup
 from mfo.database.models.users import user_datastore
 from flask_security.signals import user_registered
+from flask_bootstrap import Bootstrap5
 
 
 app = flask.Flask(__name__)
 app.config.from_pyfile('config.py', silent=True)
+
+# Register Bootstrap-Flask
+bootstrap = Bootstrap5(app)
 
 # Register Flask-SQLAlchemy
 setup.db.init_app(app)
