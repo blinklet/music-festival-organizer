@@ -5,8 +5,8 @@ FLASK_APP = app
 FLASK_DEBUG = True
 # Generate a key using "secrets.token_urlsafe()"
 FLASK_SECRET_KEY = LGBoUEDCCpgwxy5jZxpu9e01MTnRVqnG6A8ceD7Z4YU
+# FLASK_SERVER_NAME = 127.0.0.1:5000
 FLASK_EXPLAIN_TEMPLATE_LOADING = False
-
 
 # Flask-SQLAlchemy variables
 # --------------------------
@@ -15,8 +15,13 @@ SQLALCHEMY_DATABASE_URI = ""
 # Print database-related actions to the console for debugging purposes.
 SQLALCHEMY_ECHO = False
 
-
 # Flask-Security variables
 # ---------------------
 # generate a salt using "secrets.SystemRandom().getrandbits(128)"
 SECURITY_PASSWORD_SALT  = 307680677384259925768439955171685999662
+
+# Super-user 
+# ----------
+SUPERUSER_ID = admin@fakesite.com
+SUPERUSER_PASSWORD = abcd1234
+

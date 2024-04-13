@@ -32,6 +32,8 @@ SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
 SECURITY_ANONYMOUS_USER_DISABLED = True # See: https://flask-security-too.readthedocs.io/en/stable/changelog.html#notes
 SECURITY_REGISTERABLE = True
 SECURITY_SEND_REGISTER_EMAIL = False
+SECURITY_CHANGEABLE = True
+SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
 
 # Flask-Session variables
