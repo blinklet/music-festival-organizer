@@ -14,9 +14,9 @@
     {% block additional_css %}{% endblock %}
 </head>
 
-<body>
+<body class="bg-light">
     {% include "navbar.html" %}
-    <div class="main_content">
+    <div class="container_fluid p-3">
         {% block main_content %}
         <h1>This is a simple example page</h1>
         {% endblock %}
