@@ -47,15 +47,35 @@ SESSION_COOKIE_SAMESITE = "strict"
 
 # Roles (name, description, set of permissions)
 ROLES  = {
-    'USER': {
-        'name': 'User',
-        'description': 'Normal users',
-        'permissions': { 'read', 'write' }
+    'PARTICIPANT': {
+        'name': 'Participant',
+        'description': 'Normal user',
+        'permissions': { 'user' }
     },
     'ADMIN': {
         'name': 'Admin',
-        'description': 'Administrators',
-        'permissions': { 'read', 'write' }
+        'description': 'Administrator',
+        'permissions': { 'admin' }
+    },
+    'TEACHER': {
+        'name': 'Teacher',
+        'description': 'Music teacher',
+        'permissions': { 'user' }
+    },
+    'PARENT': {
+        'name': 'Parent',
+        'description': 'Parent or guardian',
+        'permissions': { 'user' }
+    },
+    'ACCOMPANIST': {
+        'name': 'Accompanist',
+        'description': 'Accompanist',
+        'permissions': { 'user' }
+    },
+    'TEACHER': {
+        'name': 'Teacher',
+        'description': 'Music teachers',
+        'permissions': { 'user' }
     },
 }
 
@@ -66,14 +86,3 @@ SUPERUSER_PASSWORD = os.environ.get("SUPERUSER_PASSWORD")
 SUPERUSER_ROLES = [role['name'] for role in ROLES.values()]
 
 
-# Nav bar links
-from collections import namedtuple
-Link = namedtuple("Link", "text route roles")
-NAV_LINKS = [
-    Link(text='Home', route='home.index', roles={'Admin','User'}),
-    Link(text='Admin', route='home.index', roles={'Admin'}),
-    Link(text='Account', route='home.index', roles={'Admin','User'}),
-    Link(text='Login', route='home.index', roles={'Admin','User'}),
-    Link(text='Register', route='home.index', roles={'Admin','User'}),
-    Link(text='Logout', route='home.index', roles={'Admin','User'}),
-]
