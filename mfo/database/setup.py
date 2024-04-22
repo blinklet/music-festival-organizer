@@ -1,13 +1,7 @@
 # mfo/database/setup.py
  
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
 from flask_security import hash_password
-
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
+from mfo.database.base import db
 
 # Create database, if none 
 def create_database(app):

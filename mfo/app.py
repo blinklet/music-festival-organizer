@@ -2,7 +2,7 @@
 import flask
 from flask_security import Security
 from mfo.database import setup
-from mfo.database.models.users import user_datastore
+from mfo.database.users import user_datastore
 from flask_security.signals import user_registered
 from flask_bootstrap import Bootstrap5
 
