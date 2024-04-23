@@ -37,13 +37,12 @@ SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
 
 # Flask-Session variables
+SESSION_PERMANENT = True
 SESSION_TYPE = os.environ.get("SESSION_TYPE")
-SESSION_PERMANENT = os.environ.get("SESSION_PERMANENT")
-SESSION_KEY_PREFIX = os.environ.get("SESSION_KEY_PREFIX")
 SESSION_SQLALCHEMY = os.environ.get("SESSION_SQLALCHEMY")
 REMEMBER_COOKIE_SAMESITE = "strict"
 SESSION_COOKIE_SAMESITE = "strict"
-
+SESSION_COOKIE_SECURE = True
 
 # Roles (name, description, set of permissions)
 ROLES  = {

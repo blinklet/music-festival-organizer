@@ -25,3 +25,6 @@ SECURITY_PASSWORD_SALT  = 307680677384259925768439955171685999662
 SUPERUSER_ID = admin@fakesite.com
 SUPERUSER_PASSWORD = abcd1234
 
+# Flask-Session variables
+# Set SESSION_TYPE and SESSION_SQLALCHEMY to create session backend
+#  (Can I use Postgres for session backend???)
