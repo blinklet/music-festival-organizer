@@ -1,13 +1,18 @@
-{% extends "shared_layout.html" %}
-{% block title %}Admin page{% endblock %}
+<!-- admin/templates/admin/index.html -->
 
-{% block main_content %}
-    <div class="container_fluid p-3">
-        <h1>Administration page</h1>
+{% extends "base.html" %}
+{% block title %}User Information{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>Admin page</h1>
+
         <div>
-            Placeholder for admin tools
+            This is the administration page.
         </div>
     </div>
 {% endblock %}
 
-{% block additional_css %}{% endblock %}
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}" >
+{% endblock %}
