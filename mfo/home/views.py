@@ -1,6 +1,7 @@
 # mfo/home/views.py
 
 import flask
+import flask_security
 
 bp = flask.Blueprint(
     'home',
@@ -11,6 +12,8 @@ bp = flask.Blueprint(
     url_prefix='/'
     )
 
+
 @bp.route('/')
+@flask_security.auth_required()
 def index():
     return flask.render_template('/home/index.html')
