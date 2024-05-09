@@ -1,8 +1,6 @@
 # mfo/database.commands.py
 
 import flask
-import flask_security
-import click
 
 import mfo.database.base as base
 
@@ -13,3 +11,13 @@ bp = flask.Blueprint('database', __name__,)
 @flask.cli.with_appcontext
 def create():
     base.db.create_all()
+
+    roles_dict = flask.current_app.config['ROLES']
+    roles_keys = roles_dict.keys()
+    for key in roles_keys:
+        role=roles_dict[key]
+        flask.current_app.security.datastore.find_or_create_role(
+            name=role['name'], 
+            description=role['description'],
+    )
+    flask.current_app.security.datastore.commit()

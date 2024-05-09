@@ -36,3 +36,15 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 # See: https://flask-security-too.readthedocs.io/en/stable/quickstart.html#sqlalchemy-application
 # See: https://docs.sqlalchemy.org/en/20/core/pooling.html#disconnect-handling-pessimistic
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}  
+
+# Roles defined
+ROLES  = {
+    'USER': {
+        'name': 'User',
+        'description': 'Normal users',
+    },
+    'ADMIN': {
+        'name': 'Admin',
+        'description': 'Administrators',
+    },
+}
