@@ -19,5 +19,6 @@ def create():
         flask.current_app.security.datastore.find_or_create_role(
             name=role['name'], 
             description=role['description'],
+            permissions=role['permissions'],
     )
     flask.current_app.security.datastore.commit()

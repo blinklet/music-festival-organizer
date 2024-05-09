@@ -42,9 +42,11 @@ ROLES  = {
     'USER': {
         'name': 'User',
         'description': 'Normal users',
+        'permissions': { 'read', 'write' }
     },
     'ADMIN': {
         'name': 'Admin',
         'description': 'Administrators',
+        'permissions': { 'read', 'write', 'database' }
     },
 }
