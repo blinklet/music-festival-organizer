@@ -21,6 +21,8 @@ SECURITY_ANONYMOUS_USER_DISABLED = True
 SECURITY_REGISTERABLE = True
 # Disable e-mail confirmation of new users (because we don't have an e-mail server set up)
 SECURITY_SEND_REGISTER_EMAIL = False
+SECURITY_CHANGEABLE = True
+SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 
 # Flask-SQLAlchemy variables
 if ENVIRONMENT == "development":
