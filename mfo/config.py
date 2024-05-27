@@ -38,15 +38,41 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}  
 
 # Roles defined
+# Roles (name, description, set of permissions)
 ROLES  = {
     'USER': {
         'name': 'User',
-        'description': 'Normal users',
-        'permissions': { 'read', 'write' }
+        'description': 'Normal user',
+        'permissions': { 'user' }
+    },
+    'PARTICIPANT': {
+        'name': 'Participant',
+        'description': 'Normal user',
+        'permissions': { 'user' }
     },
     'ADMIN': {
         'name': 'Admin',
-        'description': 'Administrators',
-        'permissions': { 'read', 'write', 'database' }
+        'description': 'Administrator',
+        'permissions': { 'admin' }
+    },
+    'TEACHER': {
+        'name': 'Teacher',
+        'description': 'Music teacher',
+        'permissions': { 'user' }
+    },
+    'GUARDIAN': {
+        'name': 'Guardian',
+        'description': 'Parent or guardian',
+        'permissions': { 'user' }
+    },
+    'ACCOMPANIST': {
+        'name': 'Accompanist',
+        'description': 'Accompanist',
+        'permissions': { 'user' }
+    },
+    'TEACHER': {
+        'name': 'Teacher',
+        'description': 'Music teachers',
+        'permissions': { 'user' }
     },
 }
