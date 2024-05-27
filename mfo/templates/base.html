@@ -4,15 +4,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Example Website{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}MFO{% endblock %}</title>
     <link rel="stylesheet" href="/static/css/styles.css" />
+    {{ bootstrap.load_css() }}
     {% block additional_css %}{% endblock %}
 </head>
 
 <body>
-    <div class="content">
-        {% block content %}
-        {% endblock %}
-    </div>
+    {% include "navbar.html" %}
+    
+    {% block content %}
+    {% endblock %}
+    
+    {{ bootstrap.load_js() }}
 </body>
 </html>

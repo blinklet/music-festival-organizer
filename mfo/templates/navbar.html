@@ -1,0 +1,24 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-primary" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home.index') }}">MFO</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapsed" aria-controls="navbarCollapsed" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapsed">
+            <div class="navbar-nav me-auto text-light">
+                {% if "Admin" in current_user.roles %}
+                    <a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a>
+                {% endif %}
+            </div>
+            <div class="navbar-nav ms-auto text-light">
+                {% if not _fs_is_user_authenticated(current_user) %}
+                    <a class="nav-link" href="{{ url_for_security('register') }}">Register</a>
+                    <a class="nav-link" href="{{ url_for_security('login') }}">Login</a>
+                {% endif %}
+                {% if _fs_is_user_authenticated(current_user) %}
+                    <a class="nav-link" href="{{ url_for_security('logout') }}">Logout</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
