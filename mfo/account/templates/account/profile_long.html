@@ -1,0 +1,84 @@
+<!--
+
+    Links with bootstrap and Flask-WTF examples 
+https://mdbootstrap.com/docs/standard/extended/profiles/ 
+
+-->
+
+<div class="container-fluid pt-4 pb-5 bg-body border border-end">
+
+
+    <div class="row justify-content-center align-items-center">
+        <div class="col">
+
+
+            <div class="card bg-white border border-secondary rounded h-100 ">
+                <div class="card-header bg-secondary pt-3 pb-2 text-center">
+                    <h1 class="text-white">{{ profile.first_name }} {{ profile.last_name }}</h1>
+                    <p class="text-light fs-5">
+                        {% for role in profile.users[0].roles %}
+                            <span class="mx-2">{{ role.name}}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+                <div class="row justify-content-center text-center mt-4">
+                    <div class="col-sm-8">
+                        <h4 class="text-muted">Address</h4>
+                        <p class="text-dark fs-5">{{ profile.address }}, {{ profile.city }}, {{ profile.province }}, {{ profile.postal_code }}</p>
+                    </div>
+                </div>
+                <div class="row justify-content-center text-center mt-2">
+                    <div class="col-sm-5 align-items-center">
+                        <h4 class="text-muted">E-mail</h4>
+                        <p class="text-dark fs-5">{{ profile.email }}</p>
+                    </div>
+                    <div class="col-sm-5 text-center">
+                        <h4 class="text-muted">Phone</h4>
+                        <p class="text-dark fs-5">{{ profile.phone }}</p>
+                    </div>
+                </div>
+                <div class="row justify-content-center text-center mt-2">
+                    <div class="col-sm-5 align-items-center">
+                        <h4 class="text-muted">Birth date</h4>
+                        <p class="text-dark fs-5">{{ profile.birthdate }}</p>
+                    </div>
+                    <div class="col-sm-5 text-center">
+                        <h4 class="text-muted">National Festival</h4>
+                        <p class="text-dark fs-5">
+                            {% if profile.national_festival %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-footer mt-4 pt-4 pb-3">
+                    <div class="row justify-content-center text-center">
+                        <div class="col-sm-5">
+                            <h4 class="text-muted">Total fees</h4>
+                            <p class="text-dark fs-5">{{ "${:,.2f}".format(profile.total_fee) }}</p>
+                        </div>
+                        <div class="col-sm-5">
+                            <h4 class="text-muted">Fees paid</h4>
+                            <p class="text-dark fs-5">{{ "${:,.2f}".format(profile.feed_paid) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+    <div class="row justify-content-between gap-2">
+        <div class="col">
+            <a class="btn btn-primary d-block btn-lg mt-3" href={{ url_for("account.edit_profile") }}>Edit profile</a>
+        </div>
+        <div class="col">
+            <a class="btn btn-success btn-lg d-block mt-3" href={{ url_for_security('change_password') }}>Change password</a>
+        </div>
+    </div>
+</div>
+
