@@ -56,7 +56,6 @@ def test_users():
                     )
             for profile in user_dict['profiles']:
                 profile['birthdate'] = datetime.strptime(profile['birthdate'], "%Y-%m-%d").date()
-                #profile['email']=user_dict['email']
                 profile_entry=Profile(**profile)
                 user.profiles.append(profile_entry)
 

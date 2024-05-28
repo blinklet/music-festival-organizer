@@ -1,6 +1,7 @@
 import flask
 
 from mfo.database.base import db
+import mfo.database.utilities
 import sqlalchemy as sa
 import flask_security as fs
 
@@ -15,27 +16,18 @@ bp = flask.Blueprint(
     )
 
 
-def find_primary_profile(user):
-    primary = None
-    for x in user.profiles:
-        for y in x.users:
-            if y.id == user.id:
-                primary = x
-    return primary
-
-
 @bp.route('/')
 @fs.auth_required()
 def index():
     user = fs.current_user
-    profile = find_primary_profile(user)
+    profile = mfo.database.utilities.find_primary_profile(user)
     return flask.render_template('/account/index.html', user=user, profile=profile)
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @fs.auth_required()
 def edit_profile():
     user = fs.current_user
-    profile = find_primary_profile(user)
+    profile = mfo.database.utilities.find_primary_profile(user)
     form = ProfileEdit(obj=profile)
     if form.validate_on_submit():
 
