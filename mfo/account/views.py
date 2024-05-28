@@ -18,8 +18,9 @@ bp = flask.Blueprint(
 def find_primary_profile(user):
     primary = None
     for x in user.profiles:
-        if x.email == user.email:
-            primary = x
+        for y in x.users:
+            if y.id == user.id:
+                primary = x
     return primary
 
 

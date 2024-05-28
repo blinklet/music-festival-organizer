@@ -35,20 +35,16 @@ class Profile(db.Model):
     postal_code: Mapped[str] = mapped_column(nullable=True)
     province: Mapped[str] = mapped_column(nullable=True)
 
-    # Profile is associated with 1 or more users
-    # if profile.email = user.email, then this is the user's primary profile
-    # if emails do not match, then this is a profile associated with the user
-    # like a student associated with a teacher
-    email: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=True)
 
     phone: Mapped[str] = mapped_column(nullable=True)
     school: Mapped[str] = mapped_column(nullable=True)
     teacher: Mapped[str] = mapped_column(nullable=True)
 
-    total_fee: Mapped[float] = mapped_column(nullable=False, default=0.0)
-    feed_paid: Mapped[float] = mapped_column(nullable=False, default=0.0)
+    total_fee: Mapped[float] = mapped_column(nullable=True, default=0.0)
+    feed_paid: Mapped[float] = mapped_column(nullable=True, default=0.0)
     comments: Mapped[str] = mapped_column(nullable=True)
-    national_festival: Mapped[bool] = mapped_column(nullable=False, default=False)
+    national_festival: Mapped[bool] = mapped_column(nullable=True, default=False)
 
     users: Mapped[list["User"]] = relationship(
         secondary=profiles_users, back_populates="profiles"

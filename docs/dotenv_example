@@ -22,6 +22,4 @@ SQLALCHEMY_ECHO = False
 # generate a salt using "secrets.SystemRandom().getrandbits(128)"
 SECURITY_PASSWORD_SALT  = 307680677384259925768439955171685999662
 
-SUPERUSER_ID = admin@fakesite.com
-SUPERUSER_PASSWORD = abcd1234
-
+TEST_USERS_FILE = "/home/brian/Projects/Music Festival Program/music-festival-organizer/tests/test_users.json"

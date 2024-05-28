@@ -30,11 +30,11 @@ def create_app():
     # Register blueprints
     import mfo.home.views
     import mfo.admin.views
-    from mfo.account import account
+    from mfo.account import views
     import mfo.database.commands
     app.register_blueprint(mfo.home.views.bp)
     app.register_blueprint(mfo.admin.views.bp)
-    app.register_blueprint(account.bp)
+    app.register_blueprint(views.bp)
     app.register_blueprint(mfo.database.commands.bp)
 
     # Assign "User" role to all newly-registered users

@@ -1,0 +1,56 @@
+[
+    {
+        "email": "user@testmail.com",
+        "password": "password",
+        "roles": [
+            "User"
+        ],
+        "profiles": [
+            {
+                "first_name": "Brad",
+                "last_name": "Bigman",
+                "identifier": 0,
+                "birthdate": "2010-05-10",
+                "address": "12 Chuckwood Lane",
+                "city": "Manburg",
+                "postal_code": "M2T 1T1",
+                "province": "BC",
+                "phone": "6133279929",
+                "school": null,
+                "teacher": null,
+                "total_fee": 0.0,
+                "feed_paid": 0.0,
+                "comments": null,
+                "national_festival": true
+            }
+        ]
+    },
+    {
+        "email": "admin@testmail.com",
+        "password": "password",
+        "roles": [
+            "Admin",
+            "User"
+        ],
+        "profiles": [
+            {
+                "first_name": "Iamin",
+                "last_name": "Charge",
+                "identifier": 0,
+                "birthdate": "1990-12-25",
+                "address": "566 Administrative Place",
+                "city": "Capital City",
+                "postal_code": "K2T 1S1",
+                "province": "ON",
+                "phone": "6135589929",
+                "email": "admin@testmail.com",
+                "school": null,
+                "teacher": null,
+                "total_fee": 0.0,
+                "feed_paid": 0.0,
+                "comments": null,
+                "national_festival": false
+            }
+        ]
+    }
+]
