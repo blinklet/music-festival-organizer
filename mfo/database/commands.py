@@ -1,13 +1,11 @@
 # mfo/database.commands.py
 
 import flask
-import os
-import dotenv
+from flask_security import hash_password
+from datetime import datetime
 from pathlib import Path
 import json
-from datetime import datetime
-from flask_security import hash_password
-
+import os
 
 from mfo.database.base import db
 from mfo.database.users import User

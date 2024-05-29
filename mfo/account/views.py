@@ -2,8 +2,7 @@ import flask
 
 from mfo.database.base import db
 import mfo.database.utilities
-import sqlalchemy as sa
-import flask_security as fs
+import flask_security
 
 from mfo.account.forms.edit_profile import ProfileEdit
 
@@ -15,23 +14,21 @@ bp = flask.Blueprint(
     url_prefix='/account',
     )
 
-
 @bp.route('/')
-@fs.auth_required()
+@flask_security.auth_required()
 def index():
-    user = fs.current_user
+    user = flask_security.current_user
     profile = mfo.database.utilities.find_primary_profile(user)
     return flask.render_template('/account/index.html', user=user, profile=profile)
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
-@fs.auth_required()
+@flask_security.auth_required()
 def edit_profile():
-    user = fs.current_user
+    user = flask_security.current_user
     profile = mfo.database.utilities.find_primary_profile(user)
     form = ProfileEdit(obj=profile)
+
     if form.validate_on_submit():
-
-
         profile.first_name = form.first_name.data
         profile.last_name = form.last_name.data
         profile.birthdate = form.birthdate.data
@@ -45,6 +42,6 @@ def edit_profile():
         profile.comments = form.comments.data
         profile.national_festival = form.national_festival.data
         db.session.commit()
-
         return flask.redirect(flask.url_for('account.index'))
+
     return flask.render_template('/account/edit_profile.html', form=form)
