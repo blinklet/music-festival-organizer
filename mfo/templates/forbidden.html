@@ -4,13 +4,10 @@
 {% block title %}Access forbidden{% endblock %}
 
 {% block content %}
-    <div>
-        <h1>Access forbidden</h1>
-
-        <div>
-            Sorry, you must be a {{role}} to access this page 
-        </div>
-    </div>
+<div class="jumbotron text-center pt-4 pb-3 bg-light">
+    <h1>Access forbidden</h1>
+    <p>Sorry, you must be a {{role}} to access this page </p>
+</div>
 {% endblock %}
 
 {% block additional_css %}{% endblock %}
