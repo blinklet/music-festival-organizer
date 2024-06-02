@@ -31,7 +31,10 @@ def index():
             return flask.redirect(flask.url_for('admin.index'))
 
         flask.flash(message, 'success')
+
+        # Add spreadsheet to database
         spreadsheet.convert_to_db(df)
+
         return flask.redirect(flask.url_for('admin.index'))
 
     return flask.render_template('/admin/index.html', form=form)
