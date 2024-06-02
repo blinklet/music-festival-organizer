@@ -7,8 +7,11 @@
         ],
         "profiles": [
             {
+                "client_id": null,
+                "session": null,
                 "first_name": "Brad",
                 "last_name": "Bigman",
+                "group_name": null,
                 "identifier": 0,
                 "birthdate": "2010-05-10",
                 "address": "12 Chuckwood Lane",
@@ -17,9 +20,7 @@
                 "province": "BC",
                 "phone": "6133279929",
                 "school": null,
-                "teacher": null,
-                "total_fee": 0.0,
-                "feed_paid": 0.0,
+                "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": true
             }
@@ -34,8 +35,11 @@
         ],
         "profiles": [
             {
+                "client_id": null,
+                "session": null,
                 "first_name": "Iamin",
                 "last_name": "Charge",
+                "group_name": null,
                 "identifier": 0,
                 "birthdate": "1990-12-25",
                 "address": "566 Administrative Place",
@@ -45,9 +49,7 @@
                 "phone": "6135589929",
                 "email": "admin@testmail.com",
                 "school": null,
-                "teacher": null,
-                "total_fee": 0.0,
-                "feed_paid": 0.0,
+                "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": false
             }
