@@ -99,7 +99,8 @@ class Profile(db.Model):
     )
 
     __table_args__ = (
-        UniqueConstraint('first_name', 'last_name', 'identifier', name='profile_name_uc'),
+        UniqueConstraint('first_name', 'last_name', 'email', name='profile_patricipant_uc'),
+        UniqueConstraint('group_name', 'email', name='profile_group_uc')
     )
 
 # class Profile(db.Model):
