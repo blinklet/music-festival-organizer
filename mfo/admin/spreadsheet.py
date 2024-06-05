@@ -12,7 +12,7 @@ import flask
 import mfo.admin.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
-from mfo.database.profiles import Profile
+from mfo.database.models import Profile, FestivalClass
 
 def read_sheet(file):
     try:
@@ -347,13 +347,105 @@ def related_profiles(input_df):
         try:
             db.session.commit()
             
+        except IntegrityError:
+                db.session.rollback()
+                print(f"** Commit failed: Student {student_first_name} {student_last_name} already associated with Teacher {teacher_first_name}, {teacher_last_name}")
+                
         except Exception as e:
             db.session.rollback()
             print(e)
 
+    # # Find all accompanists in the various accompanist columns
+    # accompanist_name_columns = [
+    #     col for col in input_df.columns if col.startswith('accompanist_name_')
+    #     ]
 
-def classes(sheet_data):
-    pass
+    # accompanists_df = input_df[accompanist_name_columns]
+    # accompanists = accompanists_df.values.flatten()
+    # accompanists = accompanists[~pd.isna(accompanists)]
+    # accompanists = pd.unique(accompanists)
+
+    # # for each accompanist, find associated students
+    # for accompanist_name in accompanists:
+    #     accompanist_first_name, accompanist_last_name = mfo.utilities.parse_full_name(accompanist_name)
+    #     print(accompanist_first_name, accompanist_last_name)
+
+    
+
+
+
+
+def classes(input_df):
+    """
+    Parse through dataframe, find all class-related columns.
+    Class columns have format like below, and there could be many
+    'class_number_x',
+    'class_suffix_x'
+
+    After you get the column names, parse through all column pairs and 
+    generate a list of tuples that identify each unique class number/suffix
+    """
+    class_number_columns = [
+        col for col in input_df.columns if col.startswith('class_number_')
+    ]
+
+    class_suffix_columns = [
+        col for col in input_df.columns if col.startswith('class_suffix_')
+    ]
+
+    class_columns = list(
+        zip(
+            class_number_columns, 
+            class_suffix_columns
+        )
+    )
+
+    class_pairs = set()
+    
+    for num_col, suf_col in class_columns:
+        for num, suf in zip(input_df[num_col], input_df[suf_col]):
+            if not pd.isna(num) and not pd.isna(suf):
+                class_pairs.add((str(int(num)), suf))
+    
+    for class_number, class_suffix in list(class_pairs):
+        stmt = select(FestivalClass).where(
+            FestivalClass.number == class_number,
+            FestivalClass.suffix == class_suffix,
+        )
+        festival_class = db.session.execute(stmt).scalar_one_or_none()
+
+        if festival_class:
+            print(F"Class {class_number}{class_suffix} already exists")
+        else:
+            new_festival_class = FestivalClass(
+                number=class_number,
+                suffix=class_suffix,
+                # description
+                # class_type
+                # fee
+                # discipline
+                # adjudication_time
+                # move_time
+                # test_pieces
+            )
+
+            db.session.add(new_festival_class)
+            print(f"** Class {class_number}{class_suffix} added")
+    
+            try:
+                db.session.commit()
+                
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"** Commit failed: Class {class_number}{class_suffix} already exists")
+                    
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+
+
+    
 
 def schools(sheet_data):
     pass
@@ -370,5 +462,6 @@ def convert_to_db(sheet_data):
     df = names_to_df(sheet_data)
     all_profiles(df)
     related_profiles(df)
+    classes(df)
     # print(df[['email', 'first_name', 'last_name', 'date_of_birth']].head())
 

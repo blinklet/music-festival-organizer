@@ -1,7 +1,7 @@
 # /mfo/database/models/profiles.py
 
 from mfo.database.base import db
-from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey
+from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 import datetime
@@ -24,6 +24,12 @@ groups_contacts = Table(
     'groups_contacts', db.metadata,
     Column('group_id', ForeignKey('profile.id'), primary_key=True),
     Column('contact_id', ForeignKey('profile.id'), primary_key=True)
+)
+
+class_repertoire = Table(
+    'class_repertoire', db.metadata,
+    Column('class_id', ForeignKey('class.id'), primary_key=True),
+    Column('repertoire_id', ForeignKey('repertoire.id'), primary_key=True)
 )
 
 class Profile(db.Model):
@@ -103,47 +109,36 @@ class Profile(db.Model):
         UniqueConstraint('group_name', 'email', name='profile_group_uc')
     )
 
-# class Profile(db.Model):
-#     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-#     # Change to a foreign key relationship to the Clients table
-#     client_id: Mapped[str] = mapped_column(nullable=True)
-
-#     # Change to a foreign key relationship to the Sessions table
-#     session: Mapped[str] = mapped_column(nullable=True)
-
-#     first_name: Mapped[str] = mapped_column(nullable=True)
-#     last_name: Mapped[str] = mapped_column(nullable=True)
-#     group_name: Mapped[str] = mapped_column(nullable=True)
-#     # extra field in case two people have same first and last names
-#     identifier: Mapped[int]  = mapped_column(nullable=True, default=0)
+class FestivalClass(db.Model):
+    __tablename__ = 'class'
     
-#     birthdate: Mapped[datetime.date] = mapped_column(nullable=True)
-    
-#     address: Mapped[str] = mapped_column(nullable=True)
-#     city: Mapped[str] = mapped_column(nullable=True)
-#     postal_code: Mapped[str] = mapped_column(nullable=True)
-#     province: Mapped[str] = mapped_column(nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-#     email: Mapped[str] = mapped_column(nullable=True)
+    number: Mapped[Optional[str]] = mapped_column(nullable=True)
+    suffix: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-#     phone: Mapped[str] = mapped_column(nullable=True)
-#     school: Mapped[str] = mapped_column(nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
+    fee: Mapped[Optional[str]] = mapped_column(nullable=True)
+    discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
+    adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
+    move_time: Mapped[Optional[int]] = mapped_column(nullable=True)
 
-#     teachers: Mapped[list["Profile"]] = relationship(
-#         secondary=teachers_students, back_populates="students")
+    test_pieces: Mapped[list["Repertoire"]] = relationship(
+        "Repertoire", secondary=class_repertoire, back_populates="festival_classes"
+    )
 
-#     group_contacts: Mapped[list["Profile"]] = relationship(
-#         secondary=groups_contacts, back_populates="group")
 
-#     total_fee: Mapped[float] = mapped_column(nullable=True, default=0.0)
-#     fees_paid: Mapped[float] = mapped_column(nullable=True, default=0.0)
-#     comments: Mapped[str] = mapped_column(nullable=True)
-#     national_festival: Mapped[bool] = mapped_column(nullable=True, default=False)
+class Repertoire(db.Model):
+    _tablename__ = 'repertoire'
 
-#     users: Mapped[list["User"]] = relationship(
-#         secondary=profiles_users, back_populates="profiles"
-#     )
-#     __table_args__ = (
-#         UniqueConstraint('first_name', 'last_name', 'identifier', name='profile_name_uc'),
-#     )
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    title: Mapped[Optional[str]] = mapped_column(nullable=True)
+    duration: Mapped[Optional[int]] = mapped_column(nullable=True)
+    composer: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    festival_classes: Mapped[list[FestivalClass]] = relationship(
+        "FestivalClass", secondary=class_repertoire, back_populates="test_pieces"
+    )

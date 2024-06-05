@@ -7,7 +7,7 @@ from flask_security.signals import user_registered
 
 import mfo.database.users as users
 import mfo.database.base as base
-from mfo.database.profiles import Profile
+from mfo.database.models import Profile
 
 def create_app():
 

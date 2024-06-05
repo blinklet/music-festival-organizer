@@ -9,7 +9,7 @@ import os
 
 from mfo.database.base import db
 from mfo.database.users import User
-from mfo.database.profiles import Profile
+from mfo.database.models import Profile
 
 
 bp = flask.Blueprint('database', __name__,)

@@ -3,7 +3,7 @@ from flask_security import SQLAlchemyUserDatastore
 from mfo.database.base import db
 from sqlalchemy.orm import Mapped, relationship
 
-from .profiles import profiles_users
+from .models import profiles_users
 
 fsqla.FsModels.set_db_info(db)
 
