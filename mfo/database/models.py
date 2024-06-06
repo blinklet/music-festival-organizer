@@ -114,11 +114,11 @@ class Profile(db.Model):
         "School", secondary=schools_contacts, back_populates="contacts"
     )
 
-    participant_from_schools: Mapped[list["School"]] = relationship(
+    attends_schools: Mapped[list["School"]] = relationship(
         "School", secondary=schools_participants, back_populates="students_or_groups"
     )
 
-    teachers_at_schools: Mapped[list["School"]] = relationship(
+    teaches_at_schools: Mapped[list["School"]] = relationship(
         "School", secondary=schools_teachers, back_populates="teachers"
     )
 
@@ -188,9 +188,9 @@ class School(db.Model):
     )
 
     students_or_groups: Mapped[list[Profile]] = relationship(
-        "Profile", secondary=schools_participants, back_populates="participant_from_schools"
+        "Profile", secondary=schools_participants, back_populates="attends_schools"
     )
 
     teachers: Mapped[list[Profile]] = relationship(
-        "Profile", secondary=schools_teachers, back_populates="teachers_at_schools"
+        "Profile", secondary=schools_teachers, back_populates="teaches_at_schools"
     )

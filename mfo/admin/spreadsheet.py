@@ -195,6 +195,48 @@ def all_profiles(input_df):
             db.session.rollback()
             print(e)
 
+    # Add teachers from the group_15 entries
+    group_teachers = input_df[['group_teacher_15']].dropna().drop_duplicates()
+
+    print(group_teachers)
+
+    for index, row in group_teachers.iterrows():
+    
+        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher_15)
+        stmt = select(Profile).where(
+            Profile.first_name == teacher_first_name,
+            Profile.last_name == teacher_last_name,
+        )
+        existing_teacher = db.session.execute(stmt).scalar_one_or_none()
+
+        if existing_teacher:
+            print(f"** Group teacher profile for {row.group_teacher_15} already exists")
+        else:
+            teacher_profile = Profile(first_name=str(teacher_first_name), last_name=str(teacher_last_name))
+            db.session.add(teacher_profile)
+            print(f"** Group Teacher {row.group_teacher_15}: added new record")
+
+        try:
+            db.session.commit()
+        
+        except IntegrityError:
+            db.session.rollback()
+            print(f"** Commit failed: Group eacher profile for {row.group_teacher_15} already exists")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+        
+
+
+
+
+
+
+
+
+
+
     # Now, add groups details
     #     'group_name_15',
     #     'group_address_15',
@@ -355,22 +397,52 @@ def related_profiles(input_df):
             db.session.rollback()
             print(e)
 
-    # # Find all accompanists in the various accompanist columns
-    # accompanist_name_columns = [
-    #     col for col in input_df.columns if col.startswith('accompanist_name_')
-    #     ]
+    # NOTE: accompanist relationship is in the entries, not directly to the student
 
-    # accompanists_df = input_df[accompanist_name_columns]
-    # accompanists = accompanists_df.values.flatten()
-    # accompanists = accompanists[~pd.isna(accompanists)]
-    # accompanists = pd.unique(accompanists)
+    # Assign groups to teachers
 
-    # # for each accompanist, find associated students
-    # for accompanist_name in accompanists:
-    #     accompanist_first_name, accompanist_last_name = mfo.utilities.parse_full_name(accompanist_name)
-    #     print(accompanist_first_name, accompanist_last_name)
+    groups_and_teachers = input_df[['group_name_15', 'group_teacher_15']].dropna().drop_duplicates()
 
-    
+    for index, row in groups_and_teachers.iterrows():
+        
+        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher_15)
+        stmt = select(Profile).where(
+            Profile.first_name == teacher_first_name,
+            Profile.last_name == teacher_last_name,
+        )
+        teacher = db.session.execute(stmt).scalar_one_or_none()
+
+        stmt = select(Profile).where(
+            Profile.group_name == row.group_name_15,
+        )
+        group = db.session.execute(stmt).scalar_one_or_none()
+
+        if group in teacher.group:
+            print(f"** Group {row.group_name_15} already associated with Teacher {row.group_teacher_15}")
+        else:
+            teacher.group.append(group)
+            print(f"** Added Group {row.group_name_15} to Teacher {row.group_teacher_15}")
+
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+                db.session.rollback()
+                print(f"** Commit failed: Group {row.group_name_15} already associated with Teacher {row.group_teacher_15}")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -508,28 +580,25 @@ def schools(input_df):
             db.session.rollback()
             print(e)
 
-    groups_and_schools = input_df[['group_name_15', 'group_school_15']].dropna(how='all').drop_duplicates()
+    groups_and_schools = input_df[['group_name_15', 'group_school_15']].dropna().drop_duplicates()
 
     for index, row in groups_and_schools.iterrows():
         
-        print(f"Working '{row.group_name_15}' '{row.group_school_15}'")
-        if  pd.isna(row.group_school_15) or row.group_school_15 == "NA":
-            print(f"** Skipping student {row.group_name_15} for School: {row.group_school_15} **")
-        else:
-            stmt = select(School).where(
-                School.name == row.group_school_15.strip(),
-            )
-            school = db.session.execute(stmt).scalar_one_or_none()
+        stmt = select(School).where(
+            School.name == row.group_school_15.strip(),
+        )
+        school = db.session.execute(stmt).scalar_one_or_none()
 
-            stmt = select(Profile).where(
-                Profile.group_name == row.group_name_15.strip(),
-            )
-            group = db.session.execute(stmt).scalar_one_or_none()
-            if group in school.students_or_groups:
-                print(f"** Group {row.group_name_15} already associated with School {row.group_school_15}")
-            else:
-                school.students_or_groups.append(group)
-                print(f"** Added Group {row.group_name_15} to School {row.group_school_15}")
+        stmt = select(Profile).where(
+            Profile.group_name == row.group_name_15.strip(),
+        )
+        group = db.session.execute(stmt).scalar_one_or_none()
+
+        if group in school.students_or_groups:
+            print(f"** Group {row.group_name_15} already associated with School {row.group_school_15}")
+        else:
+            school.students_or_groups.append(group)
+            print(f"** Added Group {row.group_name_15} to School {row.group_school_15}")
 
         try:
             db.session.commit()
@@ -616,6 +685,13 @@ def repertoire(input_df):
 
 
 def entries(sheet_data):
+    """
+    Entries are usually associated with one name but sometimes the same 
+    person makes two entries. In the case of the second entry, it looks
+    like they are adding a class or repertoire.
+    e-mail address is not always belonging to participant because often
+    teachers or parents create the entry on their behalf
+    """
     pass
 
 
@@ -626,5 +702,6 @@ def convert_to_db(sheet_data):
     classes(df)
     repertoire(df)
     schools(df)
+    entries(df)
     # print(df[['email', 'first_name', 'last_name', 'date_of_birth']].head())
 
