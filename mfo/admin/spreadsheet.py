@@ -437,10 +437,19 @@ def classes(input_df):
 
 def schools(input_df):
     # Create dataframe containing unique school nmes
-    schools_df = input_df.school.dropna().unique()
+
+    schools_columns = ['school', 'group_school_15']
+    school_names = []
+    for index, row in input_df.iterrows():
+        for name_col in schools_columns:
+            name = row[name_col]
+            if pd.notna(name):
+                if name.strip() not in school_names:
+                    school_names.append(name.strip())
 
     # Populate schools database table
-    for school_name in schools_df:
+    for school_name in school_names:
+
         stmt = select(School).where(
             School.name == school_name,
         )
@@ -459,7 +468,7 @@ def schools(input_df):
                 
             except IntegrityError:
                     db.session.rollback()
-                    print(f"** School {school_name} already exists **")
+                    print(f"** School: '{school_name}' already exists **")
                     
             except Exception as e:
                 db.session.rollback()
@@ -470,10 +479,10 @@ def schools(input_df):
     for index, row in participants_and_schools.iterrows():
         
         if  pd.isna(row.school) or row.school == "NA":
-            print(f"** Skipping student {row.first_name} {row.last_name} for school {row.school} **")
+            print(f"** Skipping student {row.first_name} {row.last_name} for School: {row.school} **")
         else:
             stmt = select(School).where(
-                School.name == row.school,
+                School.name == row.school.strip(),
             )
             school = db.session.execute(stmt).scalar_one_or_none()
 
@@ -483,21 +492,56 @@ def schools(input_df):
             )
             student = db.session.execute(stmt).scalar_one_or_none()
             if student in school.students_or_groups:
-                print(f"** Student {row.first_name} {row.last_name} already associated with School {row.school}")
+                print(f"** Student {row.first_name} {row.last_name} already associated with School: {row.school}")
             else:
                 school.students_or_groups.append(student)
-                print(f"** Added Student {row.first_name} {row.last_name} to School {row.school}")
+                print(f"** Added Student {row.first_name} {row.last_name} to School: {row.school}")
 
-    try:
-        db.session.commit()
-        
-    except IntegrityError:
-            db.session.rollback()
-            print(f"** Commit failed: Student {row.first_name} {row.last_name} already associated with School {row.school}")
+        try:
+            db.session.commit()
             
-    except Exception as e:
-        db.session.rollback()
-        print(e)
+        except IntegrityError:
+                db.session.rollback()
+                print(f"** Commit failed: Student {row.first_name} {row.last_name} already associated with School: {row.school}")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+    groups_and_schools = input_df[['group_name_15', 'group_school_15']].dropna(how='all').drop_duplicates()
+
+    for index, row in groups_and_schools.iterrows():
+        
+        print(f"Working '{row.group_name_15}' '{row.group_school_15}'")
+        if  pd.isna(row.group_school_15) or row.group_school_15 == "NA":
+            print(f"** Skipping student {row.group_name_15} for School: {row.group_school_15} **")
+        else:
+            stmt = select(School).where(
+                School.name == row.group_school_15.strip(),
+            )
+            school = db.session.execute(stmt).scalar_one_or_none()
+
+            stmt = select(Profile).where(
+                Profile.group_name == row.group_name_15.strip(),
+            )
+            group = db.session.execute(stmt).scalar_one_or_none()
+            if group in school.students_or_groups:
+                print(f"** Group {row.group_name_15} already associated with School {row.group_school_15}")
+            else:
+                school.students_or_groups.append(group)
+                print(f"** Added Group {row.group_name_15} to School {row.group_school_15}")
+
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+                db.session.rollback()
+                print(f"** Commit failed: Group {row.group_name_15} already associated with School {row.group_school_15}")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
 
 
 

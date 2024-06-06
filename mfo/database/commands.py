@@ -57,8 +57,8 @@ def test_users():
                 profile_entry=Profile(**profile)
                 user.profiles.append(profile_entry)
 
-        db.session.add(user)
-        print(f"Added userid: {user.email}")
+            db.session.add(user)
+            print(f"Added userid: {user.email}")
 
     db.session.commit()
     
