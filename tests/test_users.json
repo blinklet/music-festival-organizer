@@ -19,7 +19,6 @@
                 "postal_code": "M2T 1T1",
                 "province": "BC",
                 "phone": "6133279929",
-                "school": null,
                 "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": true
@@ -48,7 +47,6 @@
                 "province": "ON",
                 "phone": "6135589929",
                 "email": "admin@testmail.com",
-                "school": null,
                 "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": false

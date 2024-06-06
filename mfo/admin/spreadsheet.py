@@ -12,7 +12,7 @@ import flask
 import mfo.admin.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
-from mfo.database.models import Profile, FestivalClass
+from mfo.database.models import Profile, FestivalClass, Repertoire, School
 
 def read_sheet(file):
     try:
@@ -376,15 +376,6 @@ def related_profiles(input_df):
 
 
 def classes(input_df):
-    """
-    Parse through dataframe, find all class-related columns.
-    Class columns have format like below, and there could be many
-    'class_number_x',
-    'class_suffix_x'
-
-    After you get the column names, parse through all column pairs and 
-    generate a list of tuples that identify each unique class number/suffix
-    """
     class_number_columns = [
         col for col in input_df.columns if col.startswith('class_number_')
     ]
@@ -444,14 +435,140 @@ def classes(input_df):
                 print(e)
 
 
+def schools(input_df):
+    # Create dataframe containing unique school nmes
+    schools_df = input_df.school.dropna().unique()
 
+    # Populate schools database table
+    for school_name in schools_df:
+        stmt = select(School).where(
+            School.name == school_name,
+        )
+        existing_school = db.session.execute(stmt).scalar_one_or_none()
+
+        if existing_school:
+            print(f"** School {school_name} already exists **")
+        else:
+            new_school = School(name=school_name)
+
+            db.session.add(new_school)
+            print(f"** School {school_name} added")
     
+            try:
+                db.session.commit()
+                
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"** School {school_name} already exists **")
+                    
+            except Exception as e:
+                db.session.rollback()
+                print(e)
 
-def schools(sheet_data):
-    pass
+    participants_and_schools = input_df[['first_name', 'last_name', 'school']].dropna(how='all').drop_duplicates()
 
-def repertoire(sheet_data):
-    pass
+    for index, row in participants_and_schools.iterrows():
+        
+        if  pd.isna(row.school) or row.school == "NA":
+            print(f"** Skipping student {row.first_name} {row.last_name} for school {row.school} **")
+        else:
+            stmt = select(School).where(
+                School.name == row.school,
+            )
+            school = db.session.execute(stmt).scalar_one_or_none()
+
+            stmt = select(Profile).where(
+                Profile.first_name == row.first_name,
+                Profile.last_name == row.last_name,
+            )
+            student = db.session.execute(stmt).scalar_one_or_none()
+            if student in school.students_or_groups:
+                print(f"** Student {row.first_name} {row.last_name} already associated with School {row.school}")
+            else:
+                school.students_or_groups.append(student)
+                print(f"** Added Student {row.first_name} {row.last_name} to School {row.school}")
+
+    try:
+        db.session.commit()
+        
+    except IntegrityError:
+            db.session.rollback()
+            print(f"** Commit failed: Student {row.first_name} {row.last_name} already associated with School {row.school}")
+            
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+
+
+
+def repertoire(input_df):
+    title_columns = [
+        col for col in input_df.columns if col.startswith('repertoire_title_')
+    ]
+
+    duration_columns = [
+        col for col in input_df.columns if col.startswith('repertoire_duration_')
+    ]
+
+    composer_columns = [
+        col for col in input_df.columns if col.startswith('composer_')
+    ]
+
+    repertoire_columns = list(
+        zip(
+            title_columns, 
+            duration_columns,
+            composer_columns
+        )
+    )
+
+    repertoire_tuples = set()
+    
+    for title, duration, composer in repertoire_columns:
+        for ttl, dur, cpsr in zip(input_df[title], input_df[duration], input_df[composer]):
+            if not pd.isna(ttl) and not pd.isna(dur) and not pd.isna(cpsr):
+                repertoire_tuples.add((ttl,int(dur), cpsr))
+    
+    for title, duration, composer in list(repertoire_tuples):
+        stmt = select(Repertoire).where(
+            Repertoire.title == title,
+            Repertoire.composer == composer,
+        )
+        existing_repertoire = db.session.execute(stmt).scalar_one_or_none()
+
+        if existing_repertoire:
+            print(f"** Repertore {title} by {composer} already exists **")
+            if existing_repertoire.duration != duration:
+                print(f"   ** Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
+        else:
+            new_repertoire = Repertoire(
+                title=title,
+                duration=duration,
+                composer=composer,
+                # description
+            )
+
+            db.session.add(new_repertoire)
+            print(f"** Repertore {title} by {composer} duration {duration} minutes added")
+    
+            try:
+                db.session.commit()
+                
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"** Commit failed: Repertore {title} by {composer} already exists **")
+                    
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+
+
+
+
+
+
+
 
 
 def entries(sheet_data):
@@ -463,5 +580,7 @@ def convert_to_db(sheet_data):
     all_profiles(df)
     related_profiles(df)
     classes(df)
+    repertoire(df)
+    schools(df)
     # print(df[['email', 'first_name', 'last_name', 'date_of_birth']].head())
 
