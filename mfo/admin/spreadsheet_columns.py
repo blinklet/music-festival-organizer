@@ -1,5 +1,6 @@
 names = {
     'Timestamp': 'timestamp',
+    # participant info
     'Email Address': 'email',
     'If you are an individual or group participant?': 'type',
     'First Name': 'first_name',
@@ -14,6 +15,7 @@ names = {
     'School': 'school',
     'Who is your teacher?': 'teacher',
     'Do you have solo class(es) to register?': 'solo_class_0',
+    # entry
     'Class Number': 'class_number_0',
     'Class number suffix': 'class_suffix_0',
     'Repertoire Title': 'repertoire_title_0',
@@ -31,6 +33,7 @@ names = {
     'Accompanist name if have.1': 'accompanist_name_1',
     'Accompanist Phone Number.1': 'accompanist_phone_1',
     'Accompanist Email.1': 'accompanist_email_1',
+    # entry
     'If you have another Class?.1': 'solo_class_2',
     'Class Number.2': 'class_number_2',
     'Class number suffix.2': 'class_suffix_2',
@@ -40,6 +43,7 @@ names = {
     'Accompanist name if have.2': 'accompanist_name_2',
     'Accompanist Phone Number.2': 'accompanist_phone_2',
     'Accompanist Email.2': 'accompanist_email_2',
+    # entry
     'If you have another Class?.2': 'solo_class_3',
     'Class Number.3': 'class_number_3',
     'Class number suffix.3': 'class_suffix_3',
@@ -49,6 +53,7 @@ names = {
     'Accompanist name if have.3': 'accompanist_name_3',
     'Accompanist Phone Number.3': 'accompanist_phone_3',
     'Accompanist Email.3': 'accompanist_email_3',
+    # entry
     'If you have another Class?.3': 'solo_class_4',
     'Class Number.4': 'class_number_4',
     'Class number suffix.4': 'class_suffix_4',
@@ -58,6 +63,7 @@ names = {
     'Accompanist name if have.4': 'accompanist_name_4',
     'Accompanist Phone Number.4': 'accompanist_phone_4',
     'Accompanist Email.4': 'accompanist_email_4',
+    # entry
     'If you have another Class?.4': 'solo_class_5',
     'Class Number.5': 'class_number_5',
     'Class number suffix.5': 'class_suffix_5',
@@ -67,6 +73,7 @@ names = {
     'Accompanist name if have.5': 'accompanist_name_5',
     'Accompanist Phone Number.5': 'accompanist_phone_5',
     'Accompanist Email.5': 'accompanist_email_5',
+    # entry
     'If you have another Class?.5': 'solo_class_6',
     'Class Number.6': 'class_number_6',
     'Class number suffix.6': 'class_suffix_6',
@@ -76,6 +83,7 @@ names = {
     'Accompanist name if have.6': 'accompanist_name_6',
     'Accompanist Phone Number.6': 'accompanist_phone_6',
     'Accompanist Email.6': 'accompanist_email_6',
+    # entry
     'If you have another Class?.6': 'solo_class_7',
     'Class Number.7': 'class_number_7',
     'Class number suffix.7': 'class_suffix_7',
@@ -85,6 +93,7 @@ names = {
     'Accompanist name if have.7': 'accompanist_name_7',
     'Accompanist Phone Number.7': 'accompanist_phone_7',
     'Accompanist Email.7': 'accompanist_email_7',
+    # entry
     'If you have another Class?.7': 'solo_class_8',
     'Class Number.8': 'class_number_8',
     'Class number suffix.8': 'class_suffix_8',
@@ -94,6 +103,7 @@ names = {
     'Accompanist name if have.8': 'accompanist_name_8',
     'Accompanist Phone Number.8': 'accompanist_phone_8',
     'Accompanist Email.8': 'accompanist_email_8',
+    # entry
     'If you have another Class?.8': 'solo_class_9',
     'Class Number.9': 'class_number_9',
     'Class number suffix.9': 'class_suffix_9',
@@ -104,6 +114,7 @@ names = {
     'Accompanist Phone Number.9': 'accompanist_phone_9',
     'Accompanist Email.9': 'accompanist_email_9',
     'Do you have a recital class to register?': 'recital_class',
+    # recital
     'Class Number.10': 'class_number_10',
     'Class number suffix.10': 'class_suffix_10',
     'Repertoire Title 1': 'repertoire_title_10_1',
@@ -125,6 +136,7 @@ names = {
     'Accompanist Phone Number.10': 'accompanist_phone_10',
     'Accompanist Email.10': 'accompanist_email_10',
     'Do you have a duet, trio, quartet, or quintet class to register?': 'small_group_11',
+    # duet
     'Class Number.11': 'class_number_11',
     'Class number suffix.11': 'class_suffix_11',
     'Name of the second participant': 'second_participant_11',
@@ -134,6 +146,7 @@ names = {
     'Accompanist name if have.11': 'accompanist_name_11',
     'Accompanist Phone Number.11': 'accompanist_phone_11',
     'Accompanist Email.11': 'accompanist_email_11',
+    # trio
     'Class Number.12': 'class_number_12',
     'Class number suffix.12': 'class_suffix_12',
     'Name of the second participant.1': 'second_participant_12',
@@ -144,6 +157,7 @@ names = {
     'Accompanist name if have.12': 'accompanist_name_12',
     'Accompanist Phone Number.12': 'accompanist_phone_12',
     'Accompanist Email.12': 'accompanist_email_12',
+    # quartet
     'Class Number.13': 'class_number_13',
     'Class number suffix.13': 'class_suffix_13',
     'Name of the second participant.2': 'second_participant_13',
@@ -155,23 +169,26 @@ names = {
     'Accompanist name if have.13': 'accompanist_name_13',
     'Accompanist Phone Number.13': 'accompanist_phone_13',
     'Accompanist Email.13': 'accompanist_email_13',
+    # quintet
     'Class Number.14': 'class_number_14',
     'Class number suffix.14': 'class_suffix_14',
-    'Group name': 'group_name_14',
+    'Group name': 'quintet_name_14',
     'Repertoire Title.13': 'repertoire_title_14',
     ' Repertoire Duration in minutes.13': 'repertoire_duration_14',
     'Composer.13': 'composer_14',
     'Accompanist name if have.14': 'accompanist_name_14',
     'Accompanist Phone Number.14': 'accompanist_phone_14',
     'Accompanist Email.14': 'accompanist_email_14',
-    'Group Name': 'group_name_15',
-    'Address.1': 'group_address_15',
-    'City.1': 'group_city_15',
-    'Postal code.1': 'group_postal_code_15',
-    'Province.1': 'group_province_15',
-    'Phone Number.1': 'group_phone_15',
-    'School.1': 'group_school_15',
-    'Who is your teacher?.1': 'group_teacher_15',
+    # large group info
+    'Group Name': 'group_name',
+    'Address.1': 'group_address',
+    'City.1': 'group_city',
+    'Postal code.1': 'group_postal_code',
+    'Province.1': 'group_province',
+    'Phone Number.1': 'group_phone',
+    'School.1': 'group_school',
+    'Who is your teacher?.1': 'group_teacher',
+    # group entry
     'Class Number.15': 'class_number_15',
     'Class number suffix.15': 'class_suffix_15',
     'Repertoire Title 1.1': 'repertoire_title_15_1',
@@ -186,6 +203,7 @@ names = {
     'Accompanist name if have.15': 'accompanist_name_15',
     'Accompanist Phone Number.15': 'accompanist_phone_15',
     'Accompanist Email.15': 'accompanist_email_15',
+    # group entry
     'If you have another class?': 'group_class_16',
     'Class Number.16': 'class_number_16',
     'Class number suffix.16': 'class_suffix_16',
@@ -201,6 +219,7 @@ names = {
     'Accompanist name if have.16': 'accompanist_name_16',
     'Accompanist Phone Number.16': 'accompanist_phone_16',
     'Accompanist Email.16': 'accompanist_email_16',
+    # group entry
     'If you have another class?.1': 'group_class_17',
     'Class Number.17': 'class_number_17',
     'Class number suffix.17': 'class_suffix_17',

@@ -195,14 +195,12 @@ def all_profiles(input_df):
             db.session.rollback()
             print(e)
 
-    # Add teachers from the group_15 entries
-    group_teachers = input_df[['group_teacher_15']].dropna().drop_duplicates()
-
-    print(group_teachers)
+    # Add teachers from the large group entries
+    group_teachers = input_df[['group_teacher']].dropna().drop_duplicates()
 
     for index, row in group_teachers.iterrows():
     
-        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher_15)
+        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher)
         stmt = select(Profile).where(
             Profile.first_name == teacher_first_name,
             Profile.last_name == teacher_last_name,
@@ -210,18 +208,18 @@ def all_profiles(input_df):
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            print(f"** Group teacher profile for {row.group_teacher_15} already exists")
+            print(f"** Group teacher profile for {row.group_teacher} already exists")
         else:
             teacher_profile = Profile(first_name=str(teacher_first_name), last_name=str(teacher_last_name))
             db.session.add(teacher_profile)
-            print(f"** Group Teacher {row.group_teacher_15}: added new record")
+            print(f"** Group Teacher {row.group_teacher}: added new record")
 
         try:
             db.session.commit()
         
         except IntegrityError:
             db.session.rollback()
-            print(f"** Commit failed: Group eacher profile for {row.group_teacher_15} already exists")
+            print(f"** Commit failed: Group eacher profile for {row.group_teacher} already exists")
             
         except Exception as e:
             db.session.rollback()
@@ -238,16 +236,16 @@ def all_profiles(input_df):
 
 
     # Now, add groups details
-    #     'group_name_15',
-    #     'group_address_15',
-    #     'group_city_15',
-    #     'group_postal_code_15',
-    #     'group_province_15',
-    #     'group_phone_15',
-    #     'group_school_15',
+    #     'group_name',
+    #     'group_address',
+    #     'group_city',
+    #     'group_postal_code',
+    #     'group_province',
+    #     'group_phone',
+    #     'group_school',
     for index, participant in input_df.iterrows():
         if participant.type == "Group participant":
-            group_name = participant.group_name_15
+            group_name = participant.group_name
             email = participant.email
             stmt = select(Profile).where(
                 Profile.group_name == group_name,
@@ -257,8 +255,8 @@ def all_profiles(input_df):
                 if pd.notna(participant.phone):
                     phone = str(int(participant.phone))
                 else:
-                    if pd.notna(participant.group_phone_15):
-                        phone = str(int(participant.group_phone_15))
+                    if pd.notna(participant.group_phone):
+                        phone = str(int(participant.group_phone))
                     else:
                         phone = None
 
@@ -401,11 +399,11 @@ def related_profiles(input_df):
 
     # Assign groups to teachers
 
-    groups_and_teachers = input_df[['group_name_15', 'group_teacher_15']].dropna().drop_duplicates()
+    groups_and_teachers = input_df[['group_name', 'group_teacher']].dropna().drop_duplicates()
 
     for index, row in groups_and_teachers.iterrows():
         
-        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher_15)
+        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher)
         stmt = select(Profile).where(
             Profile.first_name == teacher_first_name,
             Profile.last_name == teacher_last_name,
@@ -413,22 +411,22 @@ def related_profiles(input_df):
         teacher = db.session.execute(stmt).scalar_one_or_none()
 
         stmt = select(Profile).where(
-            Profile.group_name == row.group_name_15,
+            Profile.group_name == row.group_name,
         )
         group = db.session.execute(stmt).scalar_one_or_none()
 
         if group in teacher.group:
-            print(f"** Group {row.group_name_15} already associated with Teacher {row.group_teacher_15}")
+            print(f"** Group {row.group_name} already associated with Teacher {row.group_teacher}")
         else:
             teacher.group.append(group)
-            print(f"** Added Group {row.group_name_15} to Teacher {row.group_teacher_15}")
+            print(f"** Added Group {row.group_name} to Teacher {row.group_teacher}")
 
         try:
             db.session.commit()
             
         except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed: Group {row.group_name_15} already associated with Teacher {row.group_teacher_15}")
+                print(f"** Commit failed: Group {row.group_name} already associated with Teacher {row.group_teacher}")
                 
         except Exception as e:
             db.session.rollback()
@@ -510,7 +508,7 @@ def classes(input_df):
 def schools(input_df):
     # Create dataframe containing unique school nmes
 
-    schools_columns = ['school', 'group_school_15']
+    schools_columns = ['school', 'group_school']
     school_names = []
     for index, row in input_df.iterrows():
         for name_col in schools_columns:
@@ -580,32 +578,32 @@ def schools(input_df):
             db.session.rollback()
             print(e)
 
-    groups_and_schools = input_df[['group_name_15', 'group_school_15']].dropna().drop_duplicates()
+    groups_and_schools = input_df[['group_name', 'group_school']].dropna().drop_duplicates()
 
     for index, row in groups_and_schools.iterrows():
         
         stmt = select(School).where(
-            School.name == row.group_school_15.strip(),
+            School.name == row.group_school.strip(),
         )
         school = db.session.execute(stmt).scalar_one_or_none()
 
         stmt = select(Profile).where(
-            Profile.group_name == row.group_name_15.strip(),
+            Profile.group_name == row.group_name.strip(),
         )
         group = db.session.execute(stmt).scalar_one_or_none()
 
         if group in school.students_or_groups:
-            print(f"** Group {row.group_name_15} already associated with School {row.group_school_15}")
+            print(f"** Group {row.group_name} already associated with School {row.group_school}")
         else:
             school.students_or_groups.append(group)
-            print(f"** Added Group {row.group_name_15} to School {row.group_school_15}")
+            print(f"** Added Group {row.group_name} to School {row.group_school}")
 
         try:
             db.session.commit()
             
         except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed: Group {row.group_name_15} already associated with School {row.group_school_15}")
+                print(f"** Commit failed: Group {row.group_name} already associated with School {row.group_school}")
                 
         except Exception as e:
             db.session.rollback()
