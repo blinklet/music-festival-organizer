@@ -29,8 +29,7 @@ def edit_profile():
     form = ProfileEdit(obj=profile)
 
     if form.validate_on_submit():
-        profile.first_name = form.first_name.data
-        profile.last_name = form.last_name.data
+        profile.name = form.name.data
         profile.birthdate = form.birthdate.data
         profile.address = form.address.data
         profile.city = form.city.data

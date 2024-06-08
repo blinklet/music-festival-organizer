@@ -9,8 +9,7 @@
             {
                 "client_id": null,
                 "session": null,
-                "first_name": "Brad",
-                "last_name": "Bigman",
+                "name": "Brad Bigman",
                 "group_name": null,
                 "identifier": 0,
                 "birthdate": "2010-05-10",
@@ -36,8 +35,7 @@
             {
                 "client_id": null,
                 "session": null,
-                "first_name": "Iamin",
-                "last_name": "Charge",
+                "name": "Iamin Charge",
                 "group_name": null,
                 "identifier": 0,
                 "birthdate": "1990-12-25",

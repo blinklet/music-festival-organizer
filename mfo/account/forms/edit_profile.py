@@ -5,12 +5,9 @@ from flask_wtf import FlaskForm
 
 class ProfileEdit(FlaskForm):
 
-    first_name = wtforms.StringField(
-        'First Name', 
+    name = wtforms.StringField(
+        'Full Name', 
         [wtforms.validators.InputRequired()]
-        )
-    last_name = wtforms.StringField(
-        'Last Name', [wtforms.validators.InputRequired()]
         )
     birthdate = wtforms.DateField('Birth Date')
 

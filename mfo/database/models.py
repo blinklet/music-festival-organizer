@@ -58,8 +58,7 @@ class Profile(db.Model):
     client_id: Mapped[Optional[str]] = mapped_column(nullable=True)
     session: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-    first_name: Mapped[Optional[str]] = mapped_column(nullable=True)
-    last_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(nullable=True)
     group_name: Mapped[Optional[str]] = mapped_column(nullable=True)
     identifier: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
     
@@ -135,7 +134,7 @@ class Profile(db.Model):
     )
 
     __table_args__ = (
-        UniqueConstraint('first_name', 'last_name', 'email', name='profile_patricipant_uc'),
+        UniqueConstraint('name', 'email', name='profile_patricipant_uc'),
         UniqueConstraint('group_name', 'email', name='profile_group_uc')
     )
 

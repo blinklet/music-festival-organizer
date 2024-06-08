@@ -61,19 +61,20 @@ def names_to_df(sheet_data):
 
 def all_profiles(input_df):
 
-    # First, find teachers and make a profile for each
+    # First, find teachers and make a profile for each.
+    # Not that we only get teacher names in the spreadsheet
+    # and do not have other teacher info unless they are also a
+    # participant or an accompanist.
     for teacher in input_df.teacher.dropna().drop_duplicates():
-        first_name, last_name = mfo.utilities.parse_full_name(teacher)
-        stmt = select(Profile).where(
-            Profile.first_name == first_name, 
-            Profile.last_name == last_name,
-        )
+
+        teacher_name = str(teacher).strip()
+        stmt = select(Profile).where(Profile.name == teacher_name)
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            print(f"** Teacher profile for {first_name} {last_name} already exists")
+            print(f"** Teacher profile for {teacher_name} already exists")
         else:
-            teacher_profile = Profile(first_name=str(first_name), last_name=str(last_name))
+            teacher_profile = Profile(name=teacher_name)
             db.session.add(teacher_profile)
 
         try:
@@ -81,14 +82,41 @@ def all_profiles(input_df):
         
         except IntegrityError:
             db.session.rollback()
-            print(f"** Commit failed: Teacher profile for {first_name} {last_name} already exists")
+            print(f"** Commit failed: Teacher profile for {teacher_name} already exists")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+    # Add group teachers from the large group entries
+    group_teachers = input_df[['group_teacher']].dropna().drop_duplicates()
+
+    for index, row in group_teachers.iterrows():
+    
+        group_teacher_name = str(row.group_teacher).strip()
+        stmt = select(Profile).where(Profile.name == group_teacher_name)
+        existing_teacher = db.session.execute(stmt).scalar_one_or_none()
+
+        if existing_teacher:
+            print(f"** Group teacher profile for {group_teacher_name} already exists")
+        else:
+            teacher_profile = Profile(name=str(group_teacher_name))
+            db.session.add(teacher_profile)
+            print(f"** Group Teacher {group_teacher_name}: added new record")
+
+        try:
+            db.session.commit()
+        
+        except IntegrityError:
+            db.session.rollback()
+            print(f"** Commit failed: Group eacher profile for {group_teacher_name} already exists")
             
         except Exception as e:
             db.session.rollback()
             print(e)
 
     # Then, find all accompanists in the various accompanist columns
-    # and make a profile for each
+    # and create a list of accompanist column name tuples for the next step
     accompanist_name_columns = [
         col for col in input_df.columns if col.startswith('accompanist_name_')
         ]
@@ -109,13 +137,14 @@ def all_profiles(input_df):
             )
         )
 
-    # In one set of name_*, phone_*, email_* columns, iterate through and find
-    # all unique combinations
+    # In one set of name_*, phone_*, email_* accompanist columns, 
+    # iterate through and find all unique combinations of values
     accompanists = []
     for index, row in input_df.iterrows():
         for name_col, phone_col, email_col in accompanist_columns:
             name = row[name_col]
             if pd.notna(name):
+                name = str(name).strip()
                 phone = row[phone_col]
                 if pd.notna(phone):
                     phone = str(int(phone))
@@ -130,6 +159,9 @@ def all_profiles(input_df):
             else:
                 pass
 
+    # Where the same accompanist has a different email or phone number
+    # in a different row in the spreadsheet, print a warning and 
+    # keep the current value
     aggregated_data = {}
 
     for row in accompanists:
@@ -155,85 +187,41 @@ def all_profiles(input_df):
     # accompanists are often also teachers, check if their name was already
     # entered as a teacher. If so, add email and phone if available
     for accompanist in aggregated_data.keys():
-        first_name, last_name = mfo.utilities.parse_full_name(accompanist)
+        accompanist_name = accompanist
         phone = aggregated_data[accompanist]['phone']
         email = aggregated_data[accompanist]['email']
 
-        stmt = select(Profile).where(
-            Profile.first_name == first_name, 
-            Profile.last_name == last_name,
-        )
+        stmt = select(Profile).where(Profile.name == accompanist_name)
         existing_accompanist = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_accompanist:
             if existing_accompanist.phone and existing_accompanist.email:
-                print(f"** Accompanist {first_name} {last_name}: already exists and has email and phone")
+                print(f"** Accompanist {accompanist_name}: already exists and has email and phone")
             if not existing_accompanist.phone and phone:
                 existing_accompanist.phone = phone
-                print(f"** Accompanist {first_name} {last_name}: add phone number to existing record")
+                print(f"** Accompanist {accompanist_name}: add phone number to existing record")
             if not existing_accompanist.email and email:
                 existing_accompanist.email = email
-                print(f"** Accompanist {first_name} {last_name}: add email to existing record")
+                print(f"** Accompanist {accompanist_name}: add email to existing record")
         else:
             new_accompanist = Profile(
-                first_name=str(first_name), 
-                last_name=str(last_name),
+                name=accompanist_name, 
                 phone=phone,
                 email=email,
             )
             db.session.add(new_accompanist)
-            print(f"** Accompanist {first_name} {last_name} {phone} {email}: added new record")
+            print(f"** Accompanist {accompanist_name} {phone} {email}: added new record")
          
         try:
             db.session.commit()
             
         except IntegrityError:
             db.session.rollback()
-            print(f"** Accompanist profile for {first_name} {last_name} {phone} {email} already exists")
+            print(f"** Accompanist profile for {accompanist_name} {phone} {email} already exists")
             
         except Exception as e:
             db.session.rollback()
             print(e)
-
-    # Add teachers from the large group entries
-    group_teachers = input_df[['group_teacher']].dropna().drop_duplicates()
-
-    for index, row in group_teachers.iterrows():
-    
-        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher)
-        stmt = select(Profile).where(
-            Profile.first_name == teacher_first_name,
-            Profile.last_name == teacher_last_name,
-        )
-        existing_teacher = db.session.execute(stmt).scalar_one_or_none()
-
-        if existing_teacher:
-            print(f"** Group teacher profile for {row.group_teacher} already exists")
-        else:
-            teacher_profile = Profile(first_name=str(teacher_first_name), last_name=str(teacher_last_name))
-            db.session.add(teacher_profile)
-            print(f"** Group Teacher {row.group_teacher}: added new record")
-
-        try:
-            db.session.commit()
-        
-        except IntegrityError:
-            db.session.rollback()
-            print(f"** Commit failed: Group eacher profile for {row.group_teacher} already exists")
-            
-        except Exception as e:
-            db.session.rollback()
-            print(e)
-        
-
-
-
-
-
-
-
-
-
 
     # Now, add groups details
     #     'group_name',
@@ -245,7 +233,7 @@ def all_profiles(input_df):
     #     'group_school',
     for index, participant in input_df.iterrows():
         if participant.type == "Group participant":
-            group_name = participant.group_name
+            group_name = str(participant.group_name).strip()
             email = participant.email
             stmt = select(Profile).where(
                 Profile.group_name == group_name,
@@ -270,7 +258,7 @@ def all_profiles(input_df):
 
             else:
                 print(f"** Group {group_name} {phone} {email}: already exists")
-                # TODO: add code to fix email and phone numbers and other datils, if in
+                # TODO: add code to fix email and phone numbers and other details, if in
                 # spreadsheet row but not database row
 
             try:
@@ -285,14 +273,15 @@ def all_profiles(input_df):
                 print(e)
 
         elif participant.type == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
-            first_name = participant.first_name
-            last_name = participant.last_name
+            if pd.isna(participant.first_name):
+                full_name = str(participant.last_name).strip()
+            elif pd.isna(participant.last_name):
+                full_name = str(participant.first_name).strip()
+            else:
+                full_name = str(participant.first_name).strip() + ' ' + str(participant.last_name).strip()
             email = participant.email
             
-            stmt = select(Profile).where(
-                Profile.first_name == first_name,
-                Profile.last_name == last_name,
-            )
+            stmt = select(Profile).where(Profile.name == full_name)
 
             existing_participant = db.session.execute(stmt).scalar_one_or_none()
             if not existing_participant:
@@ -301,15 +290,14 @@ def all_profiles(input_df):
                 else:
                     phone = None
                 new_participant = Profile(
-                    first_name=first_name,
-                    last_name=last_name,
+                    name=full_name,
                     email=email,
                     phone=phone
                 )
                 db.session.add(new_participant)
-                print(f"** Participant {first_name} {last_name} {phone} {email}: added new record")
+                print(f"** Participant {full_name} {phone} {email}: added new record")
             else:
-                print(f"** Participant {first_name} {last_name} {email}: already exists")
+                print(f"** Participant {full_name} {email}: already exists")
                 # But, add in details if the duplicate has more details than the existing
                 if not existing_participant.phone:
                     if pd.notna(participant.phone):
@@ -318,7 +306,7 @@ def all_profiles(input_df):
                         phone = None
                     if phone:
                         existing_participant.phone = phone
-                        print(f"** Participant {first_name} {last_name} {phone} {email}: added phone number")
+                        print(f"** Participant {full_name} {phone} {email}: added phone number")
                 if not existing_participant.email:
                     if pd.notna(participant.email):
                         email = participant.email
@@ -326,14 +314,14 @@ def all_profiles(input_df):
                         email = None
                     if email:
                         existing_participant.email = email
-                        print(f"** Participant {first_name} {last_name} {phone} {email}: added email")
+                        print(f"** Participant {full_name} {phone} {email}: added email")
 
             try:
                 db.session.commit()
             
             except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed 2: Participant {first_name} {last_name} {email} already exists")
+                print(f"** Commit failed 2: Participant {full_name} {email} already exists")
                 
             except Exception as e:
                 db.session.rollback()
@@ -354,7 +342,7 @@ def related_profiles(input_df):
     
     # Assign students to teachers 
 
-    # Combine student first name and last name into a list of tuples
+    # From spreadsheet, combine student first name and last name into a list of tuples
     input_df['student_tuple'] = list(zip(input_df['first_name'], input_df['last_name']))
     # Group by teacher and aggregate the student tuples into a list
     students_per_teacher = input_df.groupby('teacher')['student_tuple'].apply(lambda x: list(x.dropna())).reset_index()
@@ -365,31 +353,33 @@ def related_profiles(input_df):
 
     for index, row in students_per_teacher.iterrows():
         # get teacher name
-        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.teacher_name)
-        stmt = select(Profile).where(
-            Profile.first_name == teacher_first_name,
-            Profile.last_name == teacher_last_name,
-        )
+        teacher_name = str(row.teacher_name).strip()
+        stmt = select(Profile).where(Profile.name == teacher_name)
         teacher = db.session.execute(stmt).scalar_one_or_none()
 
         for student_first_name, student_last_name in row.students:
-            stmt = select(Profile).where(
-                Profile.first_name == student_first_name,
-                Profile.last_name == student_last_name,
-            )
+
+            if pd.isna(student_first_name):
+                student_full_name = str(student_last_name).strip()
+            elif pd.isna(student_last_name):
+                student_full_name = str(student_first_name).strip()
+            else:
+                student_full_name = str(student_first_name).strip() + ' ' + str(student_last_name).strip()
+
+            stmt = select(Profile).where(Profile.name == student_full_name)
             student = db.session.execute(stmt).scalar_one_or_none()
             if student in teacher.students:
-                print(f"** Student {student_first_name} {student_last_name} already associated with Teacher {teacher_first_name}, {teacher_last_name}")
+                print(f"** Student {student_full_name} already associated with Teacher {teacher_name}")
             else:
                 teacher.students.append(student)
-                print(f"** Added Student {student_first_name} {student_last_name} to Teacher {teacher_first_name}, {teacher_last_name}")
+                print(f"** Added Student {student_full_name} to Teacher {teacher_name}")
 
         try:
             db.session.commit()
             
         except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed: Student {student_first_name} {student_last_name} already associated with Teacher {teacher_first_name}, {teacher_last_name}")
+                print(f"** Commit failed: Student {student_full_name} already associated with Teacher {teacher_name}")
                 
         except Exception as e:
             db.session.rollback()
@@ -403,30 +393,27 @@ def related_profiles(input_df):
 
     for index, row in groups_and_teachers.iterrows():
         
-        teacher_first_name, teacher_last_name = mfo.utilities.parse_full_name(row.group_teacher)
-        stmt = select(Profile).where(
-            Profile.first_name == teacher_first_name,
-            Profile.last_name == teacher_last_name,
-        )
+        group_teacher_name = str(row.group_teacher).strip()
+
+        stmt = select(Profile).where(Profile.name == group_teacher_name)
         teacher = db.session.execute(stmt).scalar_one_or_none()
 
-        stmt = select(Profile).where(
-            Profile.group_name == row.group_name,
-        )
+        group_name = str(row.group_name).strip()
+        stmt = select(Profile).where(Profile.group_name == group_name)
         group = db.session.execute(stmt).scalar_one_or_none()
 
         if group in teacher.group:
-            print(f"** Group {row.group_name} already associated with Teacher {row.group_teacher}")
+            print(f"** Group {group_name} already associated with Teacher {group_teacher_name}")
         else:
             teacher.group.append(group)
-            print(f"** Added Group {row.group_name} to Teacher {row.group_teacher}")
+            print(f"** Added Group {group_name} to Teacher {group_teacher_name}")
 
         try:
             db.session.commit()
             
         except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed: Group {row.group_name} already associated with Teacher {row.group_teacher}")
+                print(f"** Commit failed: Group {group_name} already associated with Teacher {group_teacher_name}")
                 
         except Exception as e:
             db.session.rollback()
@@ -514,8 +501,8 @@ def schools(input_df):
         for name_col in schools_columns:
             name = row[name_col]
             if pd.notna(name):
-                if name.strip() not in school_names:
-                    school_names.append(name.strip())
+                if name not in school_names:
+                    school_names.append(str(name).strip())
 
     # Populate schools database table
     for school_name in school_names:
@@ -544,6 +531,7 @@ def schools(input_df):
                 db.session.rollback()
                 print(e)
 
+    # Associate students with schools
     participants_and_schools = input_df[['first_name', 'last_name', 'school']].dropna(how='all').drop_duplicates()
 
     for index, row in participants_and_schools.iterrows():
@@ -552,27 +540,35 @@ def schools(input_df):
             print(f"** Skipping student {row.first_name} {row.last_name} for School: {row.school} **")
         else:
             stmt = select(School).where(
-                School.name == row.school.strip(),
+                School.name == str(row.school).strip(),
             )
             school = db.session.execute(stmt).scalar_one_or_none()
 
-            stmt = select(Profile).where(
-                Profile.first_name == row.first_name,
-                Profile.last_name == row.last_name,
-            )
+            student_first_name = str(row.first_name).strip()
+            student_last_name = str(row.last_name).strip()
+
+            if pd.isna(student_first_name):
+                student_full_name = str(student_last_name).strip()
+            elif pd.isna(student_last_name):
+                student_full_name = str(student_first_name).strip()
+            else:
+                student_full_name = str(student_first_name).strip() + ' ' + str(student_last_name).strip()
+
+            stmt = select(Profile).where(Profile.name == student_full_name)
             student = db.session.execute(stmt).scalar_one_or_none()
+
             if student in school.students_or_groups:
-                print(f"** Student {row.first_name} {row.last_name} already associated with School: {row.school}")
+                print(f"** Student {student_full_name} already associated with School: {row.school}")
             else:
                 school.students_or_groups.append(student)
-                print(f"** Added Student {row.first_name} {row.last_name} to School: {row.school}")
-
+                print(f"** Added Student {student_full_name} to School: {row.school}")
+            
         try:
             db.session.commit()
             
         except IntegrityError:
                 db.session.rollback()
-                print(f"** Commit failed: Student {row.first_name} {row.last_name} already associated with School: {row.school}")
+                print(f"** Commit failed: Student {student_full_name} already associated with School: {row.school}")
                 
         except Exception as e:
             db.session.rollback()
@@ -701,5 +697,4 @@ def convert_to_db(sheet_data):
     repertoire(df)
     schools(df)
     entries(df)
-    # print(df[['email', 'first_name', 'last_name', 'date_of_birth']].head())
 
