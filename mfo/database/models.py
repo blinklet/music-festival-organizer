@@ -50,6 +50,19 @@ schools_teachers = Table(
     Column('teacher_id', ForeignKey('profile.id'), primary_key=True)
 )
 
+# participants_entries = Table(
+#     'participants_entries', db.metadata,
+#     Column('participant_id', ForeignKey('profile.id'), primary_key=True),
+#     Column('entry_id', ForeignKey('entry.id'), primary_key=True)
+# )
+
+# accompanists_entries = Table(
+#     'accompanists_entries', db.metadata,
+#     Column('accompanist_id', ForeignKey('profile.id'), primary_key=True),
+#     Column('entry_id', ForeignKey('entry.id'), primary_key=True)
+# )
+
+
 class Profile(db.Model):
     __tablename__ = 'profile'
     
@@ -120,7 +133,6 @@ class Profile(db.Model):
     teaches_at_schools: Mapped[list["School"]] = relationship(
         "School", secondary=schools_teachers, back_populates="teachers"
     )
-
 
     total_fee: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
     fees_paid: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
