@@ -1,8 +1,11 @@
 # mfo/admin/spreadsheet.py
 
+# Functions and Classes that support reading data from 
+# spreadsheets and importing it into the SQL database
+
 import pandas as pd
 import io
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
 
@@ -27,9 +30,10 @@ def read_sheet(file):
             return df, succeeded, message
 
         # check if the spreadsheet columns are what we expect
+        # -- Specific to Queens County Music Festival responses from Google form
         spreadsheet_columns = list(mfo.admin.spreadsheet_columns.names.keys())
         expected_columns = df.columns.values.tolist()
-        for i in range(min(len(spreadsheet_columns), len(expected_columns))):
+        for i in range(min(len(spreadsheet_columns),len(expected_columns))):
             if spreadsheet_columns[i] != expected_columns[i]:
                 print("    *****SPREADSHEET IMPORT: COLUMNS ERROR ******")
                 print(f"    File: {file.filename}")
@@ -39,7 +43,7 @@ def read_sheet(file):
                 df = None
                 succeeded = False
                 message = 'Columns do not match expected schema'
-                return df, succeeded, message
+                return df, succeeded, message            
 
         succeeded = True
         message = 'File uploaded successfully'
@@ -48,14 +52,19 @@ def read_sheet(file):
     except Exception as e:
         df = None
         succeeded = False
-        message = f'Error reading file: {e}'
+        message = 'Error reading file: {e}'
         return df, succeeded, message
 
 def names_to_df(sheet_data):
     df = sheet_data.rename(mapper=mfo.admin.spreadsheet_columns.names, axis=1)
     return df
 
-def all_profiles(input_df, issues):
+def all_profiles(input_df):
+
+    # First, find teachers and make a profile for each.
+    # Note that we only get teachers' names in the spreadsheet
+    # and do not have other teacher info unless they are also a
+    # participant or an accompanist.
 
     teachers = input_df[['teacher']].dropna().drop_duplicates()
 
@@ -66,12 +75,24 @@ def all_profiles(input_df, issues):
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            issues.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already exists")
+            print(f"** Row {index + 2}: Teacher profile for {teacher_name} already exists")
         else:
             teacher_profile = Profile(name=teacher_name)
             db.session.add(teacher_profile)
-            issues.append(f"** Row {index + 2}: Teacher profile for {teacher_name} added")
+            print(f"** Row {index + 2}: Teacher profile for {teacher_name} added")
 
+        try:
+            db.session.commit()
+        
+        except IntegrityError:
+            db.session.rollback()
+            print(f"**** Row {index + 2}: Commit failed: Teacher profile for {teacher_name} already exists")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+    # Add group teachers from the large group entries
     group_teachers = input_df[['group_teacher']].dropna().drop_duplicates()
 
     for index, row in group_teachers.iterrows():
@@ -81,12 +102,25 @@ def all_profiles(input_df, issues):
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            issues.append(f"** Row {index + 2}: Group teacher profile for {group_teacher_name} already exists")
+            print(f"** Row {index + 2}: Group teacher profile for {group_teacher_name} already exists")
         else:
             teacher_profile = Profile(name=str(group_teacher_name))
             db.session.add(teacher_profile)
-            issues.append(f"** Row {index + 2}: Group Teacher {group_teacher_name}: added new record")
+            print(f"** Row {index + 2}: Group Teacher {group_teacher_name}: added new record")
 
+        try:
+            db.session.commit()
+        
+        except IntegrityError:
+            db.session.rollback()
+            print(f"**** Commit Failed: Group Teacher profile for {group_teacher_name} already exists")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+    # Then, find all accompanists in the various accompanist columns
+    # and create a list of accompanist column name tuples for the next step
     accompanist_name_columns = [
         col for col in input_df.columns if col.startswith('accompanist_name_')
         ]
@@ -107,6 +141,8 @@ def all_profiles(input_df, issues):
             )
         )
 
+    # In one set of name_*, phone_*, email_* accompanist columns, 
+    # iterate through and find all unique combinations of values
     accompanists = []
     for index, row in input_df.iterrows():
         for name_col, phone_col, email_col in accompanist_columns:
@@ -128,6 +164,11 @@ def all_profiles(input_df, issues):
             else:
                 pass
 
+    # Where the same accompanist has a different email or phone number
+    # in a different row in the spreadsheet, print a warning and 
+    # keep the current value
+    # Accompanists are often also teachers, check if their name was already
+    # entered as a teacher. If so, add email and phone if available
     for accompanist in accompanists:
         name = accompanist['name']
         phone = accompanist['phone']
@@ -139,31 +180,31 @@ def all_profiles(input_df, issues):
 
         if existing_accompanist:
             if pd.notna(existing_accompanist.phone) and pd.notna(existing_accompanist.email):
-                issues.append(
+                print(
                     f"** Row {index +2}: Accompanist '{name}': "
                     f"already exists and has email and phone"
                 )
                 if pd.notna(phone) and (existing_accompanist.phone != phone):
-                    issues.append(
+                    print(
                         f"**** Row {index +2}: Accompanist '{name}': "
                         f"found a different phone number '{phone}'. "
                         f"Keeping original phone number '{existing_accompanist.phone}'"
                     )
                 if pd.notna(email) and (existing_accompanist.email != email):
-                    issues.append(
+                    print(
                         f"**** Row {index +2}: Accompanist '{name}': "
                         f"found a different email '{email}'. "
                         f"Keeping original email '{existing_accompanist.email}'"
                     )
             if pd.isna(existing_accompanist.phone) and pd.notna(phone):
                 existing_accompanist.phone = phone
-                issues.append(
+                print(
                     f"** Row {index +2}: Accompanist {name}: "
                     f"add phone number to existing record"
                 )
             if pd.isna(existing_accompanist.email) and pd.notna(email):
                 existing_accompanist.email = email
-                issues.append(
+                print(
                     f"** Row {index +2}: Accompanist {name}: "
                     f"add email to existing record"
                 )
@@ -174,7 +215,18 @@ def all_profiles(input_df, issues):
                 email=email,
             )
             db.session.add(new_accompanist)
-            issues.append(f"** Row {index +2}: Added accompanist '{name}', phone: '{phone}', email: '{email}'")
+            print(f"** Row {index +2}: Added accompanist '{name}', phone: '{phone}', email: '{email}'")
+         
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+            db.session.rollback()
+            print(f"** Commit error: Row {index +2}: Accompanist profile for {name} {phone} {email} already exists")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(e)
 
     for index, participant in input_df.iterrows():
         if participant.type == "Group participant":
@@ -193,17 +245,43 @@ def all_profiles(input_df, issues):
                     else:
                         phone = None
 
+                # Continue to check for existing and add following profile items:
+                # group_address
+                # group_city
+                # group_postal_code
+                # group_province
+
                 new_group = Profile(
                     group_name=group_name,
                     email=email,
                     phone=phone,
+                    # group_address
+                    # group_city
+                    # group_postal_code
+                    # group_province
                 )
                 db.session.add(new_group)
-                issues.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
+                print(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
 
             else:
-                issues.append(f"** Row {index +2}: Group {group_name} {phone} {email}: already exists")
+                print(f"** Row {index +2}: Group {group_name} {phone} {email}: already exists")
 
+                # TODO: add code to fix email and phone numbers and other details, if in
+                # spreadsheet row but not database row
+
+            try:
+                db.session.commit()
+            
+            except IntegrityError:
+                db.session.rollback()
+                print(f"**** Row {index +2}: Commit failed: Group {group_name} {phone} {email} already exists")
+                
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+        # Some participant first_name or last_name fields may be blank
+        # Also, some have extra spaces before or after the first_name or last_name
         elif participant.type == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
             if pd.isna(participant.first_name):
                 full_name = str(participant.last_name).strip()
@@ -222,15 +300,30 @@ def all_profiles(input_df, issues):
                 else:
                     phone = None
 
+                # Continue to check for existing and add following profile items:
+                # date_of_birth,
+                # gender,
+                # address,
+                # city,
+                # postal_code,
+                # province,
+
                 new_participant = Profile(
                     name=full_name,
                     email=email,
                     phone=phone,
+                    # date_of_birth,
+                    # gender,
+                    # address,
+                    # city,
+                    # postal_code,
+                    # province,
                 )
                 db.session.add(new_participant)
-                issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
+                print(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
             else:
-                issues.append(f"** Row {index +2}: Participant {full_name} {email}: already exists")
+                print(f"** Row {index +2}: Participant {full_name} {email}: already exists")
+                # But, add in details if the duplicate has more details than the existing
                 if not existing_participant.phone:
                     if pd.notna(participant.phone):
                         phone = str(int(participant.phone))
@@ -238,7 +331,7 @@ def all_profiles(input_df, issues):
                         phone = None
                     if phone:
                         existing_participant.phone = phone
-                        issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added phone number")
+                        print(f"** Row {index +2}: Participant {full_name} {phone} {email}: added phone number")
                 if not existing_participant.email:
                     if pd.notna(participant.email):
                         email = str(participant.email).lower()
@@ -246,12 +339,33 @@ def all_profiles(input_df, issues):
                         email = None
                     if email:
                         existing_participant.email = email
-                        issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added email")
-        else:
-            issues.append(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
+                        print(f"** Row {index +2}: Participant {full_name} {phone} {email}: added email")
 
-def related_profiles(input_df, issues):
+            try:
+                db.session.commit()
+            
+            except IntegrityError:
+                db.session.rollback()
+                print(f"**** Commit Failed 2: Row {index +2}: Participant {full_name} {email} already exists")
+                
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+        else:
+            print(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
+
+
+    # also consider case where accompanist, who is also participant, might 
+    # have one email address for their accompanist role and another email 
+    # for their participant role. Same for teachers
+
+    # find schools and add an entry for them
+
+
+def related_profiles(input_df):
     
+    # Assign students to teachers 
     students_per_teacher = []
     students_and_teachers = input_df[['teacher', 'first_name', 'last_name']].dropna(how='all').drop_duplicates()
 
@@ -269,17 +383,32 @@ def related_profiles(input_df, issues):
             else:
                 student_full_name = str(student_first_name).strip() + ' ' + str(student_last_name).strip()
 
+            # now we have one instance of teacher_name and student_full_name
             stmt = select(Profile).where(Profile.name == teacher_name)
             teacher = db.session.execute(stmt).scalar_one_or_none()
             stmt = select(Profile).where(Profile.name == student_full_name)
             student = db.session.execute(stmt).scalar_one_or_none()
 
             if student in teacher.students:
-                issues.append(f"** Row {index +2}: Student {student_full_name} already associated with Teacher {teacher_name}")
+                print(f"** Row {index +2}: Student {student_full_name} already associated with Teacher {teacher_name}")
             else:
                 teacher.students.append(student)
-                issues.append(f"** Row {index +2}: Added Student {student_full_name} to Teacher {teacher_name}")
+                print(f"** Row {index +2}: Added Student {student_full_name} to Teacher {teacher_name}")
 
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+                db.session.rollback()
+                print(f"**** Commit Failed:Row {index +2}: Student {student_full_name} already associated with Teacher {teacher_name}")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+    # NOTE: accompanist relationship is in the entries, not directly to the student
+    
+    # Assign groups to teachers
     groups_and_teachers = input_df[['group_name', 'group_teacher']].dropna().drop_duplicates()
 
     for index, row in groups_and_teachers.iterrows():
@@ -294,12 +423,24 @@ def related_profiles(input_df, issues):
         group = db.session.execute(stmt).scalar_one_or_none()
 
         if group in teacher.group:
-            issues.append(f"**Row {index +2}: Group {group_name} already associated with Teacher {group_teacher_name}")
+            print(f"**Row {index +2}: Group {group_name} already associated with Teacher {group_teacher_name}")
         else:
             teacher.group.append(group)
-            issues.append(f"** Row {index +2}: Added Group {group_name} to Teacher {group_teacher_name}")
+            print(f"** Row {index +2}: Added Group {group_name} to Teacher {group_teacher_name}")
 
-def classes(input_df, issues):
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+                db.session.rollback()
+                print(f"**** Commit Failed: Row {index +2}: Group {group_name} already associated with Teacher {group_teacher_name}")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
+
+
+def classes(input_df):
 
     class_number_columns = [
         col for col in input_df.columns if col.startswith('class_number_')
@@ -340,7 +481,7 @@ def classes(input_df, issues):
                 suffix = str(suffix).strip()
                 good_number = True
             elif pd.isna(number) & pd.notna(suffix):
-                issues.append(f"**** Row {index+2}: Error: Class number missing")
+                print(f"**** Row {index+2}: Error: Class number missing")
                 good_number = False
             elif pd.isna(number) & pd.isna(suffix):
                 good_number = False
@@ -348,6 +489,7 @@ def classes(input_df, issues):
                 pass
 
             if good_number:
+                # Get last number in column name
                 parts = class_num_col.rsplit('_', 1)
                 if len(parts) > 1:
                     col_num = str(parts[-1]) 
@@ -356,10 +498,15 @@ def classes(input_df, issues):
                 
                 type = class_column_type[col_num]
                 repertoire_columns = class_repertoire_columns[col_num]
+                
+                # TEST CODE
+                #print(input_df.columns.tolist())
 
                 test_pieces = []
 
                 for columns in repertoire_columns:
+                    # TEST CODE
+                    #print(columns)
                     title_col = columns['title']
                     duration_col = columns['duration']
                     composer_col = columns['composer']
@@ -368,13 +515,19 @@ def classes(input_df, issues):
                     duration = row[duration_col]
                     composer = row[composer_col]
 
+                    # TEST CODE
+                    # print(index, "   ", title_col, "   ", title)
+                    # print(index, "   ", duration_col, "   ", duration)
+                    # print(index, "   ", composer_col, "   ", composer)
+
                     if pd.notna(title) and pd.notna(composer):
+
                         title = str(title).strip()
                         if pd.notna(duration):
                             duration = int(duration)
                         else:
                             duration = None
-                        composer = str(composer).strip()
+                        composer = str(composer)
 
                         test_pieces.append(
                             {
@@ -384,14 +537,24 @@ def classes(input_df, issues):
                             }
                         )
 
+                        title = None
+                        composer = None
+
                 classes.append({'number': number, 'suffix': suffix, 'type': type, 'test_pieces': test_pieces, 'index': index})
 
+
+    
+    # Now we have a list of class entries but probably many duplicate class/suffixes
+   
     for row in classes:
         number = row['number']
         suffix = row['suffix']
         index = row['index']
         type = row['type']
         test_pieces = row['test_pieces']
+
+        # TEST CODE
+        # print('TEST_PIECES FROM LIST', test_pieces)
 
         stmt = select(FestivalClass).where(
             FestivalClass.number == number,
@@ -405,11 +568,11 @@ def classes(input_df, issues):
             print_suffix = suffix
         
         if festival_class:
-            issues.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type}, already exists")
+            print(f"** Row {index+2}: Class {number}{print_suffix}, type: {type}, already exists")
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
-                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
+                    print(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
                     type = festival_class.class_type
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
@@ -419,69 +582,70 @@ def classes(input_df, issues):
                 duration = test_piece['duration']
                 composer = test_piece['composer']
 
+                # TEST CODE
+                # print('TP TITLE FROM LIST: ', title)
+                # print('TP COMPOSER FROM LIST: ', composer)
+
                 if (title, composer) in existing_pieces:
+                    # TEST CODE
+                    # print('EXISTING TEST PIECE')
+                    
+                    # Existing piece matches
                     continue
                 else:
-                    # Check if the repertoire piece exists in the database
-                    stmt = select(Repertoire).where(
-                        Repertoire.title == title,
-                        Repertoire.composer == composer,
+                    new_piece = Repertoire(
+                        title=title,
+                        duration=duration,
+                        composer=composer,
+                        # description
                     )
-                    existing_piece = db.session.execute(stmt).scalar_one_or_none()
-
-                    if existing_piece:
-                        festival_class.test_pieces.append(existing_piece)
-                        issues.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
-                    else:
-                        # If the repertoire piece does not exist, create it and append
-                        new_piece = Repertoire(
-                            title=title,
-                            duration=duration,
-                            composer=composer,
-                        )
-                        db.session.add(new_piece)
-                        festival_class.test_pieces.append(new_piece)
-                        issues.append(f"******* Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
+                    festival_class.test_pieces.append(new_piece)
+                    print(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
 
         else:
             new_festival_class = FestivalClass(
                 number=number,
                 suffix=suffix,
+                # description,
                 class_type=type,
+                # fee,
+                # discipline,
+                # adjudication_time,
+                # move_time,
             )
-            issues.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
+            print(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
 
             for x in test_pieces:
+
                 title = x['title']
                 duration = x['duration']
                 composer = x['composer']
 
                 if pd.notna(title) and pd.notna(composer):
-                    # Check if the repertoire piece exists in the database
-                    stmt = select(Repertoire).where(
-                        Repertoire.title == title,
-                        Repertoire.composer == composer,
+                    new_piece = Repertoire(
+                        title=title,
+                        duration=duration,
+                        composer=composer,
+                        # description
                     )
-                    existing_piece = db.session.execute(stmt).scalar_one_or_none()
-
-                    if existing_piece:
-                        new_festival_class.test_pieces.append(existing_piece)
-                        issues.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
-                    else:
-                        # If the repertoire piece does not exist, create it and append
-                        new_piece = Repertoire(
-                            title=title,
-                            duration=duration,
-                            composer=composer,
-                        )
-                        db.session.add(new_piece)
-                        new_festival_class.test_pieces.append(new_piece)
-                        issues.append(f"******** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
+                    new_festival_class.test_pieces.append(new_piece)
+                    print(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
 
             db.session.add(new_festival_class)
+            
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                print(f"**** Row {index+2}: Commit failed: Class {number}{print_suffix} already exists")
+            except Exception as e:
+                db.session.rollback()
+                print(e)
 
 
-def schools(input_df, issues):
+def schools(input_df):
+    # Create dataframe containing unique school names
+
     schools_columns = ['school', 'group_school']
     existing_schools = set()
     school_names = []
@@ -494,6 +658,7 @@ def schools(input_df, issues):
                     existing_schools.add(name)
                     school_names.append({'name': name, 'index': index})
 
+    # Populate schools database table
     for school_name in school_names:
         name = school_name['name']
         index = school_name['index']
@@ -504,12 +669,25 @@ def schools(input_df, issues):
         existing_school = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_school:
-            issues.append(f"** Row {index+2}: School '{name}' already exists **")
+            print(f"** Row {index+2}: School '{name}' already exists **")
         else:
             new_school = School(name=name)
+
             db.session.add(new_school)
-            issues.append(f"** Row {index+2}: School {name} added")
+            print(f"** Row {index+2}: School {name} added")
     
+            try:
+                db.session.commit()
+                
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"**** Row {index+2}: Commit error: School '{school_name}' already exists **")
+                    
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+    # Associate students with schools
     participants_and_schools = input_df[['first_name', 'last_name', 'school', 'teacher']].dropna(how='all').drop_duplicates()
 
     for index, row in participants_and_schools.iterrows():
@@ -522,11 +700,15 @@ def schools(input_df, issues):
             school_name = str(row.school).strip()
             teacher_name = str(row.teacher).strip()
 
+
             stmt = select(School).where(
                 School.name == school_name,
             )
             school = db.session.execute(stmt).scalar_one_or_none()
 
+            # Some participant first_name or last_name fields may be blank
+            # Also, some have extra spaces before or after the first_name or last_name
+            
             if pd.isna(student_first_name):
                 student_full_name = str(student_last_name).strip()
             elif pd.isna(student_last_name):
@@ -541,17 +723,29 @@ def schools(input_df, issues):
             teacher = db.session.execute(stmt).scalar_one_or_none()
 
             if student in school.students_or_groups:
-                issues.append(f"** Row {index+2}: Student '{student_full_name}' already associated with School: '{school_name}'")
+                print(f"** Row {index+2}: Student '{student_full_name}' already associated with School: '{school_name}'")
             else:
                 school.students_or_groups.append(student)
-                issues.append(f"** Row {index+2}: Added Student '{student_full_name}' to School: '{school_name}'")
+                print(f"** Row {index+2}: Added Student '{student_full_name}' to School: '{school_name}'")
             
             if teacher in school.teachers:
-                issues.append(f"** Row {index+2}: Teacher '{teacher_name}' already associated with School: '{school_name}'")
+                print(f"** Row {index+2}: Teacher '{teacher_name}' already associated with School: '{school_name}'")
             else:
                 school.teachers.append(teacher)
-                issues.append(f"** Row {index+2}: Added teacher '{teacher_name}' to School: '{school_name}'")
+                print(f"** Row {index+2}: Added teacher '{teacher_name}' to School: '{school_name}'")
+            
+        try:
+            db.session.commit()
+            
+        except IntegrityError:
+                db.session.rollback()
+                print(f"**** Row {index+2}: Commit failed: Student or Teacher already associated with School: '{school_name}'")
+                
+        except Exception as e:
+            db.session.rollback()
+            print(e)
 
+    # Associate groups and group teachers with schools
     groups_and_schools = input_df[['group_name', 'group_teacher', 'group_school']].dropna().drop_duplicates()
 
     for index, row in groups_and_schools.iterrows():
@@ -578,18 +772,33 @@ def schools(input_df, issues):
             teacher = db.session.execute(stmt).scalar_one_or_none()
 
             if group in school.students_or_groups:
-                issues.append(f"** Row {index+2}: Group {group_name} already associated with School {group_school}")
+                print(f"** Row {index+2}: Group {group_name} already associated with School {group_school}")
             else:
                 school.students_or_groups.append(group)
-                issues.append(f"** Row {index+2}: Added Group {group_name} to School {group_school}")
+                print(f"** Row {index+2}: Added Group {group_name} to School {group_school}")
 
             if teacher in school.teachers:
-                issues.append(f"** Row {index+2}: Group Teacher {group_teacher} already associated with School {group_school}")
+                print(f"** Row {index+2}: Group Teacher {group_teacher} already associated with School {group_school}")
             else:
                 school.teachers.append(teacher)
-                issues.append(f"** Row {index+2}: Added Group Teacher {group_teacher} to School {group_school}")
+                print(f"** Row {index+2}: Added Group Teacher {group_teacher} to School {group_school}")
 
-def repertoire(input_df, issues):
+            try:
+                db.session.commit()
+                
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"**** Row {index+2}: Commit Failed: Group or Group Teacher already associated with School {group_school}")
+                    
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+    # Associate teachers with schools
+
+
+
+def repertoire(input_df):
     title_columns = [
         col for col in input_df.columns if col.startswith('repertoire_title_')
     ]
@@ -625,30 +834,34 @@ def repertoire(input_df, issues):
                     else:
                         title=str(title).strip()
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has missing title")
+                    print(f"**** Row: {index+2}: Repertoire has missing title")
                     title = None
 
                 if pd.notna(duration):
                     if isinstance(duration, (int, float)):
                         duration=int(duration)
                     else:
-                        issues.append(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
+                        print(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
                         duration = None
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
+                    print(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
                     duration = None
 
                 if pd.notna(composer):
                     if isinstance(composer, (int, float)):
-                        issues.append(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
+                        print(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
                         composer = None
                     else:
                         composer = str(composer).strip()      
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
+                    print(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
                     composer = None
             
                 repertoire_pieces.append({'title': title, 'duration': duration, 'composer': composer, 'index': index})
+
+    # List 'repertoire_pieces' contains all repertoire items, 
+    # many of which are duplicates
+    
 
     for row in repertoire_pieces:
         title = row['title']
@@ -663,46 +876,83 @@ def repertoire(input_df, issues):
         existing_repertoire = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_repertoire:
-            issues.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
+            print(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
             if existing_repertoire.duration != duration:
-                issues.append(f"   **** Row: {index+2}: Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
+                print(f"   **** Row: {index+2}: Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
         else:
             new_repertoire = Repertoire(
                 title=title,
                 duration=duration,
                 composer=composer,
+                # description
             )
 
             db.session.add(new_repertoire)
-            issues.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
+            print(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
 
-def gather_issues(input_df):
-    issues = []
-    all_profiles(input_df, issues)
-    related_profiles(input_df, issues)
-    repertoire(input_df, issues)
-    classes(input_df, issues)
-    schools(input_df, issues)
-    return issues
+            try:
+                db.session.commit()
+
+            except IntegrityError:
+                    db.session.rollback()
+                    print(f"**** Row: {index+2}: Commit Failed: Repertore {title} by {composer} already exists **")
+
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+
+
+
+
+
+def entries(input_df):
+    """
+    Entries are usually associated with one name but sometimes the same 
+    person makes two entries. In the case of the second entry, it looks
+    like they are adding a class or repertoire.
+    e-mail address is not always belonging to participant because often
+    teachers or parents create the entry on their behalf
+    """
+
+    pass
+
+    # for index, row in input_df.iterrows():
+
+    #     # group or individual entry?
+    #     group_or_individual = str(row.type).strip().lower()
+    #     if group_or_individual == "group participant":
+            
+    #         pass
+    #     else:
+    #         pass
+
+
+    #     # create full name and get student profile
+    #     participant_first_name = row.first_name
+    #     participant_last_name = row.last_name
+    #     participant
+
+    #     if pd.isna(student_first_name):
+    #         student_full_name = str(student_last_name).strip()
+    #     elif pd.isna(student_last_name):
+    #         student_full_name = str(student_first_name).strip()
+    #     else:
+    #         student_full_name = str(student_first_name).strip() + ' ' + str(student_last_name).strip()
+
+    #     stmt = select(Profile).where(Profile.name == student_full_name)
+    #     student = db.session.execute(stmt).scalar_one_or_none()
+    
+
+
+
+
 
 def convert_to_db(sheet_data):
     df = names_to_df(sheet_data)
-    issues = gather_issues(df)
+    all_profiles(df)
+    related_profiles(df)
+    repertoire(df)
+    classes(df)
+    schools(df)
+    entries(df)
 
-    for issue in issues:
-        print(issue)
-
-    user_response = input("Do you want to commit these changes to the database? (yes/no): ")
-    if user_response.lower() == 'yes':
-        try:
-            db.session.commit()
-            print("Changes committed to the database.")
-        except IntegrityError:
-            db.session.rollback()
-            print("Commit failed due to integrity error.")
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"Commit failed due to error: {e}")
-    else:
-        db.session.rollback()
-        print("Changes were not committed to the database.")
