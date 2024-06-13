@@ -55,7 +55,7 @@ def names_to_df(sheet_data):
     df = sheet_data.rename(mapper=mfo.admin.spreadsheet_columns.names, axis=1)
     return df
 
-def all_profiles(input_df, issues):
+def all_profiles(input_df, issues, info):
 
     teachers = input_df[['teacher']].dropna().drop_duplicates()
 
@@ -66,11 +66,11 @@ def all_profiles(input_df, issues):
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            issues.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already exists")
+            info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already exists")
         else:
             teacher_profile = Profile(name=teacher_name)
             db.session.add(teacher_profile)
-            issues.append(f"** Row {index + 2}: Teacher profile for {teacher_name} added")
+            info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} added")
 
     group_teachers = input_df[['group_teacher']].dropna().drop_duplicates()
 
@@ -81,11 +81,11 @@ def all_profiles(input_df, issues):
         existing_teacher = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_teacher:
-            issues.append(f"** Row {index + 2}: Group teacher profile for {group_teacher_name} already exists")
+            info.append(f"** Row {index + 2}: Group teacher profile for {group_teacher_name} already exists")
         else:
             teacher_profile = Profile(name=str(group_teacher_name))
             db.session.add(teacher_profile)
-            issues.append(f"** Row {index + 2}: Group Teacher {group_teacher_name}: added new record")
+            info.append(f"** Row {index + 2}: Group Teacher {group_teacher_name}: added new record")
 
     accompanist_name_columns = [
         col for col in input_df.columns if col.startswith('accompanist_name_')
@@ -139,7 +139,7 @@ def all_profiles(input_df, issues):
 
         if existing_accompanist:
             if pd.notna(existing_accompanist.phone) and pd.notna(existing_accompanist.email):
-                issues.append(
+                info.append(
                     f"** Row {index +2}: Accompanist '{name}': "
                     f"already exists and has email and phone"
                 )
@@ -157,13 +157,13 @@ def all_profiles(input_df, issues):
                     )
             if pd.isna(existing_accompanist.phone) and pd.notna(phone):
                 existing_accompanist.phone = phone
-                issues.append(
+                info.append(
                     f"** Row {index +2}: Accompanist {name}: "
                     f"add phone number to existing record"
                 )
             if pd.isna(existing_accompanist.email) and pd.notna(email):
                 existing_accompanist.email = email
-                issues.append(
+                info.append(
                     f"** Row {index +2}: Accompanist {name}: "
                     f"add email to existing record"
                 )
@@ -174,7 +174,7 @@ def all_profiles(input_df, issues):
                 email=email,
             )
             db.session.add(new_accompanist)
-            issues.append(f"** Row {index +2}: Added accompanist '{name}', phone: '{phone}', email: '{email}'")
+            info.append(f"** Row {index +2}: Added accompanist '{name}', phone: '{phone}', email: '{email}'")
 
     for index, participant in input_df.iterrows():
         if participant.type == "Group participant":
@@ -199,10 +199,10 @@ def all_profiles(input_df, issues):
                     phone=phone,
                 )
                 db.session.add(new_group)
-                issues.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
+                info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
 
             else:
-                issues.append(f"** Row {index +2}: Group {group_name} {phone} {email}: already exists")
+                info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: already exists")
 
         elif participant.type == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
             if pd.isna(participant.first_name):
@@ -228,9 +228,9 @@ def all_profiles(input_df, issues):
                     phone=phone,
                 )
                 db.session.add(new_participant)
-                issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
+                info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
             else:
-                issues.append(f"** Row {index +2}: Participant {full_name} {email}: already exists")
+                info.append(f"** Row {index +2}: Participant {full_name} {email}: already exists")
                 if not existing_participant.phone:
                     if pd.notna(participant.phone):
                         phone = str(int(participant.phone))
@@ -238,7 +238,7 @@ def all_profiles(input_df, issues):
                         phone = None
                     if phone:
                         existing_participant.phone = phone
-                        issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added phone number")
+                        info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added phone number")
                 if not existing_participant.email:
                     if pd.notna(participant.email):
                         email = str(participant.email).lower()
@@ -246,13 +246,12 @@ def all_profiles(input_df, issues):
                         email = None
                     if email:
                         existing_participant.email = email
-                        issues.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added email")
+                        info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added email")
         else:
             issues.append(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
 
-def related_profiles(input_df, issues):
+def related_profiles(input_df, issues, info):
     
-    students_per_teacher = []
     students_and_teachers = input_df[['teacher', 'first_name', 'last_name']].dropna(how='all').drop_duplicates()
 
     for index, row in students_and_teachers.iterrows():
@@ -275,10 +274,10 @@ def related_profiles(input_df, issues):
             student = db.session.execute(stmt).scalar_one_or_none()
 
             if student in teacher.students:
-                issues.append(f"** Row {index +2}: Student {student_full_name} already associated with Teacher {teacher_name}")
+                info.append(f"** Row {index +2}: Student {student_full_name} already associated with Teacher {teacher_name}")
             else:
                 teacher.students.append(student)
-                issues.append(f"** Row {index +2}: Added Student {student_full_name} to Teacher {teacher_name}")
+                info.append(f"** Row {index +2}: Added Student {student_full_name} to Teacher {teacher_name}")
 
     groups_and_teachers = input_df[['group_name', 'group_teacher']].dropna().drop_duplicates()
 
@@ -294,12 +293,12 @@ def related_profiles(input_df, issues):
         group = db.session.execute(stmt).scalar_one_or_none()
 
         if group in teacher.group:
-            issues.append(f"**Row {index +2}: Group {group_name} already associated with Teacher {group_teacher_name}")
+            info.append(f"**Row {index +2}: Group {group_name} already associated with Teacher {group_teacher_name}")
         else:
             teacher.group.append(group)
-            issues.append(f"** Row {index +2}: Added Group {group_name} to Teacher {group_teacher_name}")
+            info.append(f"** Row {index +2}: Added Group {group_name} to Teacher {group_teacher_name}")
 
-def classes(input_df, issues):
+def classes(input_df, issues, info):
 
     class_number_columns = [
         col for col in input_df.columns if col.startswith('class_number_')
@@ -405,7 +404,7 @@ def classes(input_df, issues):
             print_suffix = suffix
         
         if festival_class:
-            issues.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type}, already exists")
+            info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type}, already exists")
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
@@ -422,7 +421,6 @@ def classes(input_df, issues):
                 if (title, composer) in existing_pieces:
                     continue
                 else:
-                    # Check if the repertoire piece exists in the database
                     stmt = select(Repertoire).where(
                         Repertoire.title == title,
                         Repertoire.composer == composer,
@@ -431,7 +429,7 @@ def classes(input_df, issues):
 
                     if existing_piece:
                         festival_class.test_pieces.append(existing_piece)
-                        issues.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
+                        info.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
                     else:
                         # If the repertoire piece does not exist, create it and append
                         new_piece = Repertoire(
@@ -441,7 +439,7 @@ def classes(input_df, issues):
                         )
                         db.session.add(new_piece)
                         festival_class.test_pieces.append(new_piece)
-                        issues.append(f"******* Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
+                        info.append(f"** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
 
         else:
             new_festival_class = FestivalClass(
@@ -449,7 +447,7 @@ def classes(input_df, issues):
                 suffix=suffix,
                 class_type=type,
             )
-            issues.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
+            info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
 
             for x in test_pieces:
                 title = x['title']
@@ -466,7 +464,7 @@ def classes(input_df, issues):
 
                     if existing_piece:
                         new_festival_class.test_pieces.append(existing_piece)
-                        issues.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
+                        info.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
                     else:
                         # If the repertoire piece does not exist, create it and append
                         new_piece = Repertoire(
@@ -476,12 +474,12 @@ def classes(input_df, issues):
                         )
                         db.session.add(new_piece)
                         new_festival_class.test_pieces.append(new_piece)
-                        issues.append(f"******** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
+                        info.append(f"** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
 
             db.session.add(new_festival_class)
 
 
-def schools(input_df, issues):
+def schools(input_df, issues, info):
     schools_columns = ['school', 'group_school']
     existing_schools = set()
     school_names = []
@@ -504,11 +502,11 @@ def schools(input_df, issues):
         existing_school = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_school:
-            issues.append(f"** Row {index+2}: School '{name}' already exists **")
+            info.append(f"** Row {index+2}: School '{name}' already exists **")
         else:
             new_school = School(name=name)
             db.session.add(new_school)
-            issues.append(f"** Row {index+2}: School {name} added")
+            info.append(f"** Row {index+2}: School {name} added")
     
     participants_and_schools = input_df[['first_name', 'last_name', 'school', 'teacher']].dropna(how='all').drop_duplicates()
 
@@ -541,16 +539,16 @@ def schools(input_df, issues):
             teacher = db.session.execute(stmt).scalar_one_or_none()
 
             if student in school.students_or_groups:
-                issues.append(f"** Row {index+2}: Student '{student_full_name}' already associated with School: '{school_name}'")
+                info.append(f"** Row {index+2}: Student '{student_full_name}' already associated with School: '{school_name}'")
             else:
                 school.students_or_groups.append(student)
-                issues.append(f"** Row {index+2}: Added Student '{student_full_name}' to School: '{school_name}'")
+                info.append(f"** Row {index+2}: Added Student '{student_full_name}' to School: '{school_name}'")
             
             if teacher in school.teachers:
-                issues.append(f"** Row {index+2}: Teacher '{teacher_name}' already associated with School: '{school_name}'")
+                info.append(f"** Row {index+2}: Teacher '{teacher_name}' already associated with School: '{school_name}'")
             else:
                 school.teachers.append(teacher)
-                issues.append(f"** Row {index+2}: Added teacher '{teacher_name}' to School: '{school_name}'")
+                info.append(f"** Row {index+2}: Added teacher '{teacher_name}' to School: '{school_name}'")
 
     groups_and_schools = input_df[['group_name', 'group_teacher', 'group_school']].dropna().drop_duplicates()
 
@@ -578,18 +576,18 @@ def schools(input_df, issues):
             teacher = db.session.execute(stmt).scalar_one_or_none()
 
             if group in school.students_or_groups:
-                issues.append(f"** Row {index+2}: Group {group_name} already associated with School {group_school}")
+                info.append(f"** Row {index+2}: Group {group_name} already associated with School {group_school}")
             else:
                 school.students_or_groups.append(group)
-                issues.append(f"** Row {index+2}: Added Group {group_name} to School {group_school}")
+                info.append(f"** Row {index+2}: Added Group {group_name} to School {group_school}")
 
             if teacher in school.teachers:
-                issues.append(f"** Row {index+2}: Group Teacher {group_teacher} already associated with School {group_school}")
+                info.append(f"** Row {index+2}: Group Teacher {group_teacher} already associated with School {group_school}")
             else:
                 school.teachers.append(teacher)
-                issues.append(f"** Row {index+2}: Added Group Teacher {group_teacher} to School {group_school}")
+                info.append(f"** Row {index+2}: Added Group Teacher {group_teacher} to School {group_school}")
 
-def repertoire(input_df, issues):
+def repertoire(input_df, issues, info):
     title_columns = [
         col for col in input_df.columns if col.startswith('repertoire_title_')
     ]
@@ -663,9 +661,9 @@ def repertoire(input_df, issues):
         existing_repertoire = db.session.execute(stmt).scalar_one_or_none()
 
         if existing_repertoire:
-            issues.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
+            info.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
             if existing_repertoire.duration != duration:
-                issues.append(f"   **** Row: {index+2}: Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
+                issues.append(f"   ** Row: {index+2}: Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
         else:
             new_repertoire = Repertoire(
                 title=title,
@@ -674,35 +672,46 @@ def repertoire(input_df, issues):
             )
 
             db.session.add(new_repertoire)
-            issues.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
+            info.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
 
 def gather_issues(input_df):
     issues = []
-    all_profiles(input_df, issues)
-    related_profiles(input_df, issues)
-    repertoire(input_df, issues)
-    classes(input_df, issues)
-    schools(input_df, issues)
-    return issues
+    info = []
+    all_profiles(input_df, issues, info)
+    related_profiles(input_df, issues, info)
+    repertoire(input_df, issues, info)
+    classes(input_df, issues, info)
+    schools(input_df, issues, info)
+    return issues, info
 
-def convert_to_db(sheet_data):
-    df = names_to_df(sheet_data)
-    issues = gather_issues(df)
-
-    for issue in issues:
-        print(issue)
-
-    user_response = input("Do you want to commit these changes to the database? (yes/no): ")
-    if user_response.lower() == 'yes':
-        try:
-            db.session.commit()
-            print("Changes committed to the database.")
-        except IntegrityError:
-            db.session.rollback()
-            print("Commit failed due to integrity error.")
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"Commit failed due to error: {e}")
-    else:
+def convert_to_db():
+    try:
+        db.session.commit()
+    except IntegrityError:
         db.session.rollback()
-        print("Changes were not committed to the database.")
+        raise
+    except Exception as e:
+        db.session.rollback()
+        raise
+
+# def convert_to_db(sheet_data):
+#     df = names_to_df(sheet_data)
+#     issues, info = gather_issues(df)
+
+#     for issue in issues:
+#         print(issue)
+
+#     user_response = input("Do you want to commit these changes to the database? (yes/no): ")
+#     if user_response.lower() == 'yes':
+#         try:
+#             db.session.commit()
+#             print("Changes committed to the database.")
+#         except IntegrityError:
+#             db.session.rollback()
+#             print("Commit failed due to integrity error.")
+#         except SQLAlchemyError as e:
+#             db.session.rollback()
+#             print(f"Commit failed due to error: {e}")
+#     else:
+#         db.session.rollback()
+#         print("Changes were not committed to the database.")

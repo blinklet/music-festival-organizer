@@ -1,0 +1,55 @@
+<!-- admin/templates/admin/spreadsheet_issues.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+    {% include "flash.html" %}
+    <div class="jumbotron text-center pt-4 pb-3 bg-light">
+        <h1>Music Festival Organizer Admin Portal</h1>
+        <p>Manage participants and events efficiently.</p>
+    </div>
+    <div class="container pt-4 pb-10">
+    <h3>Review Issues</h3>
+
+    {% if issues %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Issue</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for issue in issues %}
+                <tr>
+                    <td>{{ issue }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-success" role="alert">
+        No issues found. Ready to commit.
+    </div>
+    {% endif %}
+
+
+    <div class="row justify-content-center pt-3 mb-4">
+        <div class="col-auto">
+    <form method="post" action="{{ url_for('admin.confirm') }}">
+        {{ form.hidden_tag() }}
+        {{ form.cache_key }}
+        {{ form.confirm(class="btn btn-primary btn-md") }}
+        {{ form.cancel(class="btn btn-secondary btn-md") }}
+    </form>
+        </div>
+    </div>
+
+    </div>
+{% endblock %}
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}" >
+{% endblock %}
+

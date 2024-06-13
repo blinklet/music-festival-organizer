@@ -4,8 +4,11 @@ import flask
 import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
-from werkzeug.utils import secure_filename
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+import pandas as pd
+import os
 
+from mfo.database.base import db
 import mfo.admin.spreadsheet as spreadsheet
 
 bp = flask.Blueprint(
@@ -15,7 +18,6 @@ bp = flask.Blueprint(
     template_folder='templates',
     url_prefix='/admin',
     )
-
 
 @bp.route('/', methods=['GET', 'POST'])
 @flask_security.auth_required()
@@ -32,13 +34,53 @@ def index():
 
         flask.flash(message, 'success')
 
-        # Add spreadsheet to database
-        spreadsheet.convert_to_db(df)
+        df = spreadsheet.names_to_df(df)
+        issues, info = spreadsheet.gather_issues(df)
 
-        return flask.redirect(flask.url_for('admin.index'))
+        # Store DataFrame in cache
+        cache_key = os.urandom(24).hex()
+        flask.session['cache_key'] = cache_key
+        flask.current_app.cache.set(cache_key, df.to_json())  # Store for 5 minutes
 
-    return flask.render_template('/admin/index.html', form=form)
+        return flask.render_template(
+            'admin/spreadsheet_issues.html', 
+            issues=issues,
+            form=mfo.admin.forms.ConfirmForm()
+        )
+
+    return flask.render_template('admin/index.html', form=form)
+
+@bp.route('/confirm', methods=['POST'])
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def confirm():
+    form = mfo.admin.forms.ConfirmForm()
+    if form.validate_on_submit():
+        if form.confirm.data:
+            try:
+                cache_key = flask.session.pop('cache_key', None)
+                data = flask.current_app.cache.get(cache_key)
+                if data:
+                    df = pd.read_json(data)
+
+                    spreadsheet.convert_to_db()  # Perform the conversion and commit the data
+                    flask.flash("Changes committed to the database.", 'success')
+                    flask.current_app.cache.delete(cache_key)
+            except IntegrityError:
+                db.session.rollback()
+                flask.flash("Commit failed due to integrity error.", 'danger')
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                flask.flash(f"Commit failed due to error: {e}", 'danger')
+        elif form.cancel.data:
+            db.session.rollback()  # Roll back any uncommitted changes
+            flask.flash("Changes were not committed to the database.", 'warning')
+        else:
+            flask.flash("Changes were not committed to the database.", 'danger')
     
+    return flask.redirect(flask.url_for('admin.index'))
+
+
 
 @bp.errorhandler(Forbidden)
 def handle_forbidden(e):

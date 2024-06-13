@@ -39,6 +39,10 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 # See: https://docs.sqlalchemy.org/en/20/core/pooling.html#disconnect-handling-pessimistic
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}  
 
+# Flask-Caching variables
+CACHE_TYPE = "SimpleCache"  # Change to redis or something better
+CACHE_DEFAULT_TIMEOUT = 300  # Caches last 5 minutes
+
 # Roles defined
 # Roles (name, description, set of permissions)
 ROLES  = {

@@ -1,9 +1,11 @@
 # mfo/app.py
 
 import flask
+from flask import current_app
 from flask_security import Security
 from flask_bootstrap import Bootstrap5
 from flask_security.signals import user_registered
+from flask_caching import Cache
 
 import mfo.database.users as users
 import mfo.database.base as base
@@ -26,6 +28,10 @@ def create_app():
     # Register Bootstrap-Flask
     bootstrap = Bootstrap5()
     bootstrap.init_app(app)
+
+    # Register Flask-Caching
+    cache = Cache(app)
+    app.cache = cache
 
     # Register blueprints
     import mfo.home.views
