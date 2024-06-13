@@ -38,9 +38,9 @@ def index():
         issues, info = spreadsheet.gather_issues(df)
 
         # Store DataFrame in cache
-        cache_key = os.urandom(24).hex()
-        flask.session['cache_key'] = cache_key
-        flask.current_app.cache.set(cache_key, df.to_json())  # Store for 5 minutes
+        # cache_key = os.urandom(24).hex()
+        # flask.session['cache_key'] = cache_key
+        # flask.current_app.cache.set(cache_key, df.to_json())  # Store for 5 minutes
 
         return flask.render_template(
             'admin/spreadsheet_issues.html', 
@@ -58,20 +58,16 @@ def confirm():
     if form.validate_on_submit():
         if form.confirm.data:
             try:
-                cache_key = flask.session.pop('cache_key', None)
-                data = flask.current_app.cache.get(cache_key)
-                if data:
-                    df = pd.read_json(data)
-
-                    spreadsheet.convert_to_db()  # Perform the conversion and commit the data
-                    flask.flash("Changes committed to the database.", 'success')
-                    flask.current_app.cache.delete(cache_key)
+                db.session.commit()
             except IntegrityError:
                 db.session.rollback()
                 flask.flash("Commit failed due to integrity error.", 'danger')
             except SQLAlchemyError as e:
                 db.session.rollback()
                 flask.flash(f"Commit failed due to error: {e}", 'danger')
+            else:
+                flask.flash("Changes committed to the database.", 'success')
+
         elif form.cancel.data:
             db.session.rollback()  # Roll back any uncommitted changes
             flask.flash("Changes were not committed to the database.", 'warning')

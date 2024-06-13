@@ -326,14 +326,14 @@ def classes(input_df, issues, info):
 
             if pd.notna(number) & pd.isna(suffix):
                 if isinstance(number, (int, float)):
-                    number=str(int(number))
+                    number=str(int(number)).zfill(4)
                 else:
                     number=number.strip()
                 suffix = None
                 good_number = True
             elif pd.notna(number) & pd.notna(suffix):
                 if isinstance(number, (int, float)):
-                    number=str(int(number))
+                    number=str(int(number)).zfill(4)
                 else:
                     number=number.strip()
                 suffix = str(suffix).strip()
@@ -392,6 +392,9 @@ def classes(input_df, issues, info):
         type = row['type']
         test_pieces = row['test_pieces']
 
+        # TEST CODE
+        print(f"'{number}','{suffix}'")
+
         stmt = select(FestivalClass).where(
             FestivalClass.number == number,
             FestivalClass.suffix == suffix,
@@ -408,7 +411,7 @@ def classes(input_df, issues, info):
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
-                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
+                    issues.append(f"** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
                     type = festival_class.class_type
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
@@ -447,6 +450,7 @@ def classes(input_df, issues, info):
                 suffix=suffix,
                 class_type=type,
             )
+            db.session.add(new_festival_class)
             info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
 
             for x in test_pieces:
@@ -675,8 +679,8 @@ def repertoire(input_df, issues, info):
             info.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
 
 def gather_issues(input_df):
-    issues = []
-    info = []
+    issues = mfo.utilities.CustomList()
+    info = mfo.utilities.CustomList()
     all_profiles(input_df, issues, info)
     related_profiles(input_df, issues, info)
     repertoire(input_df, issues, info)

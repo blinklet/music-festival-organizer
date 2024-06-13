@@ -1,3 +1,5 @@
+# mfo/utilities.py
+
 from typing import Tuple
 
 def parse_full_name(full_name: str) -> Tuple[str, str]:
@@ -23,3 +25,9 @@ def parse_full_name(full_name: str) -> Tuple[str, str]:
     last_name = name_parts[-1]
     
     return first_name, last_name
+
+
+class CustomList(list):
+    def append(self, item):
+        super().append(item)
+        print(item)
