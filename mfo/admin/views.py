@@ -34,19 +34,22 @@ def index():
 
         flask.flash(message, 'success')
 
-        df = spreadsheet.names_to_df(df)
-        issues, info = spreadsheet.gather_issues(df)
+        spreadsheet.convert_to_db(df)
+        
+        # df = spreadsheet.names_to_df(df)
+        # issues, info = spreadsheet.gather_issues(df)
 
         # Store DataFrame in cache
         # cache_key = os.urandom(24).hex()
         # flask.session['cache_key'] = cache_key
         # flask.current_app.cache.set(cache_key, df.to_json())  # Store for 5 minutes
 
-        return flask.render_template(
-            'admin/spreadsheet_issues.html', 
-            issues=issues,
-            form=mfo.admin.forms.ConfirmForm()
-        )
+        # return flask.render_template(
+        #     'admin/spreadsheet_issues.html', 
+        #     issues=issues,
+        #     form=mfo.admin.forms.ConfirmForm()
+        # )
+        return flask.render_template('admin/index.html', form=form)
 
     return flask.render_template('admin/index.html', form=form)
 
@@ -75,7 +78,6 @@ def confirm():
             flask.flash("Changes were not committed to the database.", 'danger')
     
     return flask.redirect(flask.url_for('admin.index'))
-
 
 
 @bp.errorhandler(Forbidden)

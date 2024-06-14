@@ -688,34 +688,39 @@ def gather_issues(input_df):
     schools(input_df, issues, info)
     return issues, info
 
-def convert_to_db():
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        raise
-    except Exception as e:
-        db.session.rollback()
-        raise
-
-# def convert_to_db(sheet_data):
-#     df = names_to_df(sheet_data)
-#     issues, info = gather_issues(df)
-
-#     for issue in issues:
-#         print(issue)
-
-#     user_response = input("Do you want to commit these changes to the database? (yes/no): ")
-#     if user_response.lower() == 'yes':
-#         try:
-#             db.session.commit()
-#             print("Changes committed to the database.")
-#         except IntegrityError:
-#             db.session.rollback()
-#             print("Commit failed due to integrity error.")
-#         except SQLAlchemyError as e:
-#             db.session.rollback()
-#             print(f"Commit failed due to error: {e}")
-#     else:
+# def convert_to_db():
+#     try:
+#         db.session.commit()
+#     except IntegrityError:
 #         db.session.rollback()
-#         print("Changes were not committed to the database.")
+#         raise
+#     except Exception as e:
+#         db.session.rollback()
+#         raise
+
+
+
+
+
+def convert_to_db(sheet_data):
+    df = names_to_df(sheet_data)
+    issues, info = gather_issues(df)
+
+    print("\n\n\nISSUES:")
+    for issue in issues:
+        print(issue)
+
+    user_response = input("Do you want to commit these changes to the database? (yes/no): ")
+    if user_response.lower() == 'yes':
+        try:
+            db.session.commit()
+            print("Changes committed to the database.")
+        except IntegrityError:
+            db.session.rollback()
+            print("Commit failed due to integrity error.")
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Commit failed due to error: {e}")
+    else:
+        db.session.rollback()
+        print("Changes were not committed to the database.")
