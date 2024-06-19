@@ -13,6 +13,7 @@ from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
 
 def read_sheet(file):
+    
     try:
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(file.stream.read().decode("utf-8")))
@@ -115,16 +116,23 @@ def all_profiles(input_df, issues, info):
             name = row[name_col]
             if pd.notna(name):
                 name = str(name).strip()
+
                 phone = row[phone_col]
-                if pd.notna(phone):
+                if pd.isna(phone):
+                    phone = None
+                elif isinstance(phone, (int, float)):
                     phone = str(int(phone))
+                elif isinstance(phone, str):
+                    phone = phone.strip()
                 else:
                     phone = None
+
                 email = row[email_col]
                 if pd.notna(email):
                     email = (str(email)).lower().strip()
                 else:
                     email = None
+                    
                 accompanists.append({'name': name, 'phone': phone, 'email': email, 'index': index})
             else:
                 pass
@@ -187,12 +195,22 @@ def all_profiles(input_df, issues, info):
             existing_group = db.session.execute(stmt).scalar_one_or_none()
             if not existing_group:
                 if pd.notna(participant.phone):
-                    phone = str(int(participant.phone))
-                else:
-                    if pd.notna(participant.group_phone):
-                        phone = str(int(participant.group_phone))
+                    phone = participant.phone
+                    if isinstance(phone, (int, float)):
+                        phone = str(int(phone))
+                    elif isinstance(phone, str):
+                        phone = phone.strip()
                     else:
                         phone = None
+                else:
+                    if pd.notna(participant.group_phone):
+                        phone = participant.group_phone
+                        if isinstance(phone, (int, float)):
+                            phone = str(int(phone))
+                        elif isinstance(phone, str):
+                            phone = phone.strip()
+                        else:
+                            phone = None
 
                 new_group = Profile(
                     group_name=group_name,
@@ -256,7 +274,7 @@ def related_profiles(input_df, issues, info):
     students_and_teachers = input_df[['teacher', 'first_name', 'last_name']].dropna(how='all').drop_duplicates()
 
     for index, row in students_and_teachers.iterrows():
-        if pd.notna(row.teacher):
+        if pd.notna(row.teacher) :
 
             teacher_name = str(row.teacher).strip()
             student_first_name = row.first_name
@@ -713,16 +731,6 @@ def entries(input_df, issues, info):
                 solo_class_number_col = "class_number_" + str(solo_class_index)
                 class_number = row[solo_class_number_col]
 
-                # DEBUG
-                print()
-                print(f"'{class_number}'")
-                print()
-
-                if pd.isna(class_number):
-                    print()
-                    print("Class number is NA")
-                    print()
-                                   
                 if pd.notna(class_number):
                     solo_class_suffix_col = "class_suffix_" + str(solo_class_index)
                     repertoire_title_col = "repertoire_title_" + str(solo_class_index)
@@ -739,27 +747,22 @@ def entries(input_df, issues, info):
                         else:
                             class_number=class_number.strip()
                         class_suffix = None
+                        print_suffix = ""
                     elif pd.notna(class_number) & pd.notna(class_suffix):
                         if isinstance(class_number, (int, float)):
                             class_number=str(int(class_number)).zfill(4)
                         else:
                             class_number=class_number.strip()
                         class_suffix = str(class_suffix).strip()
+                        print_suffix = class_suffix
                     else:
                         pass
 
-                    # DEBUG
-                    print()
-                    print(f"'{class_number}' '{class_suffix}'")
-                    print()
-                    
                     stmt = select(FestivalClass).where(
                         FestivalClass.number == class_number,
                         FestivalClass.suffix == class_suffix
                     )
                     festival_class = db.session.execute(stmt).scalar_one_or_none()
-
-
 
                     repertoire_title = row[repertoire_title_col]
                     repertoire_duration = row[repertoire_duration_col]
@@ -774,7 +777,7 @@ def entries(input_df, issues, info):
                         )
                         repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
                     else:
-                        issues.append(f"**** Row {index+2}: Repertoire title and composer are required for class {class_number}{class_suffix}. Row skipped.")
+                        issues.append(f"**** Row {index+2}: Class {class_number}{print_suffix}: Repertoire composer name is not entered. Entry skipped.")
                         continue
 
                     accompanist_name = row[accompanist_name_col]
@@ -790,22 +793,18 @@ def entries(input_df, issues, info):
                         comments=None
                     )
                     db.session.add(new_entry)
-                    info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{class_suffix}")
+                    info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{print_suffix}")
 
                     if pd.notna(accompanist_name):
                         accompanist_name = str(accompanist_name).strip()
                         stmt = select(Profile).where(Profile.name == accompanist_name)
                         accompanist = db.session.execute(stmt).scalar_one_or_none()
                         new_entry.accompanists.append(accompanist)
-                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to entry for {full_name} in class {class_number}{class_suffix}")
+                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to entry for {full_name} in class {class_number}{print_suffix}")
 
-
-
-
-                    
                 else:
-                    print("No class number")
-                    break   
+                    issues.append(f"**Row {index+2}: No class number in entry. Entry skipped.")
+                       
 
                     
 
