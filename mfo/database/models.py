@@ -28,7 +28,7 @@ groups_contacts = Table(
 
 class_repertoire = Table(
     'class_repertoire', db.metadata,
-    Column('class_id', ForeignKey('class.id'), primary_key=True),
+    Column('class_id', ForeignKey('classes.id'), primary_key=True),
     Column('repertoire_id', ForeignKey('repertoire.id'), primary_key=True)
 )
 
@@ -50,17 +50,23 @@ schools_teachers = Table(
     Column('teacher_id', ForeignKey('profile.id'), primary_key=True)
 )
 
-# participants_entries = Table(
-#     'participants_entries', db.metadata,
-#     Column('participant_id', ForeignKey('profile.id'), primary_key=True),
-#     Column('entry_id', ForeignKey('entry.id'), primary_key=True)
-# )
+participants_entries = Table(
+    'participants_entries', db.metadata,
+    Column('participant_id', ForeignKey('profile.id'), primary_key=True),
+    Column('entry_id', ForeignKey('entries.id'), primary_key=True)
+)
 
-# accompanists_entries = Table(
-#     'accompanists_entries', db.metadata,
-#     Column('accompanist_id', ForeignKey('profile.id'), primary_key=True),
-#     Column('entry_id', ForeignKey('entry.id'), primary_key=True)
-# )
+accompanists_entries = Table(
+    'accompanists_entries', db.metadata,
+    Column('accompanist_id', ForeignKey('profile.id'), primary_key=True),
+    Column('entry_id', ForeignKey('entries.id'), primary_key=True)
+)
+
+entry_repertoire = Table(
+    'entry_repertoire', db.metadata,
+    Column('entry_id', ForeignKey('entries.id'), primary_key=True),
+    Column('repertoire_id', ForeignKey('repertoire.id'), primary_key=True)
+)
 
 
 class Profile(db.Model):
@@ -134,6 +140,14 @@ class Profile(db.Model):
         "School", secondary=schools_teachers, back_populates="teachers"
     )
 
+    accompanies_entries: Mapped[List["Entry"]] = relationship(
+        "Entry", secondary=accompanists_entries, back_populates="accompanists"
+    )
+
+    participates_in_entries: Mapped[List["Entry"]] = relationship(
+        "Entry", secondary=participants_entries, back_populates="participants"
+    )
+
     total_fee: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
     fees_paid: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
     comments: Mapped[Optional[str]] = mapped_column(nullable=True)
@@ -152,7 +166,7 @@ class Profile(db.Model):
 
 
 class FestivalClass(db.Model):
-    __tablename__ = 'class'
+    __tablename__ = 'classes'
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
@@ -166,9 +180,33 @@ class FestivalClass(db.Model):
     adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
     move_time: Mapped[Optional[int]] = mapped_column(nullable=True)
 
-    test_pieces: Mapped[list["Repertoire"]] = relationship(
+    test_pieces: Mapped[List["Repertoire"]] = relationship(
         "Repertoire", secondary=class_repertoire, back_populates="festival_classes"
     )
+
+    entries: Mapped[list["Entry"]] = relationship("Entry", back_populates="festival_class")
+
+
+class Entry(db.Model):
+    __tablename__ = 'entries'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    participants: Mapped[List["Profile"]] = relationship(
+        "Profile", secondary=participants_entries, back_populates="participates_in_entries"
+    )
+    accompanists: Mapped[List["Profile"]] = relationship(
+        "Profile", secondary=accompanists_entries, back_populates="accompanies_entries"
+    )
+    repertoire: Mapped[List["Repertoire"]] = relationship(
+        "Repertoire", secondary=entry_repertoire, back_populates="used_in_entries"
+    )
+    timestamp: Mapped[Optional[datetime.datetime]] = mapped_column(nullable=True)
+    comments: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    class_id: Mapped[int] = mapped_column(Integer, ForeignKey('classes.id'))
+    festival_class: Mapped["FestivalClass"] = relationship("FestivalClass", back_populates="entries")
+
 
 
 class Repertoire(db.Model):
@@ -181,9 +219,14 @@ class Repertoire(db.Model):
     composer: Mapped[Optional[str]] = mapped_column(nullable=True)
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-    festival_classes: Mapped[list[FestivalClass]] = relationship(
+    festival_classes: Mapped[List["FestivalClass"]] = relationship(
         "FestivalClass", secondary=class_repertoire, back_populates="test_pieces"
     )
+
+    used_in_entries: Mapped[List["Entry"]] = relationship(
+        "Entry", secondary=entry_repertoire, back_populates="repertoire"
+    )
+
 
 
 class School(db.Model):
@@ -205,3 +248,4 @@ class School(db.Model):
     teachers: Mapped[list[Profile]] = relationship(
         "Profile", secondary=schools_teachers, back_populates="teaches_at_schools"
     )
+

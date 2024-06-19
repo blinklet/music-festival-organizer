@@ -5,11 +5,12 @@ import io
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
+from datetime import datetime
 
 import mfo.admin.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
-from mfo.database.models import Profile, FestivalClass, Repertoire, School
+from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
 
 def read_sheet(file):
     try:
@@ -678,6 +679,180 @@ def repertoire(input_df, issues, info):
             db.session.add(new_repertoire)
             info.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
 
+def entries(input_df, issues, info):
+    """
+    Each row in the dataframe is an entry.
+    Each entry is a combination of a profile, a class, and a repertoire.
+    The profile is either a student or a group.
+    The class is a festival class.
+    The repertoire is a list of pieces.
+    Occasionally, the same student or group may make multiple entries
+    We assume these are additional entries, not duplicates. Though they might be attempts
+    at corrections or additions to the original entry. We will highlight the second entry 
+    as an issue to be verified.
+    """
+    for index, row in input_df.iterrows():
+        # test if this is an individual entry or a group entry
+        if row.type.strip() == "Group participant":
+            group_name = row.group_name
+
+
+        elif row.type.strip() == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
+            if pd.isna(row.first_name):
+                full_name = str(row.last_name).strip()
+            elif pd.isna(row.last_name):
+                full_name = str(row.first_name).strip()
+            else:
+                full_name = str(row.first_name).strip() + ' ' + str(row.last_name).strip()
+
+            stmt = select(Profile).where(Profile.name == full_name)
+            participant = db.session.execute(stmt).scalar_one_or_none()
+ 
+            # solo entries are numbers 0 to 9
+            for solo_class_index in range(10):
+                solo_class_number_col = "class_number_" + str(solo_class_index)
+                class_number = row[solo_class_number_col]
+
+                # DEBUG
+                print()
+                print(f"'{class_number}'")
+                print()
+
+                if pd.isna(class_number):
+                    print()
+                    print("Class number is NA")
+                    print()
+                                   
+                if pd.notna(class_number):
+                    solo_class_suffix_col = "class_suffix_" + str(solo_class_index)
+                    repertoire_title_col = "repertoire_title_" + str(solo_class_index)
+                    repertoire_duration_col = "repertoire_duration_" + str(solo_class_index)
+                    repertoire_composer_col = "composer_" + str(solo_class_index)
+                    accompanist_name_col = "accompanist_name_" + str(solo_class_index)
+                    accompanist_phone_col = "accompanist_phone_" + str(solo_class_index)
+                    accompanist_email_col = "accompanist_email_" + str(solo_class_index)
+                    class_suffix = row[solo_class_suffix_col]
+
+                    if pd.notna(class_number) & pd.isna(class_suffix):
+                        if isinstance(class_number, (int, float)):
+                            class_number=str(int(class_number)).zfill(4)
+                        else:
+                            class_number=class_number.strip()
+                        class_suffix = None
+                    elif pd.notna(class_number) & pd.notna(class_suffix):
+                        if isinstance(class_number, (int, float)):
+                            class_number=str(int(class_number)).zfill(4)
+                        else:
+                            class_number=class_number.strip()
+                        class_suffix = str(class_suffix).strip()
+                    else:
+                        pass
+
+                    # DEBUG
+                    print()
+                    print(f"'{class_number}' '{class_suffix}'")
+                    print()
+                    
+                    stmt = select(FestivalClass).where(
+                        FestivalClass.number == class_number,
+                        FestivalClass.suffix == class_suffix
+                    )
+                    festival_class = db.session.execute(stmt).scalar_one_or_none()
+
+
+
+                    repertoire_title = row[repertoire_title_col]
+                    repertoire_duration = row[repertoire_duration_col]
+                    repertoire_composer = row[repertoire_composer_col]
+
+                    if pd.notna(repertoire_title) and pd.notna(repertoire_composer):
+                        repertoire_title = str(repertoire_title).strip()
+                        repertoire_composer = str(repertoire_composer).strip()
+                        stmt = select(Repertoire).where(
+                            Repertoire.title == repertoire_title,
+                            Repertoire.composer == repertoire_composer
+                        )
+                        repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
+                    else:
+                        issues.append(f"**** Row {index+2}: Repertoire title and composer are required for class {class_number}{class_suffix}. Row skipped.")
+                        continue
+
+                    accompanist_name = row[accompanist_name_col]
+                    accompanist_phone = row[accompanist_phone_col]
+                    accompanist_email = row[accompanist_email_col]
+
+                    # This is a solo class so all items are entered once
+                    new_entry = Entry(
+                        festival_class=festival_class,
+                        participants=[participant],
+                        repertoire=[repertoire_piece],
+                        timestamp=datetime.now(),
+                        comments=None
+                    )
+                    db.session.add(new_entry)
+                    info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{class_suffix}")
+
+                    if pd.notna(accompanist_name):
+                        accompanist_name = str(accompanist_name).strip()
+                        stmt = select(Profile).where(Profile.name == accompanist_name)
+                        accompanist = db.session.execute(stmt).scalar_one_or_none()
+                        new_entry.accompanists.append(accompanist)
+                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to entry for {full_name} in class {class_number}{class_suffix}")
+
+
+
+
+                    
+                else:
+                    print("No class number")
+                    break   
+
+                    
+
+
+            # for col in input_df.columns:
+            #     if col.startswith('class_number_'):
+            #         class_number = row[col]
+            #         if pd.notna(class_number):
+            #             parts = col.rsplit('_', 1)
+            #             if len(parts) > 1:
+            #                 col_num = str(parts[-1]) 
+            #             else:
+            #                 col_num = str(col)
+            #             break
+
+
+            
+        else:
+            pass
+            # issues.append(f"**** Row {index+2}: Invalid entry type: '{row.type}'. Row skipped.")
+            # continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def gather_issues(input_df):
     issues = mfo.utilities.CustomList()
     info = mfo.utilities.CustomList()
@@ -686,6 +861,7 @@ def gather_issues(input_df):
     repertoire(input_df, issues, info)
     classes(input_df, issues, info)
     schools(input_df, issues, info)
+    entries(input_df, issues, info)
     return issues, info
 
 # def convert_to_db():
@@ -710,17 +886,17 @@ def convert_to_db(sheet_data):
     for issue in issues:
         print(issue)
 
-    user_response = input("Do you want to commit these changes to the database? (yes/no): ")
-    if user_response.lower() == 'yes':
-        try:
-            db.session.commit()
-            print("Changes committed to the database.")
-        except IntegrityError:
-            db.session.rollback()
-            print("Commit failed due to integrity error.")
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"Commit failed due to error: {e}")
-    else:
+    # user_response = input("Do you want to commit these changes to the database? (yes/no): ")
+    # if user_response.lower() == 'yes':
+    try:
+        db.session.commit()
+        print("Changes committed to the database.")
+    except IntegrityError:
         db.session.rollback()
-        print("Changes were not committed to the database.")
+        print("Commit failed due to integrity error.")
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Commit failed due to error: {e}")
+    # else:
+    #     db.session.rollback()
+    #     print("Changes were not committed to the database.")
