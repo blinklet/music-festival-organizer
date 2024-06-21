@@ -191,15 +191,15 @@ names = {
     # group entry
     'Class Number.15': 'class_number_15',
     'Class number suffix.15': 'class_suffix_15',
-    'Repertoire Title 1.1': 'repertoire_title_15_1',
-    ' Repertoire Duration 1 in minutes.1': 'repertoire_duration_15_1',
-    'Composer 1.1': 'composer_15_1',
-    'Repertoire Title 2.1': 'repertoire_title_15_2',
-    ' Repertoire Duration 2 in minutes.1': 'repertoire_duration_15_2',
-    'Composer 2.1': 'composer_15_2',
-    'Repertoire Title 3.1': 'repertoire_title_15_3',
-    ' Repertoire Duration 3 in minutes.1': 'repertoire_duration_15_3',
-    'Composer 3.1': 'composer_15_3',
+    'Repertoire Title 1.1': 'repertoire_title_1_15',
+    ' Repertoire Duration 1 in minutes.1': 'repertoire_duration_1_15',
+    'Composer 1.1': 'composer_1_15',
+    'Repertoire Title 2.1': 'repertoire_title_2_15',
+    ' Repertoire Duration 2 in minutes.1': 'repertoire_duration_2_15',
+    'Composer 2.1': 'composer_2_15',
+    'Repertoire Title 3.1': 'repertoire_title_3_15',
+    ' Repertoire Duration 3 in minutes.1': 'repertoire_duration_3_15',
+    'Composer 3.1': 'composer_3_15',
     'Accompanist name if have.15': 'accompanist_name_15',
     'Accompanist Phone Number.15': 'accompanist_phone_15',
     'Accompanist Email.15': 'accompanist_email_15',
@@ -207,15 +207,15 @@ names = {
     'If you have another class?': 'group_class_16',
     'Class Number.16': 'class_number_16',
     'Class number suffix.16': 'class_suffix_16',
-    'Repertoire Title 1.2': 'repertoire_title_16_1',
-    ' Repertoire Duration 1 in minutes.2': 'repertoire_duration_16_1',
-    'Composer 1.2': 'composer_16_1',
-    'Repertoire Title 2.2': 'repertoire_title_16_2',
-    ' Repertoire Duration 2 in minutes.2': 'repertoire_duration_16_2',
-    'Composer 2.2': 'composer_16_2',
-    'Repertoire Title 3.2': 'repertoire_title_16_3',
-    ' Repertoire Duration 3 in minutes.2': 'repertoire_duration_16_3',
-    'Composer 3.2': 'composer_16_3',
+    'Repertoire Title 1.2': 'repertoire_title_1_16',
+    ' Repertoire Duration 1 in minutes.2': 'repertoire_duration_1_16',
+    'Composer 1.2': 'composer_1_16',
+    'Repertoire Title 2.2': 'repertoire_title_2_16',
+    ' Repertoire Duration 2 in minutes.2': 'repertoire_duration_2_16',
+    'Composer 2.2': 'composer_2_16',
+    'Repertoire Title 3.2': 'repertoire_title_3_16',
+    ' Repertoire Duration 3 in minutes.2': 'repertoire_duration_3_16',
+    'Composer 3.2': 'composer_3_16',
     'Accompanist name if have.16': 'accompanist_name_16',
     'Accompanist Phone Number.16': 'accompanist_phone_16',
     'Accompanist Email.16': 'accompanist_email_16',
@@ -223,15 +223,15 @@ names = {
     'If you have another class?.1': 'group_class_17',
     'Class Number.17': 'class_number_17',
     'Class number suffix.17': 'class_suffix_17',
-    'Repertoire Title 1.3': 'repertoire_title_17_1',
-    ' Repertoire Duration 1 in minutes.3': 'repertoire_duration_17_1',
-    'Composer 1.3': 'composer_17_1',
-    'Repertoire Title 2.3': 'repertoire_title_17_2',
-    ' Repertoire Duration 2 in minutes.3': 'repertoire_duration_17_2',
-    'Composer 2.3': 'composer_17_2',
-    'Repertoire Title 3.3': 'repertoire_title_17_3',
-    ' Repertoire Duration 3 in minutes.3': 'repertoire_duration_17_3',
-    'Composer 3.3': 'composer_17_3',
+    'Repertoire Title 1.3': 'repertoire_title_1_17',
+    ' Repertoire Duration 1 in minutes.3': 'repertoire_duration_1_17',
+    'Composer 1.3': 'composer_1_17',
+    'Repertoire Title 2.3': 'repertoire_title_2_17',
+    ' Repertoire Duration 2 in minutes.3': 'repertoire_duration_2_17',
+    'Composer 2.3': 'composer_2_17',
+    'Repertoire Title 3.3': 'repertoire_title_3_17',
+    ' Repertoire Duration 3 in minutes.3': 'repertoire_duration_3_17',
+    'Composer 3.3': 'composer_3_17',
     'Accompanist name if have.17': 'accompanist_name_17',
     'Accompanist Phone Number.17': 'accompanist_phone_17',
     'Accompanist Email.17': 'accompanist_email_17',
@@ -394,53 +394,53 @@ class_repertoire_columns = {
          ],
     '15': [
           {
-            'title': 'repertoire_title_15_1',
-            'duration': 'repertoire_duration_15_1',
-            'composer': 'composer_15_1'
+            'title': 'repertoire_title_1_15',
+            'duration': 'repertoire_duration_1_15',
+            'composer': 'composer_1_15'
           },
           {
-            'title': 'repertoire_title_15_2',
-            'duration': 'repertoire_duration_15_2',
-            'composer': 'composer_15_2'
+            'title': 'repertoire_title_2_15',
+            'duration': 'repertoire_duration_2_15',
+            'composer': 'composer_2_15'
           },
           {
-            'title': 'repertoire_title_15_3',
-            'duration': 'repertoire_duration_15_3',
-            'composer': 'composer_15_3'
+            'title': 'repertoire_title_3_15',
+            'duration': 'repertoire_duration_3_15',
+            'composer': 'composer_3_15'
           }
          ],
     '16': [
           {
-            'title': 'repertoire_title_16_1',
-            'duration': 'repertoire_duration_16_1',
-            'composer': 'composer_16_1'
+            'title': 'repertoire_title_1_16',
+            'duration': 'repertoire_duration_1_16',
+            'composer': 'composer_1_16'
           },
           {
-            'title': 'repertoire_title_16_2',
-            'duration': 'repertoire_duration_16_2',
-            'composer': 'composer_16_2'
+            'title': 'repertoire_title_2_16',
+            'duration': 'repertoire_duration_2_16',
+            'composer': 'composer_2_16'
           },
           {
-            'title': 'repertoire_title_16_3',
-            'duration': 'repertoire_duration_16_3',
-            'composer': 'composer_16_3'
+            'title': 'repertoire_title_3_16',
+            'duration': 'repertoire_duration_3_16',
+            'composer': 'composer_3_16'
           }
          ],
     '17': [
            {
-            'title': 'repertoire_title_17_1',
-            'duration': 'repertoire_duration_17_1',
-            'composer': 'composer_17_1'
+            'title': 'repertoire_title_1_17',
+            'duration': 'repertoire_duration_1_17',
+            'composer': 'composer_1_17'
            },
            {
-            'title': 'repertoire_title_17_2',
-            'duration': 'repertoire_duration_17_2',
-            'composer': 'composer_17_2'
+            'title': 'repertoire_title_2_17',
+            'duration': 'repertoire_duration_2_17',
+            'composer': 'composer_2_17'
            },
            {
-            'title': 'repertoire_title_17_3',
-            'duration': 'repertoire_duration_17_3',
-            'composer': 'composer_17_3'
+            'title': 'repertoire_title_3_17',
+            'duration': 'repertoire_duration_3_17',
+            'composer': 'composer_3_17'
            }
           ],
 }

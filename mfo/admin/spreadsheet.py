@@ -350,10 +350,6 @@ def classes(input_df, issues, info):
             number = row[class_num_col]
             suffix = row[class_suf_col]
 
-            #DEBUG
-            if index == 119:
-                print(f"DEBUG: {index} {class_num_col} {number}")
-
 
             if pd.notna(number) & pd.isna(suffix):
                 if isinstance(number, (int, float)):
@@ -386,13 +382,6 @@ def classes(input_df, issues, info):
                     col_num = str(class_num_col)
                 
                 type = class_column_type[col_num]
-
-                # DEBUG
-                if number == "5263":
-                    print(parts)
-                    print(f"DEBUG: {index} {number} {suffix} {type} {col_num}")
-
-
 
                 repertoire_columns = class_repertoire_columns[col_num]
 
@@ -728,6 +717,8 @@ def entries(input_df, issues, info):
     at corrections or additions to the original entry. We will highlight the second entry 
     as an issue to be verified.
     """
+    repertoire_columns = mfo.admin.spreadsheet_columns.class_repertoire_columns
+
     for index, row in input_df.iterrows():
         # test if this is an individual entry or a group entry
         if row.type.strip() == "Group participant":
@@ -745,16 +736,16 @@ def entries(input_df, issues, info):
             stmt = select(Profile).where(Profile.name == full_name)
             participant = db.session.execute(stmt).scalar_one_or_none()
  
-            # solo and small group entries are numbers 0-9, 11-14
-            for solo_class_index in chain(range(10), range(11, 15)):
+            # solo, recital, and small group entries are numbers 014
+            for solo_class_index in range(15):
                 solo_class_number_col = "class_number_" + str(solo_class_index)
                 class_number = row[solo_class_number_col]
 
                 if pd.notna(class_number):
                     solo_class_suffix_col = "class_suffix_" + str(solo_class_index)
-                    repertoire_title_col = "repertoire_title_" + str(solo_class_index)
-                    repertoire_duration_col = "repertoire_duration_" + str(solo_class_index)
-                    repertoire_composer_col = "composer_" + str(solo_class_index)
+                    # repertoire_title_col = "repertoire_title_" + str(solo_class_index)
+                    # repertoire_duration_col = "repertoire_duration_" + str(solo_class_index)
+                    # repertoire_composer_col = "composer_" + str(solo_class_index)
                     accompanist_name_col = "accompanist_name_" + str(solo_class_index)
                     accompanist_phone_col = "accompanist_phone_" + str(solo_class_index)
                     accompanist_email_col = "accompanist_email_" + str(solo_class_index)
@@ -784,21 +775,21 @@ def entries(input_df, issues, info):
                     )
                     festival_class = db.session.execute(stmt).scalar_one_or_none()
 
-                    repertoire_title = row[repertoire_title_col]
-                    repertoire_duration = row[repertoire_duration_col]
-                    repertoire_composer = row[repertoire_composer_col]
+                    # repertoire_title = row[repertoire_title_col]
+                    # repertoire_duration = row[repertoire_duration_col]
+                    # repertoire_composer = row[repertoire_composer_col]
 
-                    if pd.notna(repertoire_title) and pd.notna(repertoire_composer):
-                        repertoire_title = str(repertoire_title).strip()
-                        repertoire_composer = str(repertoire_composer).strip()
-                        stmt = select(Repertoire).where(
-                            Repertoire.title == repertoire_title,
-                            Repertoire.composer == repertoire_composer
-                        )
-                        repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
-                    else:
-                        issues.append(f"**** Row {index+2}: Class {class_number}{print_suffix}: Repertoire composer name is not entered. Entry skipped.")
-                        continue
+                    # if pd.notna(repertoire_title) and pd.notna(repertoire_composer):
+                    #     repertoire_title = str(repertoire_title).strip()
+                    #     repertoire_composer = str(repertoire_composer).strip()
+                    #     stmt = select(Repertoire).where(
+                    #         Repertoire.title == repertoire_title,
+                    #         Repertoire.composer == repertoire_composer
+                    #     )
+                    #     repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
+                    # else:
+                    #     issues.append(f"**** Row {index+2}: Class {class_number}{print_suffix}: Repertoire composer name is not entered. Entry skipped.")
+                    #     continue
 
                     accompanist_name = row[accompanist_name_col]
                     accompanist_phone = row[accompanist_phone_col]
@@ -808,12 +799,12 @@ def entries(input_df, issues, info):
                     new_entry = Entry(
                         festival_class=festival_class,
                         participants=[participant],
-                        repertoire=[repertoire_piece],
+                        repertoire=[],
                         timestamp=datetime.now(),
                         comments=None
                     )
                     db.session.add(new_entry)
-                    info.append(f"** Row {index+2}: Added entry for {full_name} playing '{repertoire_title}' in class {class_number}{print_suffix}")
+                    info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{print_suffix}")
 
                     if pd.notna(accompanist_name):
                         accompanist_name = str(accompanist_name).strip()
@@ -825,12 +816,12 @@ def entries(input_df, issues, info):
                     # find participant columns for additional participants in the same class
                     # prevent '1' matching '11' for example
                     participant_columns = []
-                    reperoire_columns = []
+
                     for col in input_df.columns:
                         col_number = col.rsplit('_')[-1]
-                        if col.startswith('participant_'):
-                            if len(str(col_number)) == len(str(solo_class_index)):
-                                if str(col_number) == str(solo_class_index):
+                        if len(str(col_number)) == len(str(solo_class_index)):
+                            if str(col_number) == str(solo_class_index):
+                                if col.startswith('participant_'):
                                     if pd.notna(row[col]):
                                         participant_columns.append(col)
 
@@ -841,7 +832,7 @@ def entries(input_df, issues, info):
                             additional_participant = db.session.execute(stmt).scalar_one_or_none()
                             if additional_participant:
                                 new_entry.participants.append(additional_participant)
-                                issues.append(f"** Row {index+2}: Added additional participant {participant_name} to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
+                                info.append(f"** Row {index+2}: Added additional participant {participant_name} to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
                             else:
                                 issues.append(f"**** Row {index+2}: Additional participant '{participant_name}' in entry class {class_number}{print_suffix} not found in database. Will add participant to DB. Check that this is not a misspelling")
                                 new_participant = Profile(name=participant_name)
@@ -851,9 +842,43 @@ def entries(input_df, issues, info):
                     # The recital class is a special case where the same participant plays multiple repertoire
                     # so I created a generalization were all repertoire is appended to an empty list
                     # this works for every class where there is 1 or more repertoire pieces
+                    entry_repertoire_columns = repertoire_columns[str(solo_class_index)]
+
+                    for columns in entry_repertoire_columns:
+                        title_col = columns['title']
+                        duration_col = columns['duration']
+                        composer_col = columns['composer']
+
+                        title = row[title_col]
+                        duration = row[duration_col]
+                        composer = row[composer_col]
+
+                        if pd.notna(title) and pd.notna(composer):
+                            title = str(title).strip()
+                            if pd.notna(duration):
+                                duration = int(duration)
+                            else:
+                                duration = None
+                            composer = str(composer).strip()
+
+                            stmt = select(Repertoire).where(
+                                Repertoire.title == title,
+                                Repertoire.composer == composer
+                            )
+
+                            repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
+                            if repertoire_piece:
+                                new_entry.repertoire.append(repertoire_piece)
+                                info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
+                            else:
+                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in entry class {class_number}{print_suffix} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
+                                new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
+                                db.session.add(new_repertoire)
+                                new_entry.repertoire.append(new_repertoire)
 
 
 
+                    
 
 
                 else:
