@@ -117,21 +117,21 @@ names = {
     # recital
     'Class Number.10': 'class_number_10',
     'Class number suffix.10': 'class_suffix_10',
-    'Repertoire Title 1': 'repertoire_title_10_1',
-    ' Repertoire Duration 1 in minutes': 'repertoire_duration_10_1',
-    'Composer 1': 'composer_10_1',
-    'Repertoire Title 2': 'repertoire_title_10_2',
-    ' Repertoire Duration 2 in minutes': 'repertoire_duration_10_2',
-    'Composer 2': 'composer_10_2',
-    'Repertoire Title 3': 'repertoire_title_10_3',
-    ' Repertoire Duration 3 in minutes': 'repertoire_duration_10_3',
-    'Composer 3': 'composer_10_3',
-    'Repertoire Title 4': 'repertoire_title_10_4',
-    ' Repertoire Duration 4 in minutes': 'repertoire_duration_10_4',
-    'Composer 4': 'composer_10_4',
-    'Repertoire Title 5': 'repertoire_title_10_5',
-    ' Repertoire Duration 5 in minutes': 'repertoire_duration_10_5',
-    'Composer 5': 'composer_10_5',
+    'Repertoire Title 1': 'repertoire_title_1_10',
+    ' Repertoire Duration 1 in minutes': 'repertoire_duration_1_10',
+    'Composer 1': 'composer_1_10',
+    'Repertoire Title 2': 'repertoire_title_2_10',
+    ' Repertoire Duration 2 in minutes': 'repertoire_duration_2_10',
+    'Composer 2': 'composer_2_10',
+    'Repertoire Title 3': 'repertoire_title_3_10',
+    ' Repertoire Duration 3 in minutes': 'repertoire_duration_3_10',
+    'Composer 3': 'composer_3_10',
+    'Repertoire Title 4': 'repertoire_title_4_10',
+    ' Repertoire Duration 4 in minutes': 'repertoire_duration_4_10',
+    'Composer 4': 'composer_4_10',
+    'Repertoire Title 5': 'repertoire_title_5_10',
+    ' Repertoire Duration 5 in minutes': 'repertoire_duration_5_10',
+    'Composer 5': 'composer_5_10',
     'Accompanist name if have.10': 'accompanist_name_10',
     'Accompanist Phone Number.10': 'accompanist_phone_10',
     'Accompanist Email.10': 'accompanist_email_10',
@@ -139,7 +139,7 @@ names = {
     # duet
     'Class Number.11': 'class_number_11',
     'Class number suffix.11': 'class_suffix_11',
-    'Name of the second participant': 'second_participant_11',
+    'Name of the second participant': 'participant_2_11',
     'Repertoire Title.10': 'repertoire_title_11',
     ' Repertoire Duration in minutes.10': 'repertoire_duration_11',
     'Composer.10': 'composer_11',
@@ -149,8 +149,8 @@ names = {
     # trio
     'Class Number.12': 'class_number_12',
     'Class number suffix.12': 'class_suffix_12',
-    'Name of the second participant.1': 'second_participant_12',
-    'Name of the third participant': 'third_participant_12',
+    'Name of the second participant.1': 'participant_2_12',
+    'Name of the third participant': 'participant_3_12',
     'Repertoire Title.11': 'repertoire_title_12',
     ' Repertoire Duration in minutes.11': 'repertoire_duration_12',
     'Composer.11': 'composer_12',
@@ -160,9 +160,9 @@ names = {
     # quartet
     'Class Number.13': 'class_number_13',
     'Class number suffix.13': 'class_suffix_13',
-    'Name of the second participant.2': 'second_participant_13',
-    'Name of the third participant.1': 'third_participant_13',
-    'Name of the fourth participant': 'fourth_participant_13',
+    'Name of the second participant.2': 'participant_2_13',
+    'Name of the third participant.1': 'participant_3_13',
+    'Name of the fourth participant': 'participant_4_13',
     'Repertoire Title.12': 'repertoire_title_13',
     ' Repertoire Duration in minutes.12': 'repertoire_duration_13',
     'Composer.12': 'composer_13',
@@ -339,29 +339,29 @@ class_repertoire_columns = {
          ],
     '10': [
           {
-            'title': 'repertoire_title_10_1',
-            'duration': 'repertoire_duration_10_1',
-            'composer': 'composer_10_1'
+            'title': 'repertoire_title_1_10',
+            'duration': 'repertoire_duration_1_10',
+            'composer': 'composer_1_10'
           },
           {
-            'title': 'repertoire_title_10_2',
-            'duration': 'repertoire_duration_10_2',
-            'composer': 'composer_10_2'
+            'title': 'repertoire_title_2_10',
+            'duration': 'repertoire_duration_2_10',
+            'composer': 'composer_2_10'
           },
           {
-            'title': 'repertoire_title_10_3',
-            'duration': 'repertoire_duration_10_3',
-            'composer': 'composer_10_3'
+            'title': 'repertoire_title_3_10',
+            'duration': 'repertoire_duration_3_10',
+            'composer': 'composer_3_10'
           },
           {
-            'title': 'repertoire_title_10_4',
-            'duration': 'repertoire_duration_10_4',
-            'composer': 'composer_10_4'
+            'title': 'repertoire_title_4_10',
+            'duration': 'repertoire_duration_4_10',
+            'composer': 'composer_4_10'
           },
           {
-            'title': 'repertoire_title_10_5',
-            'duration': 'repertoire_duration_10_5',
-            'composer': 'composer_10_5'
+            'title': 'repertoire_title_5_10',
+            'duration': 'repertoire_duration_5_10',
+            'composer': 'composer_5_10'
           },
          ],
     '11': [

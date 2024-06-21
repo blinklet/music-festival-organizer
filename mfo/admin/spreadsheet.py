@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
 from datetime import datetime
+from itertools import chain
 
 import mfo.admin.spreadsheet_columns
 import mfo.utilities
@@ -334,14 +335,25 @@ def classes(input_df, issues, info):
         )
     )
 
+
     classes = []
     class_column_type = mfo.admin.spreadsheet_columns.class_column_type
     class_repertoire_columns = mfo.admin.spreadsheet_columns.class_repertoire_columns
 
+    #DEBUG
+    from pprint import pprint
+    pprint(input_df.columns)
+
     for index, row in input_df.iterrows():
         for class_num_col, class_suf_col in class_columns:
+
             number = row[class_num_col]
             suffix = row[class_suf_col]
+
+            #DEBUG
+            if index == 119:
+                print(f"DEBUG: {index} {class_num_col} {number}")
+
 
             if pd.notna(number) & pd.isna(suffix):
                 if isinstance(number, (int, float)):
@@ -366,13 +378,22 @@ def classes(input_df, issues, info):
                 pass
 
             if good_number:
-                parts = class_num_col.rsplit('_', 1)
+                parts = class_num_col.rsplit('_')
+
                 if len(parts) > 1:
                     col_num = str(parts[-1]) 
                 else:
                     col_num = str(class_num_col)
                 
                 type = class_column_type[col_num]
+
+                # DEBUG
+                if number == "5263":
+                    print(parts)
+                    print(f"DEBUG: {index} {number} {suffix} {type} {col_num}")
+
+
+
                 repertoire_columns = class_repertoire_columns[col_num]
 
                 test_pieces = []
@@ -411,9 +432,6 @@ def classes(input_df, issues, info):
         type = row['type']
         test_pieces = row['test_pieces']
 
-        # TEST CODE
-        print(f"'{number}','{suffix}'")
-
         stmt = select(FestivalClass).where(
             FestivalClass.number == number,
             FestivalClass.suffix == suffix,
@@ -426,11 +444,11 @@ def classes(input_df, issues, info):
             print_suffix = suffix
         
         if festival_class:
-            info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type}, already exists")
+            info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: '{festival_class.class_type}'--'{type}', already exists")
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
-                    issues.append(f"** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
+                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
                     type = festival_class.class_type
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
@@ -610,6 +628,7 @@ def schools(input_df, issues, info):
                 school.teachers.append(teacher)
                 info.append(f"** Row {index+2}: Added Group Teacher {group_teacher} to School {group_school}")
 
+
 def repertoire(input_df, issues, info):
     title_columns = [
         col for col in input_df.columns if col.startswith('repertoire_title_')
@@ -686,7 +705,7 @@ def repertoire(input_df, issues, info):
         if existing_repertoire:
             info.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
             if existing_repertoire.duration != duration:
-                issues.append(f"   ** Row: {index+2}: Current duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
+                issues.append(f"**** Row: {index+2}: Repertore {title} by {composer} already exists but duration is different. Existing duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
         else:
             new_repertoire = Repertoire(
                 title=title,
@@ -726,8 +745,8 @@ def entries(input_df, issues, info):
             stmt = select(Profile).where(Profile.name == full_name)
             participant = db.session.execute(stmt).scalar_one_or_none()
  
-            # solo entries are numbers 0 to 9
-            for solo_class_index in range(10):
+            # solo and small group entries are numbers 0-9, 11-14
+            for solo_class_index in chain(range(10), range(11, 15)):
                 solo_class_number_col = "class_number_" + str(solo_class_index)
                 class_number = row[solo_class_number_col]
 
@@ -739,6 +758,7 @@ def entries(input_df, issues, info):
                     accompanist_name_col = "accompanist_name_" + str(solo_class_index)
                     accompanist_phone_col = "accompanist_phone_" + str(solo_class_index)
                     accompanist_email_col = "accompanist_email_" + str(solo_class_index)
+                    
                     class_suffix = row[solo_class_suffix_col]
 
                     if pd.notna(class_number) & pd.isna(class_suffix):
@@ -784,7 +804,7 @@ def entries(input_df, issues, info):
                     accompanist_phone = row[accompanist_phone_col]
                     accompanist_email = row[accompanist_email_col]
 
-                    # This is a solo class so all items are entered once
+                    # This is a solo or small group class so all items are entered once
                     new_entry = Entry(
                         festival_class=festival_class,
                         participants=[participant],
@@ -793,7 +813,7 @@ def entries(input_df, issues, info):
                         comments=None
                     )
                     db.session.add(new_entry)
-                    info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{print_suffix}")
+                    info.append(f"** Row {index+2}: Added entry for {full_name} playing '{repertoire_title}' in class {class_number}{print_suffix}")
 
                     if pd.notna(accompanist_name):
                         accompanist_name = str(accompanist_name).strip()
@@ -802,8 +822,43 @@ def entries(input_df, issues, info):
                         new_entry.accompanists.append(accompanist)
                         info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to entry for {full_name} in class {class_number}{print_suffix}")
 
+                    # find participant columns for additional participants in the same class
+                    # prevent '1' matching '11' for example
+                    participant_columns = []
+                    reperoire_columns = []
+                    for col in input_df.columns:
+                        col_number = col.rsplit('_')[-1]
+                        if col.startswith('participant_'):
+                            if len(str(col_number)) == len(str(solo_class_index)):
+                                if str(col_number) == str(solo_class_index):
+                                    if pd.notna(row[col]):
+                                        participant_columns.append(col)
+
+                    if len(participant_columns) > 0:
+                        for participant_col in participant_columns:
+                            participant_name = str(row[participant_col]).strip()
+                            stmt = select(Profile).where(Profile.name == participant_name)
+                            additional_participant = db.session.execute(stmt).scalar_one_or_none()
+                            if additional_participant:
+                                new_entry.participants.append(additional_participant)
+                                issues.append(f"** Row {index+2}: Added additional participant {participant_name} to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
+                            else:
+                                issues.append(f"**** Row {index+2}: Additional participant '{participant_name}' in entry class {class_number}{print_suffix} not found in database. Will add participant to DB. Check that this is not a misspelling")
+                                new_participant = Profile(name=participant_name)
+                                db.session.add(new_participant)
+                                new_entry.participants.append(new_participant)                   
+                    
+                    # The recital class is a special case where the same participant plays multiple repertoire
+                    # so I created a generalization were all repertoire is appended to an empty list
+                    # this works for every class where there is 1 or more repertoire pieces
+
+
+
+
+
                 else:
-                    issues.append(f"**Row {index+2}: No class number in entry. Entry skipped.")
+                    pass
+                    # issues.append(f"**Row {index+2}: No class number in entry. Entry skipped.")
                        
 
                     
