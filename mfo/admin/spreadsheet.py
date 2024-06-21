@@ -197,10 +197,12 @@ def all_profiles(input_df, issues, info):
         if participant.type == "Group participant":
             group_name = str(participant.group_name).strip()
             email = str(participant.email).lower()
+
             stmt = select(Profile).where(
                 Profile.group_name == group_name,
             )
             existing_group = db.session.execute(stmt).scalar_one_or_none()
+
             if not existing_group:
                 if pd.notna(participant.phone):
                     phone = participant.phone
@@ -219,11 +221,35 @@ def all_profiles(input_df, issues, info):
                             phone = phone.strip()
                         else:
                             phone = None
+                
+                if pd.notna(participant.group_address):
+                    address = str(participant.group_address).strip()
+                else:
+                    address = None
+
+                if pd.notna(participant.group_city):
+                    city = str(participant.group_city).strip()
+                else:
+                    city = None
+
+                if pd.notna(participant.group_postal_code):
+                    postal_code = str(participant.group_postal_code).strip()
+                else:
+                    postal_code = None
+
+                if pd.notna(participant.group_province):
+                    province = str(participant.group_province).strip()
+                else:
+                    province = None
 
                 new_group = Profile(
                     group_name=group_name,
                     email=email,
                     phone=phone,
+                    address=address,
+                    city=city,
+                    postal_code=postal_code,
+                    province=province,
                 )
                 db.session.add(new_group)
                 info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
@@ -249,10 +275,34 @@ def all_profiles(input_df, issues, info):
                 else:
                     phone = None
 
+                if pd.notna(participant.address):
+                    address = str(participant.address).strip()
+                else:
+                    address = None
+
+                if pd.notna(participant.city):
+                    city = str(participant.city).strip()
+                else:
+                    city = None
+
+                if pd.notna(participant.postal_code):
+                    postal_code = str(participant.postal_code).strip()
+                else:
+                    postal_code = None
+
+                if pd.notna(participant.province):
+                    province = str(participant.province).strip()
+                else:
+                    province = None
+
                 new_participant = Profile(
                     name=full_name,
                     email=email,
                     phone=phone,
+                    address=address,
+                    city=city,
+                    postal_code=postal_code,
+                    province=province,
                 )
                 db.session.add(new_participant)
                 info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
@@ -274,6 +324,39 @@ def all_profiles(input_df, issues, info):
                     if email:
                         existing_participant.email = email
                         info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added email")
+                if not existing_participant.address:
+                    if pd.notna(participant.address):
+                        address = str(participant.address).strip()
+                    else:
+                        address = None
+                    if address:
+                        existing_participant.address = address
+                        info.append(f"** Row {index +2}: Participant {full_name}: added address")
+                if not existing_participant.city:
+                    if pd.notna(participant.city):
+                        city = str(participant.city).strip()
+                    else:
+                        city = None
+                    if city:
+                        existing_participant.city = city
+                        info.append(f"** Row {index +2}: Participant {full_name}: added city")
+                if not existing_participant.postal_code:
+                    if pd.notna(participant.postal_code):
+                        postal_code = str(participant.postal_code).strip()
+                    else:
+                        postal_code = None
+                    if postal_code:
+                        existing_participant.postal_code = postal_code
+                        info.append(f"** Row {index +2}: Participant {full_name}: added postal code")
+                if not existing_participant.province:
+                    if pd.notna(participant.province):
+                        province = str(participant.province).strip()
+                    else:
+                        province = None
+                    if province:
+                        existing_participant.province = province
+                        info.append(f"** Row {index +2}: Participant {full_name}: added province")
+
         else:
             issues.append(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
 
@@ -324,6 +407,12 @@ def related_profiles(input_df, issues, info):
         else:
             teacher.group.append(group)
             info.append(f"** Row {index +2}: Added Group {group_name} to Teacher {group_teacher_name}")
+
+        if group in teacher.students:
+            info.append(f"**Row {index +2}: Group {group_name} already associated (as a student) with Teacher {group_teacher_name}")
+        else:
+            teacher.students.append(group)
+            info.append(f"** Row {index +2}: Added Group {group_name} (as a student) to Teacher {group_teacher_name}")
 
 def classes(input_df, issues, info):
 
@@ -875,22 +964,6 @@ def entries(input_df, issues, info):
                     )
                     festival_class = db.session.execute(stmt).scalar_one_or_none()
 
-                    # repertoire_title = row[repertoire_title_col]
-                    # repertoire_duration = row[repertoire_duration_col]
-                    # repertoire_composer = row[repertoire_composer_col]
-
-                    # if pd.notna(repertoire_title) and pd.notna(repertoire_composer):
-                    #     repertoire_title = str(repertoire_title).strip()
-                    #     repertoire_composer = str(repertoire_composer).strip()
-                    #     stmt = select(Repertoire).where(
-                    #         Repertoire.title == repertoire_title,
-                    #         Repertoire.composer == repertoire_composer
-                    #     )
-                    #     repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
-                    # else:
-                    #     issues.append(f"**** Row {index+2}: Class {class_number}{print_suffix}: Repertoire composer name is not entered. Entry skipped.")
-                    #     continue
-
                     accompanist_name = row[accompanist_name_col]
                     accompanist_phone = row[accompanist_phone_col]
                     accompanist_email = row[accompanist_email_col]
@@ -976,58 +1049,11 @@ def entries(input_df, issues, info):
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
 
-
-
-                    
-
-
                 else:
                     pass
-                    # issues.append(f"**Row {index+2}: No class number in entry. Entry skipped.")
-                       
-
-                    
-
-
-            # for col in input_df.columns:
-            #     if col.startswith('class_number_'):
-            #         class_number = row[col]
-            #         if pd.notna(class_number):
-            #             parts = col.rsplit('_', 1)
-            #             if len(parts) > 1:
-            #                 col_num = str(parts[-1]) 
-            #             else:
-            #                 col_num = str(col)
-            #             break
-
-
             
         else:
             pass
-            # issues.append(f"**** Row {index+2}: Invalid entry type: '{row.type}'. Row skipped.")
-            # continue
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
