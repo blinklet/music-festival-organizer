@@ -1,5 +1,12 @@
 # mfo/admin/spreadsheet.py
 
+"""
+This needs a major re-write. There is so much duplicate code here.
+The functions are too long and do too much. They need to be broken up
+into smaller functions that do one thing each. This will make the code
+easier to read and maintain.
+"""
+
 import pandas as pd
 import io
 from sqlalchemy import select
@@ -712,7 +719,7 @@ def entries(input_df, issues, info):
     The profile is either a student or a group.
     The class is a festival class.
     The repertoire is a list of pieces.
-    Occasionally, the same student or group may make multiple entries
+    Occasionally, the same student or group may make multiple entries (rows in the spreadsheet)
     We assume these are additional entries, not duplicates. Though they might be attempts
     at corrections or additions to the original entry. We will highlight the second entry 
     as an issue to be verified.
@@ -722,8 +729,101 @@ def entries(input_df, issues, info):
     for index, row in input_df.iterrows():
         # test if this is an individual entry or a group entry
         if row.type.strip() == "Group participant":
-            group_name = row.group_name
+            group_name = str(row.group_name).strip()
 
+            stmt = select(Profile).where(Profile.group_name == group_name)
+            group = db.session.execute(stmt).scalar_one_or_none()
+
+            for group_index in range(15,18):
+                group_class_number_col = "class_number_" + str(group_index)
+                class_number = row[group_class_number_col]
+
+                if pd.notna(class_number):
+                    group_class_suffix_col = "class_suffix_" + str(group_index)
+                    class_suffix = row[group_class_suffix_col]
+                    print_suffix = str(class_suffix).strip()
+
+                    if pd.notna(class_number) & pd.isna(class_suffix):
+                        if isinstance(class_number, (int, float)):
+                            class_number=str(int(class_number)).zfill(4)
+                        else:
+                            class_number=class_number.strip()
+                        class_suffix = None
+                        print_suffix = ""
+                    elif pd.notna(class_number) & pd.notna(class_suffix):
+                        if isinstance(class_number, (int, float)):
+                            class_number=str(int(class_number)).zfill(4)
+                        else:
+                            class_number=class_number.strip()
+                        class_suffix = str(class_suffix).strip()
+                        print_suffix = class_suffix
+                    else:
+                        pass
+
+                    stmt = select(FestivalClass).where(
+                        FestivalClass.number == class_number,
+                        FestivalClass.suffix == class_suffix
+                    )
+                    festival_class = db.session.execute(stmt).scalar_one_or_none()
+
+                    new_entry = Entry(
+                        festival_class=festival_class,
+                        participants=[group],
+                        repertoire=[],
+                        timestamp=datetime.now(),
+                        comments=None
+                    )
+                    db.session.add(new_entry)
+                    info.append(f"** Row {index+2}: Added large group entry for '{group_name}' in class {class_number}{print_suffix}")
+
+                    accompanist_name_col = "accompanist_name_" + str(group_index)
+                    accompanist_phone_col = "accompanist_phone_" + str(group_index)
+                    accompanist_email_col = "accompanist_email_" + str(group_index)
+
+                    accompanist_name = row[accompanist_name_col]
+                    accompanist_phone = row[accompanist_phone_col]
+                    accompanist_email = row[accompanist_email_col]
+
+                    if pd.notna(accompanist_name):
+                        accompanist_name = str(accompanist_name).strip()
+                        stmt = select(Profile).where(Profile.name == accompanist_name)
+                        accompanist = db.session.execute(stmt).scalar_one_or_none()
+                        new_entry.accompanists.append(accompanist)
+                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to large group entry")
+                    
+                    entry_repertoire_columns = repertoire_columns[str(group_index)]
+
+                    for columns in entry_repertoire_columns:
+                        title_col = columns['title']
+                        duration_col = columns['duration']
+                        composer_col = columns['composer']
+
+                        title = row[title_col]
+                        duration = row[duration_col]
+                        composer = row[composer_col]
+
+                        if pd.notna(title) and pd.notna(composer):
+                            title = str(title).strip()
+                            if pd.notna(duration):
+                                duration = int(duration)
+                            else:
+                                duration = None
+                            composer = str(composer).strip()
+
+                            stmt = select(Repertoire).where(
+                                Repertoire.title == title,
+                                Repertoire.composer == composer
+                            )
+
+                            repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
+                            if repertoire_piece:
+                                new_entry.repertoire.append(repertoire_piece)
+                                info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to large group entry for {group_name} in class {class_number}{print_suffix}")
+                            else:
+                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in class {class_number}{print_suffix} in large group entry for {group_name} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
+                                new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
+                                db.session.add(new_repertoire)
+                                new_entry.repertoire.append(new_repertoire)
 
         elif row.type.strip() == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
             if pd.isna(row.first_name):
