@@ -148,8 +148,8 @@ class Profile(db.Model):
         "Entry", secondary=participants_entries, back_populates="participants"
     )
 
-    total_fee: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
-    fees_paid: Mapped[Optional[float]] = mapped_column(nullable=True, default=0.0)
+    total_fee: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
+    fees_paid: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
     comments: Mapped[Optional[str]] = mapped_column(nullable=True)
     national_festival: Mapped[Optional[bool]] = mapped_column(nullable=True, default=False)
 

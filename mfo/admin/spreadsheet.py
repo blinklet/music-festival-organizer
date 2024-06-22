@@ -241,6 +241,12 @@ def all_profiles(input_df, issues, info):
                     province = str(participant.group_province).strip()
                 else:
                     province = None
+                
+                if pd.notna(participant.national_festival):
+                    if participant.national_festival in ["Yes", "yes", "Y", "y"]:
+                        national_festival = True
+                    else:
+                        national_festival = False
 
                 new_group = Profile(
                     group_name=group_name,
@@ -250,6 +256,7 @@ def all_profiles(input_df, issues, info):
                     city=city,
                     postal_code=postal_code,
                     province=province,
+                    national_festival=national_festival,
                 )
                 db.session.add(new_group)
                 info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
@@ -294,6 +301,12 @@ def all_profiles(input_df, issues, info):
                     province = str(participant.province).strip()
                 else:
                     province = None
+                
+                if pd.notna(participant.national_festival):
+                    if participant.national_festival in ["Yes", "yes", "Y", "y"]:
+                        national_festival = True
+                    else:
+                        national_festival = False
 
                 new_participant = Profile(
                     name=full_name,
@@ -303,6 +316,7 @@ def all_profiles(input_df, issues, info):
                     city=city,
                     postal_code=postal_code,
                     province=province,
+                    national_festival=national_festival,
                 )
                 db.session.add(new_participant)
                 info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
@@ -356,6 +370,14 @@ def all_profiles(input_df, issues, info):
                     if province:
                         existing_participant.province = province
                         info.append(f"** Row {index +2}: Participant {full_name}: added province")
+                if pd.notna(participant.national_festival):
+                    if participant.national_festival in ["Yes", "yes", "Y", "y"]:
+                        national_festival = True
+                        info.append(f"** Row {index +2}: Participant {full_name}: set national festival flag to '{national_festival}'")
+                    else:
+                        national_festival = False
+                existing_participant.national_festival = national_festival
+                      
 
         else:
             issues.append(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
@@ -855,12 +877,17 @@ def entries(input_df, issues, info):
                     )
                     festival_class = db.session.execute(stmt).scalar_one_or_none()
 
+                    if pd.notna(row.comments):
+                        comments = row.comments
+                    else:
+                        comments = None
+
                     new_entry = Entry(
                         festival_class=festival_class,
                         participants=[group],
                         repertoire=[],
                         timestamp=datetime.now(),
-                        comments=None
+                        comments=comments,
                     )
                     db.session.add(new_entry)
                     info.append(f"** Row {index+2}: Added large group entry for '{group_name}' in class {class_number}{print_suffix}")
@@ -913,6 +940,30 @@ def entries(input_df, issues, info):
                                 new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
+                                
+            if pd.notna(row.total_fee):
+                total_fee = int(row.total_fee)
+            else:
+                total_fee = None
+                    
+            if pd.notna(row.fee_paid):
+                if row.fee_paid == "Yes":
+                    fees_paid = total_fee
+                else:
+                    fees_paid = 0
+
+            if group.total_fee == 0:
+                group.total_fee = total_fee
+                info.append(f"** Row {index+2}: Total fees for group {group_name} set to {total_fee}")
+            else:
+                issues.append(f"**** Row {index+2}: Duplicate total fees for group {group_name}. Check that this is not a duplicate entry")
+
+            if group.fees_paid == 0:
+                group.fees_paid = fees_paid
+                info.append(f"** Row {index+2}: Fees paid for group {group_name} set to {fees_paid}")
+            else:
+                issues.append(f"**** Row {index+2}: Duplicate fees paid for group {group_name}. Check that this is not a duplicate entry")
+
 
         elif row.type.strip() == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
             if pd.isna(row.first_name):
@@ -968,13 +1019,14 @@ def entries(input_df, issues, info):
                     accompanist_phone = row[accompanist_phone_col]
                     accompanist_email = row[accompanist_email_col]
 
+
                     # This is a solo or small group class so all items are entered once
                     new_entry = Entry(
                         festival_class=festival_class,
                         participants=[participant],
                         repertoire=[],
                         timestamp=datetime.now(),
-                        comments=None
+                        comments=None,
                     )
                     db.session.add(new_entry)
                     info.append(f"** Row {index+2}: Added entry for {full_name} in class {class_number}{print_suffix}")
@@ -1049,9 +1101,29 @@ def entries(input_df, issues, info):
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
 
-                else:
-                    pass
+            if pd.notna(row.total_fee):
+                total_fee = int(row.total_fee)
+            else:
+                total_fee = None
             
+            if pd.notna(row.fee_paid):
+                if row.fee_paid == "Yes":
+                    fees_paid = total_fee
+                else:
+                    fees_paid = 0
+
+            if participant.total_fee == 0:
+                participant.total_fee = total_fee
+                info.append(f"** Row {index+2}: Total fees for {full_name} set to {total_fee}")
+            else:
+                issues.append(f"**** Row {index+2}: Duplicate total fees for {full_name}. Check that this is not a duplicate entry")
+
+            if participant.fees_paid == 0:
+                participant.fees_paid = fees_paid
+                info.append(f"** Row {index+2}: Fees paid for {full_name} set to {fees_paid}")
+            else:
+                issues.append(f"**** Row {index+2}: Duplicate fees paid for {full_name}. Check that this is not a duplicate entry")
+
         else:
             pass
 
