@@ -9,7 +9,7 @@ import pandas as pd
 import os
 
 from mfo.database.base import db
-import mfo.admin.spreadsheet as spreadsheet
+import mfo.admin.services.spreadsheet as spreadsheet
 
 bp = flask.Blueprint(
     'admin',
@@ -19,10 +19,19 @@ bp = flask.Blueprint(
     url_prefix='/admin',
     )
 
-@bp.route('/', methods=['GET', 'POST'])
+
+@bp.get('/')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def index():
+def index_get():
+    form = mfo.admin.forms.UploadForm()
+    return flask.render_template('admin/index.html', form=form)
+
+
+@bp.post('/')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def index_post():
     form = mfo.admin.forms.UploadForm()
     if form.validate_on_submit():
         file = form.file.data
@@ -30,28 +39,14 @@ def index():
 
         if not succeeded:
             flask.flash(message, 'danger')
-            return flask.redirect(flask.url_for('admin.index'))
+            return flask.redirect(flask.url_for('admin.index_get'))
 
         flask.flash(message, 'success')
 
         spreadsheet.convert_to_db(df)
         
-        # df = spreadsheet.names_to_df(df)
-        # issues, info = spreadsheet.gather_issues(df)
-
-        # Store DataFrame in cache
-        # cache_key = os.urandom(24).hex()
-        # flask.session['cache_key'] = cache_key
-        # flask.current_app.cache.set(cache_key, df.to_json())  # Store for 5 minutes
-
-        # return flask.render_template(
-        #     'admin/spreadsheet_issues.html', 
-        #     issues=issues,
-        #     form=mfo.admin.forms.ConfirmForm()
-        # )
         return flask.render_template('admin/index.html', form=form)
-
-    return flask.render_template('admin/index.html', form=form)
+    
 
 @bp.route('/confirm', methods=['POST'])
 @flask_security.auth_required()

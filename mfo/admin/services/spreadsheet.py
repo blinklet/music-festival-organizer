@@ -15,7 +15,7 @@ import flask
 from datetime import datetime
 from itertools import chain
 
-import mfo.admin.spreadsheet_columns
+import mfo.admin.services.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
@@ -37,7 +37,7 @@ def read_sheet(file):
             return df, succeeded, message
 
         # check if the spreadsheet columns are what we expect
-        spreadsheet_columns = list(mfo.admin.spreadsheet_columns.names.keys())
+        spreadsheet_columns = list(mfo.admin.services.spreadsheet_columns.names.keys())
         expected_columns = df.columns.values.tolist()
         for i in range(min(len(spreadsheet_columns), len(expected_columns))):
             if spreadsheet_columns[i] != expected_columns[i]:
@@ -62,7 +62,7 @@ def read_sheet(file):
         return df, succeeded, message
 
 def names_to_df(sheet_data):
-    df = sheet_data.rename(mapper=mfo.admin.spreadsheet_columns.names, axis=1)
+    df = sheet_data.rename(mapper=mfo.admin.services.spreadsheet_columns.names, axis=1)
     return df
 
 def all_profiles(input_df, issues, info):
@@ -455,8 +455,8 @@ def classes(input_df, issues, info):
 
 
     classes = []
-    class_column_type = mfo.admin.spreadsheet_columns.class_column_type
-    class_repertoire_columns = mfo.admin.spreadsheet_columns.class_repertoire_columns
+    class_column_type = mfo.admin.services.spreadsheet_columns.class_column_type
+    class_repertoire_columns = mfo.admin.services.spreadsheet_columns.class_repertoire_columns
 
     #DEBUG
     from pprint import pprint
@@ -835,7 +835,7 @@ def entries(input_df, issues, info):
     at corrections or additions to the original entry. We will highlight the second entry 
     as an issue to be verified.
     """
-    repertoire_columns = mfo.admin.spreadsheet_columns.class_repertoire_columns
+    repertoire_columns = mfo.admin.services.spreadsheet_columns.class_repertoire_columns
 
     for index, row in input_df.iterrows():
         # test if this is an individual entry or a group entry

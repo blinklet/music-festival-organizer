@@ -7,7 +7,7 @@
         <div class="collapse navbar-collapse" id="navbarCollapsed">
             <div class="navbar-nav me-auto text-light">
                 {% if "Admin" in current_user.roles %}
-                    <a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a>
+                    <a class="nav-link" href="{{ url_for('admin.index_get') }}">Admin</a>
                 {% endif %}
             </div>
             <div class="navbar-nav ms-auto">

@@ -1,5 +1,5 @@
 import pandas as pd
-import mfo.admin.spreadsheet_columns as sc
+import mfo.admin.services.spreadsheet_columns as sc
 
 #responses = '/home/brian/Projects/Music Festival Program/Music Festival Reference Material/Spreadsheets and Reports/QCMF Online Entry Form (Responses).ods'
 responses = '/home/brian/Projects/Music Festival Program/Music Festival Reference Material/Spreadsheets and Reports/test.ods'
