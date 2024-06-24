@@ -7,6 +7,7 @@ from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import pandas as pd
 import os
+import json
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
@@ -43,36 +44,43 @@ def index_post():
 
         flask.flash(message, 'success')
 
-        spreadsheet.convert_to_db(df)
+        df = spreadsheet.names_to_df(df)
+        issues, info = spreadsheet.gather_issues(df)
+        db.session.rollback()
+
+        flask.session['dataframe'] = df.to_json()
+        flask.session['issues'] = json.dumps(issues)
         
-        return flask.render_template('admin/index.html', form=form)
+        return flask.redirect(flask.url_for('admin.confirm_get'))
     
 
-@bp.route('/confirm', methods=['POST'])
+@bp.get('/confirm')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def confirm():
+def confirm_get():
+    form = mfo.admin.forms.ConfirmForm()
+    issues_json = flask.session.get('issues')
+    issues = json.loads(issues_json)
+    return flask.render_template('admin/spreadsheet_issues.html', issues=issues, form=form)
+
+
+@bp.post('/confirm')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def confirm_post():
     form = mfo.admin.forms.ConfirmForm()
     if form.validate_on_submit():
         if form.confirm.data:
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-                flask.flash("Commit failed due to integrity error.", 'danger')
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                flask.flash(f"Commit failed due to error: {e}", 'danger')
-            else:
-                flask.flash("Changes committed to the database.", 'success')
+            df = pd.read_json(flask.session.get('dataframe'))
+            issues, info = spreadsheet.gather_issues(df)
+            spreadsheet.commit_to_db()
 
         elif form.cancel.data:
-            db.session.rollback()  # Roll back any uncommitted changes
             flask.flash("Changes were not committed to the database.", 'warning')
         else:
             flask.flash("Changes were not committed to the database.", 'danger')
     
-    return flask.redirect(flask.url_for('admin.index'))
+    return flask.redirect(flask.url_for('admin.index_get'))
 
 
 @bp.errorhandler(Forbidden)

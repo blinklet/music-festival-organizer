@@ -1155,16 +1155,8 @@ def gather_issues(input_df):
 
 
 
-def convert_to_db(sheet_data):
-    df = names_to_df(sheet_data)
-    issues, info = gather_issues(df)
-
-    print("\n\n\nISSUES:")
-    for issue in issues:
-        print(issue)
-
-    # user_response = input("Do you want to commit these changes to the database? (yes/no): ")
-    # if user_response.lower() == 'yes':
+def commit_to_db():
+    
     try:
         db.session.commit()
         print("Changes committed to the database.")
@@ -1174,6 +1166,4 @@ def convert_to_db(sheet_data):
     except SQLAlchemyError as e:
         db.session.rollback()
         print(f"Commit failed due to error: {e}")
-    # else:
-    #     db.session.rollback()
-    #     print("Changes were not committed to the database.")
+

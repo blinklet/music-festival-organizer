@@ -167,3 +167,6 @@ cython_debug/
 # Libreoffice Calc files
 *.ods
 *.ods*
+
+# Flask-Session
+session/
