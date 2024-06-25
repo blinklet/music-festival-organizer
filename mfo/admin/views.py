@@ -46,12 +46,17 @@ def index_post():
 
         df = spreadsheet.names_to_df(df)
         issues, info = spreadsheet.gather_issues(df)
-        db.session.rollback()
-
-        flask.session['dataframe'] = df.to_json()
-        flask.session['issues'] = json.dumps(issues)
         
-        return flask.redirect(flask.url_for('admin.confirm_get'))
+
+        if issues:
+            flask.session['dataframe'] = df.to_json()
+            flask.session['issues'] = json.dumps(issues)
+            db.session.rollback()
+            return flask.redirect(flask.url_for('admin.confirm_get'))
+        else:
+            spreadsheet.commit_to_db()
+            flask.flash("Data was successfully committed to the database.", 'success')
+            return flask.redirect(flask.url_for('admin.index_get'))
     
 
 @bp.get('/confirm')
@@ -61,6 +66,7 @@ def confirm_get():
     form = mfo.admin.forms.ConfirmForm()
     issues_json = flask.session.get('issues')
     issues = json.loads(issues_json)
+    flask.session.pop('issues', None)
     return flask.render_template('admin/spreadsheet_issues.html', issues=issues, form=form)
 
 
@@ -72,6 +78,7 @@ def confirm_post():
     if form.validate_on_submit():
         if form.confirm.data:
             df = pd.read_json(flask.session.get('dataframe'))
+            flask.session.pop('dataframe', None)
             issues, info = spreadsheet.gather_issues(df)
             spreadsheet.commit_to_db()
 
