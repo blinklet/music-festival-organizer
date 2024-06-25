@@ -2,6 +2,7 @@
 
 import os
 import dotenv
+from cachelib import SimpleCache
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(app_dir)
@@ -39,9 +40,15 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 # See: https://docs.sqlalchemy.org/en/20/core/pooling.html#disconnect-handling-pessimistic
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}  
 
-# Flask-Caching variables
-CACHE_TYPE = "SimpleCache"  # Change to redis or something better
-CACHE_DEFAULT_TIMEOUT = 300  # Caches last 5 minutes
+# Flask-Session variables
+SESSION_TYPE = 'filesystem'
+SESSION_FILE_DIR = os.path.join(project_dir, 'session')
+SESSION_FILE_THRESHOLD = 50
+SESSION_PERMANENT = False
+SESSION_USE_SIGNER = True
+#SESSION_SERIALIZATION_FORMAT = 'json'
+
+
 
 # Roles defined
 # Roles (name, description, set of permissions)

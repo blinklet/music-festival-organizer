@@ -1,13 +1,9 @@
 <!-- admin/templates/admin/spreadsheet_issues.html -->
 
-{% extends "base.html" %}
+{% extends "/admin/_admin_base.html" %}
 
-{% block content %}
-    {% include "flash.html" %}
-    <div class="jumbotron text-center pt-4 pb-3 bg-light">
-        <h1>Music Festival Organizer Admin Portal</h1>
-        <p>Manage participants and events efficiently.</p>
-    </div>
+{% block admin_content %}
+    
     <div class="container pt-4 pb-10">
     <h3>Review Issues</h3>
 
@@ -37,9 +33,8 @@
 
     <div class="row justify-content-center pt-3 mb-4">
         <div class="col-auto">
-    <form method="post" action="{{ url_for('admin.confirm') }}">
+    <form method="post" action="{{ url_for('admin.confirm_post') }}">
         {{ form.hidden_tag() }}
-        {{ form.cache_key }}
         {{ form.confirm(class="btn btn-primary btn-md") }}
         {{ form.cancel(class="btn btn-secondary btn-md") }}
     </form>

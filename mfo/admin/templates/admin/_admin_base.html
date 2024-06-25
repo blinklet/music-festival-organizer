@@ -1,0 +1,22 @@
+<!-- admin/templates/admin/_admin_base.html -->
+
+{% extends "base.html" %}
+{% block title %}Admin page{% endblock %}
+
+{% block content %}
+
+    <div class="jumbotron text-center pt-4 pb-3 bg-light">
+        <h1>Music Festival Organizer Admin Portal</h1>
+        <p>Manage participants and events efficiently.</p>
+    </div>
+
+    {% include "flash.html" %}
+    {% block admin_content %}{% endblock %}
+
+{% endblock %}
+
+
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}" >
+{% endblock %}

@@ -1,15 +1,10 @@
 <!-- admin/templates/admin/index.html -->
 
-{% extends "base.html" %}
-{% block title %}User Information{% endblock %}
+{% extends "/admin/_admin_base.html" %}
+{% block title %}Spreadsheet upload{% endblock %}
 
-{% block content %}
-    {% include "flash.html" %}
+{% block admin_content %}
 
-    <div class="jumbotron text-center pt-4 pb-3 bg-light">
-        <h1>Music Festival Organizer Admin Portal</h1>
-        <p>Manage participants and events efficiently.</p>
-    </div>
     <div class="container pt-4">
         <h3>Upload Spreadsheet</h1>
         <form method="POST" enctype="multipart/form-data">
@@ -23,8 +18,4 @@
         </form>
     </div>
 
-{% endblock %}
-
-{% block additional_css %}
-    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}" >
 {% endblock %}
