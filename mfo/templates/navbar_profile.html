@@ -1,0 +1,11 @@
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">Account</a>
+    <div class="dropdown-menu">
+        <div class="dropdown-item">
+            <a class="nav-link" href="{{ url_for('account.index') }}">Profile</a>
+        </div>
+        <div class="dropdown-item">
+            <a class="nav-link" href="{{ url_for_security('logout') }}">Logout</a>
+        </div>
+    </div>
+</div>
