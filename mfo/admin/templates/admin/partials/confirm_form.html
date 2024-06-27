@@ -1,0 +1,10 @@
+<div class="row justify-content-center pt-3 mb-4">
+    <div class="col-auto">
+        <form method="post" action="{{ url_for('admin.confirm_post') }}">
+            {{ form.hidden_tag() }}
+            {{ form.confirm(class="btn btn-primary btn-md") }}
+            {{ form.cancel(class="btn btn-secondary btn-md") }}
+        </form>
+    </div>
+</div>
+

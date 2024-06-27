@@ -21,6 +21,14 @@ bp = flask.Blueprint(
     )
 
 
+@bp.get('/upload_fail')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def upload_fail_get():
+    form = mfo.admin.forms.UploadForm()
+    return flask.render_template('admin/index.html', form=form)
+
+
 @bp.get('/')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -40,8 +48,14 @@ def index_post():
 
         if not succeeded:
             flask.flash(message, 'danger')
-            return flask.redirect(flask.url_for('admin.index_get'))
-
+            # Get out of the innerHTML so that the redirect works
+            # https://htmx.org/docs/#redirect
+            # (This is different than the confirm_post() function because the form in the 
+            # confirm_form.html template is not submitted with htmx; it is a normal POST request)
+            response = flask.jsonify("")
+            response.headers['HX-Redirect'] = flask.url_for('admin.upload_fail_get')
+            return response
+        
         flask.flash(message, 'success')
 
         df = spreadsheet.names_to_df(df)
@@ -52,22 +66,28 @@ def index_post():
             flask.session['dataframe'] = df.to_json()
             flask.session['issues'] = json.dumps(issues)
             db.session.rollback()
-            return flask.redirect(flask.url_for('admin.confirm_get'))
-        else:
-            spreadsheet.commit_to_db()
-            flask.flash("Data was successfully committed to the database.", 'success')
-            return flask.redirect(flask.url_for('admin.index_get'))
-    
+        
+        return flask.redirect(flask.url_for('admin.confirm_get'))
 
+    
 @bp.get('/confirm')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def confirm_get():
     form = mfo.admin.forms.ConfirmForm()
-    issues_json = flask.session.get('issues')
-    issues = json.loads(issues_json)
-    flask.session.pop('issues', None)
-    return flask.render_template('admin/spreadsheet_issues.html', issues=issues, form=form)
+    issues_json = flask.session.get('issues', None)
+    if issues_json:
+        issues = json.loads(issues_json)
+        flask.flash("Issues found. Review issues", 'warning')
+        return flask.render_template('admin/partials/list_issues.html', issues=issues, form=form)
+    else:
+        flask.flash("No issues found. Click Confirm to add spreadsheet data to MFO", 'success')
+        issues = []
+        return flask.render_template('admin/partials/list_issues.html', issues=issues, form=form)
+    # Note that the form in the confirm_form.html template included in the 
+    # partials/list_issues.html template is not submitted with htmx; it is a normal POST request
+    # so when the form is submitted, the confirm_post() function is called with a normal POST request
+    # so the redirect reloads the entire page.
 
 
 @bp.post('/confirm')
@@ -76,18 +96,20 @@ def confirm_get():
 def confirm_post():
     form = mfo.admin.forms.ConfirmForm()
     if form.validate_on_submit():
+        flask.session.pop('issues', None)
         if form.confirm.data:
             df = pd.read_json(flask.session.get('dataframe'))
             flask.session.pop('dataframe', None)
             issues, info = spreadsheet.gather_issues(df)
             spreadsheet.commit_to_db()
-
+            flask.flash("Changes were committed to the database.", 'success')
+            return flask.redirect(flask.url_for('admin.index_get'))
         elif form.cancel.data:
-            flask.flash("Changes were not committed to the database.", 'warning')
+            flask.flash("Upload cancelled by user. Database unchanged.", 'warning')
         else:
-            flask.flash("Changes were not committed to the database.", 'danger')
+            flask.flash("Unexpected error! Changes were not committed to the database.", 'danger')
     
-    return flask.redirect(flask.url_for('admin.index_get'))
+    return flask.redirect(flask.url_for('admin.upload_fail_get'))
 
 
 @bp.errorhandler(Forbidden)

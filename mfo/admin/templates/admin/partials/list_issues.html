@@ -1,0 +1,35 @@
+<div class="container pt-4 pb-10">
+    <!-- {% include "flash.html" %} -->
+    
+    <h3>Review Issues</h3>
+
+    {% if issues %}
+
+    <p class="pb-3">Review the issues list, below, and resolve issues in the spreadsheet data. 
+    Then, click <i>Cancel</i> to upload the new spreadsheet.</p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Issue</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for issue in issues %}
+                <tr> 
+                    <td>{{ issue }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-success" role="alert">
+        No issues found. Ready to commit.
+    </div>
+    {% endif %}
+
+    {% include "admin/partials/confirm_form.html" %}
+    
+</div>

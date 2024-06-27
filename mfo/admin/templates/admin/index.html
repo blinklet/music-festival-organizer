@@ -5,9 +5,12 @@
 
 {% block admin_content %}
 
-    <div class="container pt-4">
-        <h3>Upload Spreadsheet</h1>
-        <form method="POST" enctype="multipart/form-data">
+{% include "flash.html" %}
+
+<div class="container pt-4">
+    <div id="file-form">
+        <h3>Upload Spreadsheet</h3>
+        <form hx-post="{{ url_for('admin.index_post') }}" hx-swap="innerHTML" hx-target="#file-form" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <div class="mb-3">
                 {{ form.file(class="form-control") }}
@@ -17,5 +20,6 @@
             </div>
         </form>
     </div>
+</div>
 
 {% endblock %}
