@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import pandas as pd
 import os
 import json
+import io
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
@@ -110,6 +111,71 @@ def confirm_post():
             flask.flash("Unexpected error! Changes were not committed to the database.", 'danger')
     
     return flask.redirect(flask.url_for('admin.upload_fail_get'))
+
+
+# @bp.post('/download_issues')
+# @flask_security.auth_required()
+# @flask_security.roles_required('Admin')
+# def download_issues():
+#     file_name = flask.request.form.get('filename', 'issues.txt')
+#     issues_json = flask.session.get('issues', None)
+#     issues = json.loads(issues_json)
+#     output = io.BytesIO()
+#     for issue in issues:
+#         output.write((issue + "\n").encode('utf-8'))
+  
+#     # Set the cursor to the beginning of the file
+#     output.seek(0)
+    
+#     # Create a response with the file
+#     response = flask.make_response(
+#         flask.send_file(
+#             output, 
+#             mimetype='text/plain', 
+#             as_attachment=True, 
+#             download_name=file_name)
+#         )
+#     return response
+
+@bp.post('/generate_text_file')
+def generate_text_file():
+    # Get the file name from the form data
+    file_name = flask.request.form.get('filename', 'issues.txt')  # Default to 'issues.txt' if not provided
+    print("##############", file_name)
+
+    # Create an in-memory binary file
+    output = io.BytesIO()
+    
+    # Example issues list, typically this would be dynamic
+    issues_json = flask.session.get('issues', None)
+    issues = json.loads(issues_json)
+
+    # Write each issue to the output, appending a newline to each one
+    for issue in issues:
+        output.write((issue + "\n").encode('utf-8'))
+    
+    # Set the cursor to the beginning of the file
+    output.seek(0)
+    
+    # Save the file content and file name in the session
+    flask.session['file_content'] = output.getvalue()
+    flask.session['file_name'] = file_name
+
+    # Return a JSON response with the download URL
+    return flask.jsonify({'redirect': flask.url_for('admin.download_file')})
+
+@bp.route('/download_file')
+def download_file():
+    # Retrieve file content and file name from session
+    file_content = flask.session.get('file_content', None)
+    file_name = flask.session.get('file_name', 'issues.txt')
+
+    if not file_content:
+        return '<p class="error">No file to download</p>'
+
+    output = io.BytesIO(file_content)
+    output.seek(0)
+    return flask.send_file(output, mimetype='text/plain', as_attachment=True, download_name=file_name)
 
 
 @bp.errorhandler(Forbidden)

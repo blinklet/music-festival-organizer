@@ -1,12 +1,26 @@
 <div class="container pt-4 pb-10">
     <!-- {% include "flash.html" %} -->
     
-    <h3>Review Issues</h3>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h3>Review Issues</h3>
+            </div>
+        </div>
+    </div>
 
     {% if issues %}
 
-    <p class="pb-3">Review the issues list, below, and resolve issues in the spreadsheet data. 
-    Then, click <i>Cancel</i> to upload the new spreadsheet.</p>
+    <div class="container">
+        <div class="row pb-3">
+            <div class="col-sm-9 pb-3 pb-md-0 align-middle"> 
+                Review the issues list, below, and resolve issues in the spreadsheet data. 
+                Scroll to the end and click <i>Cancel</i> to discard the uploaded changes.
+            </div>
+            <div class="col-sm-3 text-center text-md-end align-middle">
+                <button type="button" class="btn btn-primary pt-2" data-bs-toggle="modal" data-bs-target="#filenameModal">Save Issues List</button>
+        </div>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
@@ -33,3 +47,43 @@
     {% include "admin/partials/confirm_form.html" %}
     
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="filenameModal" tabindex="-1" aria-labelledby="filenameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filenameModalLabel">Enter Filename</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form hx-post="{{ url_for('admin.generate_text_file') }}" hx-swap="none" hx-trigger="submit" id="filenameForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="filename">Filename</label>
+                        <input type="text" class="form-control" id="filename" name="filename" placeholder="issues.txt" value="issues.txt">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Needed for file download.
+This script checks the response for a redirect URL and navigates to it, triggering the file download. -->
+{% block additional_js %}
+<script>
+    document.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.xhr && event.detail.xhr.response) {
+            var response = JSON.parse(event.detail.xhr.response);
+            if (response.redirect) {
+                window.location.href = response.redirect;
+            }
+        }
+    });
+</script>
+{% endblock %}
