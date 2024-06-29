@@ -2,13 +2,21 @@
 
 Music Festival Organizer for competitive music festivals
 
-## Status
+## Install
 
-March 14, 2024: Just getting started. Investigating requirements
+```
+git clone https://github.com/blinklet/music-festival-organizer.git
+cd music-festival-organizer
+python3 -m venv .venv
+source ./venv/bin/activate
+pip install -r requirements.txt
+```
 
-April 7, 2024: Learning more about structuring a program with Flask blueprints
+## Run
 
-April 11, 2024: Added Flask-Security-Too (just basics)
-
-April 11,2024: Customized security templates and navbar
+```
+flask --app mfo.app database create
+flask --app mfo.app database test_users
+flask --app mfo.app run
+```
 
