@@ -19,6 +19,7 @@ import mfo.admin.services.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
+from mfo.database.users import User, Role
 
 def read_sheet(file):
     
@@ -77,8 +78,22 @@ def all_profiles(input_df, issues, info):
 
         if existing_teacher:
             info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already exists")
+            # check if profile has a role == 'Teacher"
+
+            if "Teacher" in [role.name for role in existing_teacher.roles]:
+                info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already has role 'Teacher'")
+            else:
+                info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} does not have role 'Teacher'")
+                # add role 'Teacher' to profile
+                stmt = select(Role).where(Role.name == "Teacher")
+                teacher_role = db.session.execute(stmt).scalar_one_or_none()
+                existing_teacher.roles.append(teacher_role)
+                info.append(f"** Row {index + 2}: Added role 'Teacher' to profile for {teacher_name}")
         else:
             teacher_profile = Profile(name=teacher_name)
+            stmt = select(Role).where(Role.name == "Teacher")
+            teacher_role = db.session.execute(stmt).scalar_one_or_none()
+            teacher_profile.roles.append(teacher_role)
             db.session.add(teacher_profile)
             info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} added")
 
@@ -92,8 +107,21 @@ def all_profiles(input_df, issues, info):
 
         if existing_teacher:
             info.append(f"** Row {index + 2}: Group teacher profile for {group_teacher_name} already exists")
+
+            if "Teacher" in [role.name for role in existing_teacher.roles]:
+                info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} already has role 'Teacher'")
+            else:
+                info.append(f"** Row {index + 2}: Teacher profile for {teacher_name} does not have role 'Teacher'")
+                # add role 'Teacher' to profile
+                stmt = select(Role).where(Role.name == "Teacher")
+                teacher_role = db.session.execute(stmt).scalar_one_or_none()
+                existing_teacher.roles.append(teacher_role)
+                info.append(f"** Row {index + 2}: Added role 'Teacher' to profile for {teacher_name}")
         else:
             teacher_profile = Profile(name=str(group_teacher_name))
+            stmt = select(Role).where(Role.name == "Teacher")
+            teacher_role = db.session.execute(stmt).scalar_one_or_none()
+            teacher_profile.roles.append(teacher_role)
             db.session.add(teacher_profile)
             info.append(f"** Row {index + 2}: Group Teacher {group_teacher_name}: added new record")
 
@@ -184,12 +212,24 @@ def all_profiles(input_df, issues, info):
                     f"** Row {index +2}: Accompanist {name}: "
                     f"add email to existing record"
                 )
+            if "Accompanist" in [role.name for role in existing_accompanist.roles]:
+                info.append(f"** Row {index + 2}: Accompanist profile for {name} already has role 'Accompanist'")
+            else:
+                info.append(f"** Row {index + 2}: Accompanist profile for {name} does not have role 'Accompanist'")
+                # add role 'Accompanist' to profile
+                stmt = select(Role).where(Role.name == "Accompanist")
+                accompanist_role = db.session.execute(stmt).scalar_one_or_none()
+                existing_accompanist.roles.append(accompanist_role)
+                info.append(f"** Row {index + 2}: Added role 'Accompanist' to profile for {name}")
         else:
             new_accompanist = Profile(
                 name=name, 
                 phone=phone,
                 email=email,
             )
+            stmt = select(Role).where(Role.name == "Accompanist")
+            accompanist_role = db.session.execute(stmt).scalar_one_or_none()
+            new_accompanist.roles.append(accompanist_role)
             db.session.add(new_accompanist)
             info.append(f"** Row {index +2}: Added accompanist '{name}', phone: '{phone}', email: '{email}'")
 

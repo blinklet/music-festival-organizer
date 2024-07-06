@@ -89,6 +89,11 @@ ROLES  = {
         'description': 'Music teachers',
         'permissions': { 'user' }
     },
+    'ADJUDICATOR': {
+        'name': 'Adjudicator',
+        'description': 'Festival adjudicator',
+        'permissions': { 'user' }
+    },
 }
 
 TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
