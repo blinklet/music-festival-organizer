@@ -298,11 +298,25 @@ def all_profiles(input_df, issues, info):
                     province=province,
                     national_festival=national_festival,
                 )
+                
+                stmt = select(Role).where(Role.name == "Group")
+                role = db.session.execute(stmt).scalar_one_or_none()
+                new_group.roles.append(role)
+
                 db.session.add(new_group)
                 info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: added new record")
 
             else:
                 info.append(f"** Row {index +2}: Group {group_name} {phone} {email}: already exists")
+
+                if "Group" in [role.name for role in existing_group.roles]:
+                    info.append(f"** Row {index + 2}: Participant profile for {group_name} already has role 'Group'")
+                else:
+                    stmt = select(Role).where(Role.name == "Group")
+                    role = db.session.execute(stmt).scalar_one_or_none()
+                    existing_group.roles.append(role)
+                    info.append(f"** Row {index + 2}: Added role 'Participant' to profile for {group_name}")
+
 
         elif participant.type == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
             if pd.isna(participant.first_name):
@@ -358,6 +372,11 @@ def all_profiles(input_df, issues, info):
                     province=province,
                     national_festival=national_festival,
                 )
+
+                stmt = select(Role).where(Role.name == "Participant")
+                role = db.session.execute(stmt).scalar_one_or_none()
+                new_participant.roles.append(role)
+
                 db.session.add(new_participant)
                 info.append(f"** Row {index +2}: Participant {full_name} {phone} {email}: added new record")
             else:
@@ -417,8 +436,17 @@ def all_profiles(input_df, issues, info):
                     else:
                         national_festival = False
                 existing_participant.national_festival = national_festival
-                      
 
+                if "Participant" in [role.name for role in existing_participant.roles]:
+                    info.append(f"** Row {index + 2}: Participant profile for {full_name} already has role 'Participant'")
+                else:
+                    info.append(f"** Row {index + 2}: Participant profile for {full_name} does not have role 'Participant'")
+                    # add role 'Teacher' to profile
+                    stmt = select(Role).where(Role.name == "Participant")
+                    role = db.session.execute(stmt).scalar_one_or_none()
+                    existing_participant.roles.append(role)
+                    info.append(f"** Row {index + 2}: Added role 'Participant' to profile for {full_name}")
+            
         else:
             issues.append(f"Spreadsheet error: Row {index +2}: invalid entry in 'group or individual' column: '{participant.type}'")
 

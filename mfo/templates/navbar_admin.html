@@ -1,46 +1,16 @@
 
 <div class="dropdown">
-    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Admin
-    </a>
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Admin</a>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{{ url_for('admin.index_get') }}">Upload Spreadsheet</a></li>
-        <li>
-            <a class="dropdown-item dropdown-toggle" href="#">Reports</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ url_for('admin.teachers_get') }}">Teachers</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('admin.accompanists_get') }}">Accompanists</a></li>
-            </ul>
-        </li>
     </ul>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-        document.querySelectorAll('.dropdown-menu a.dropdown-toggle').forEach(function(element) {
-            element.addEventListener('click', function (e) {
-                let nextEl = element.nextElementSibling;
-                if(nextEl && nextEl.classList.contains('dropdown-menu')) {
-                    e.stopPropagation(); // Prevent the click from being propagated to the parent dropdown
-                    e.preventDefault();
-                    if(nextEl.classList.contains('show')){
-                        nextEl.classList.remove('show');
-                        nextEl.style.display = 'none';
-                    } else {
-                        // Close all open nested dropdowns before opening the new one
-                        closeAllNestedDropdowns();
-                        nextEl.classList.add('show');
-                        nextEl.style.display = 'block';
-                    }
-                }
-            });
-        });
-    
-        function closeAllNestedDropdowns() {
-            document.querySelectorAll('.dropdown-menu .dropdown-menu.show').forEach(function(menu) {
-                menu.classList.remove('show');
-                menu.style.display = 'none';
-            });
-        }
-    });
-    </script>
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Reports</a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ url_for('admin.teachers_get') }}">Teachers</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.accompanists_get') }}">Accompanists</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.participants_get') }}">Individual Participants</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.groups_get') }}">Group Participants</a></li>
+    </ul>
+</div>

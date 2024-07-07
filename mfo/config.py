@@ -64,6 +64,11 @@ ROLES  = {
         'description': 'Normal user',
         'permissions': { 'user' }
     },
+        'GROUP': {
+        'name': 'Group',
+        'description': 'Normal user',
+        'permissions': { 'user' }
+    },
     'ADMIN': {
         'name': 'Admin',
         'description': 'Administrator',

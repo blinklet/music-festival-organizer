@@ -180,7 +180,7 @@ def teachers_get():
     teachers = result.scalars().all()
 
     # Render the teachers template with the teachers data
-    return flask.render_template('admin/teachers.html', teachers=teachers)
+    return flask.render_template('admin/profile_report.html', report_name='Teachers', profiles=teachers)
 
 
 @bp.get('/accompanists')
@@ -195,4 +195,22 @@ def accompanists_get():
     accompanists = result.scalars().all()
 
     # Render the teachers template with the teachers data
-    return flask.render_template('admin/accompanists.html', accompanists=accompanists)
+    return flask.render_template('admin/profile_report.html', report_name='Accompanists', profiles=accompanists)
+
+@bp.get('/participants')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def participants_get():
+    stmt = select(Profile).where(Profile.roles.any(name='Participant'))
+    result = db.session.execute(stmt)
+    participants = result.scalars().all()
+    return flask.render_template('admin/profile_report.html', report_name='Participants', profiles=participants)
+
+@bp.get('/groups')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def groups_get():
+    stmt = select(Profile).where(Profile.roles.any(name='Group'))
+    result = db.session.execute(stmt)
+    groups = result.scalars().all()
+    return flask.render_template('admin/profile_report.html', report_name='Groups', profiles=groups)

@@ -1,0 +1,39 @@
+<!-- admin/templates/admin/profile_report.html -->
+
+{% extends "/admin/_admin_base.html" %}
+{% block title %}{{ report_name }}{% endblock %}
+
+{% block admin_content %}
+
+<div class="container pt-4">
+    <h3>{{ report_name }}</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Postal Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile in profiles %}
+            <tr>
+                {% if profile.name %}
+                <td>{{ profile.name }}</td>
+                {% else %}
+                <td>{{ profile.group_name }}</td>
+                {% endif %}
+                <td>{{ profile.email }}</td>
+                <td>{{ profile.phone }}</td>
+                <td>{{ profile.address }}</td>
+                <td>{{ profile.city }}</td>
+                <td>{{ profile.postal_code }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
