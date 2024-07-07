@@ -1,2 +1,16 @@
-<a class="nav-link" href="{{ url_for('admin.index_get') }}">Admin</a>
-<a class="nav-link" href="{{ url_for('admin.index_get') }}">Admin</a>
+
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Admin</a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ url_for('admin.index_get') }}">Upload Spreadsheet</a></li>
+    </ul>
+</div>
+<div class="dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Reports</a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ url_for('admin.teachers_get') }}">Teachers</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.accompanists_get') }}">Accompanists</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.participants_get') }}">Individual Participants</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.groups_get') }}">Group Participants</a></li>
+    </ul>
+</div>

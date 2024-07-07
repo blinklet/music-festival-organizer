@@ -64,6 +64,11 @@ ROLES  = {
         'description': 'Normal user',
         'permissions': { 'user' }
     },
+        'GROUP': {
+        'name': 'Group',
+        'description': 'Normal user',
+        'permissions': { 'user' }
+    },
     'ADMIN': {
         'name': 'Admin',
         'description': 'Administrator',
@@ -87,6 +92,11 @@ ROLES  = {
     'TEACHER': {
         'name': 'Teacher',
         'description': 'Music teachers',
+        'permissions': { 'user' }
+    },
+    'ADJUDICATOR': {
+        'name': 'Adjudicator',
+        'description': 'Festival adjudicator',
         'permissions': { 'user' }
     },
 }

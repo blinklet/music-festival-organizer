@@ -5,6 +5,7 @@ import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import select
 import pandas as pd
 import os
 import json
@@ -12,6 +13,7 @@ import io
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
+from mfo.database.models import Profile
 
 bp = flask.Blueprint(
     'admin',
@@ -113,35 +115,12 @@ def confirm_post():
     return flask.redirect(flask.url_for('admin.upload_fail_get'))
 
 
-# @bp.post('/download_issues')
-# @flask_security.auth_required()
-# @flask_security.roles_required('Admin')
-# def download_issues():
-#     file_name = flask.request.form.get('filename', 'issues.txt')
-#     issues_json = flask.session.get('issues', None)
-#     issues = json.loads(issues_json)
-#     output = io.BytesIO()
-#     for issue in issues:
-#         output.write((issue + "\n").encode('utf-8'))
-  
-#     # Set the cursor to the beginning of the file
-#     output.seek(0)
-    
-#     # Create a response with the file
-#     response = flask.make_response(
-#         flask.send_file(
-#             output, 
-#             mimetype='text/plain', 
-#             as_attachment=True, 
-#             download_name=file_name)
-#         )
-#     return response
-
 @bp.post('/generate_text_file')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
 def generate_text_file():
     # Get the file name from the form data
     file_name = flask.request.form.get('filename', 'issues.txt')  # Default to 'issues.txt' if not provided
-    print("##############", file_name)
 
     # Create an in-memory binary file
     output = io.BytesIO()
@@ -165,6 +144,8 @@ def generate_text_file():
     return flask.jsonify({'redirect': flask.url_for('admin.download_file')})
 
 @bp.route('/download_file')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
 def download_file():
     # Retrieve file content and file name from session
     file_content = flask.session.get('file_content', None)
@@ -181,3 +162,55 @@ def download_file():
 @bp.errorhandler(Forbidden)
 def handle_forbidden(e):
     return flask.render_template('forbidden.html', role="Admin")
+
+
+@bp.get('/teachers')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def teachers_get():
+    """
+    Get teachers data from database and display it in a bootstrap-styled table
+    """
+    # Get teachers data from database
+    #if "Teacher" in [role.name for role in existing_teacher.roles]:
+
+    # Get all teachers from the database. Select rows where role = teacher
+    stmt = select(Profile).where(Profile.roles.any(name='Teacher'))
+    result = db.session.execute(stmt)
+    teachers = result.scalars().all()
+
+    # Render the teachers template with the teachers data
+    return flask.render_template('admin/profile_report.html', report_name='Teachers', profiles=teachers)
+
+
+@bp.get('/accompanists')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def accompanists_get():
+    """
+    Get accompanists data from database and display it in a bootstrap-styled table
+    """
+    stmt = select(Profile).where(Profile.roles.any(name='Accompanist'))
+    result = db.session.execute(stmt)
+    accompanists = result.scalars().all()
+
+    # Render the teachers template with the teachers data
+    return flask.render_template('admin/profile_report.html', report_name='Accompanists', profiles=accompanists)
+
+@bp.get('/participants')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def participants_get():
+    stmt = select(Profile).where(Profile.roles.any(name='Participant'))
+    result = db.session.execute(stmt)
+    participants = result.scalars().all()
+    return flask.render_template('admin/profile_report.html', report_name='Participants', profiles=participants)
+
+@bp.get('/groups')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def groups_get():
+    stmt = select(Profile).where(Profile.roles.any(name='Group'))
+    result = db.session.execute(stmt)
+    groups = result.scalars().all()
+    return flask.render_template('admin/profile_report.html', report_name='Groups', profiles=groups)

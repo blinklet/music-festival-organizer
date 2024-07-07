@@ -14,6 +14,13 @@ profiles_users = Table(
     Column("user_id", ForeignKey("user.id"), primary_key=True)
 )
 
+profiles_roles = Table(
+    "profiles_roles",
+    db.metadata,
+    Column("profile_id", ForeignKey("profile.id"), primary_key=True),
+    Column("role_id", ForeignKey("role.id"), primary_key=True)
+)
+
 teachers_students = Table(
     'teacher_student', db.metadata,
     Column('teacher_id', ForeignKey('profile.id'), primary_key=True),
@@ -156,6 +163,12 @@ class Profile(db.Model):
     users: Mapped[List["User"]] = relationship(
         "User",
         secondary=profiles_users,
+        back_populates="profiles"
+    )
+
+    roles: Mapped[List["Role"]] = relationship(
+        "Role",
+        secondary=profiles_roles,
         back_populates="profiles"
     )
 
