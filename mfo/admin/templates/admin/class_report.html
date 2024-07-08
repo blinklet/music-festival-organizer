@@ -1,0 +1,37 @@
+<!-- admin/templates/admin/profile_report.html -->
+
+{% extends "/admin/_admin_base.html" %}
+{% block title %}{{ report_name }}{% endblock %}
+
+{% block admin_content %}
+
+<div class="container pt-4">
+    <h3>{{ report_name }}</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Discipline</th>
+                <th>Entries</th>
+                <th>Total Fees</th>
+                <th>Total Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for _class in classes %}
+            <tr>
+                <td>{{ _class.number_suffix }}</td>
+                <td>{{ _class.description }}</td>
+                <td>{{ _class.type }}</td>
+                <td>{{ _class.discipline }}</td>
+                <td>{{ _class.number_of_entries }}</td>
+                <td>{{ _class.total_fees }}</td>
+                <td>{{ _class.total_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

@@ -9,6 +9,7 @@ easier to read and maintain.
 
 import pandas as pd
 import io
+import os
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
@@ -506,6 +507,11 @@ def related_profiles(input_df, issues, info):
 
 def classes(input_df, issues, info):
 
+    # get DEFAULT_ADJUDICATION_TIME and DEFAULT_MOVE_TIME from environment variables
+    ADJUDICATION_TIME = flask.current_app.config['DEFAULT_ADJUDICATION_TIME']
+    MOVE_TIME = flask.current_app.config['DEFAULT_MOVE_TIME']
+    FEE = flask.current_app.config['DEFAULT_FEE']
+
     class_number_columns = [
         col for col in input_df.columns if col.startswith('class_number_')
     ]
@@ -661,6 +667,9 @@ def classes(input_df, issues, info):
                 number=number,
                 suffix=suffix,
                 class_type=type,
+                adjudication_time = ADJUDICATION_TIME[type],
+                move_time = MOVE_TIME[type],
+                fee = FEE[type]
             )
             db.session.add(new_festival_class)
             info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
@@ -1208,19 +1217,6 @@ def gather_issues(input_df):
     schools(input_df, issues, info)
     entries(input_df, issues, info)
     return issues, info
-
-# def convert_to_db():
-#     try:
-#         db.session.commit()
-#     except IntegrityError:
-#         db.session.rollback()
-#         raise
-#     except Exception as e:
-#         db.session.rollback()
-#         raise
-
-
-
 
 
 def commit_to_db():

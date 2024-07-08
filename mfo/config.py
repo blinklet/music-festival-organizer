@@ -103,3 +103,32 @@ ROLES  = {
 
 TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
 
+# Class default data
+DEFAULT_ADJUDICATION_TIME = {
+    'Solo': 10,
+    'Recital': 15,
+    'Duet': 15,
+    'Trio': 20,
+    'Quartet': 25,
+    'Quintet': 30,
+    'Large Group': 35,
+}
+DEFAULT_MOVE_TIME = {
+    'Solo': 2,
+    'Recital': 4,
+    'Duet': 3,
+    'Trio': 4,
+    'Quartet': 5,
+    'Quintet': 5,
+    'Large Group': 5,
+}
+DEFAULT_FEE = {
+    'Solo': 12,
+    'Recital': 16,
+    'Duet': 12,
+    'Trio': 12,
+    'Quartet': 12,
+    'Quintet': 12,
+    'Large Group': 25,
+}
+
