@@ -188,7 +188,7 @@ class FestivalClass(db.Model):
 
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
     class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
-    fee: Mapped[Optional[str]] = mapped_column(nullable=True)
+    fee: Mapped[Optional[int]] = mapped_column(nullable=True)
     discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
     adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
     move_time: Mapped[Optional[int]] = mapped_column(nullable=True)
