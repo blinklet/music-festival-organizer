@@ -14,6 +14,7 @@ bp = flask.Blueprint(
 
 
 @bp.route('/')
-@flask_security.auth_required()
 def index():
+    if '_flashes' in flask.session:
+        flask.session['_flashes'].clear()
     return flask.render_template('/home/index.html')

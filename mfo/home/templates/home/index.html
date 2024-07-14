@@ -5,9 +5,117 @@
 {% block title %}Home page{% endblock %}
 
 {% block content %}
-{% include "flash.html" %}
-<div class="jumbotron text-center pt-4 pb-3 bg-light">
-    <h1>Music Festival Organizer</h1>
-    <p>Manage participants and events efficiently.</p>
+
+<!-- Hero section -->
+<div class py-3> 
+
 </div>
+<div class="px-4 py-5 text-center border-bottom">
+    <h1 class="display-3">Music Festival Organizer</h1>
+    <p class="lead mb-3 px-4">
+        Designed to support participants and administrators 
+        of competitive music festivals.
+    </p>
+    <p class="px-5">
+        Whether you're 
+        a teacher or student preparing for a musical competition, 
+        or a volunteer scheduling sessions and administering
+        registrations, our platform offers 
+        the tools you need to ensure a seamless and enriching 
+        experience.
+    </p>
+</div>
+
+<!-- Features section -->
+<div class="py-4 px-5 bg-light border-bottom">
+    <h2 class="text-center mb-4">Key Features</h2>
+    <p class="text-center mb-5">
+        Our platform offers a range of features to support 
+        participants, adjudicators, and administrators 
+        throughout the competition process.
+    </p>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 pb-4 ">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Participant Registration</h5>
+                    <p class="card-text">
+                        Register as a participant. Parents and teachers 
+                        may register their children or students. Participants
+                        can access their competition schedule.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Adjudicator Information</h5>
+                    <p class="card-text">
+                        Adjudicators can track information about
+                        the sessions they will adjudicate so it is 
+                        easy to prepare for sessions and to see changes to 
+                        the schedule.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Session Scheduling</h5>
+                    <p class="card-text">
+                        Administrators can create and manage 
+                        competition sessions, assign adjudicators, 
+                        and schedule participant performances.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Teachers and Accompanists</h5>
+                    <p class="card-text">
+                        Teachers can see their students' schedules.
+                        Accompanists can see the pieces they are
+                        accompanying and the schedule each day.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Payment information</h5>
+                    <p class="card-text">
+                        Participants can see the cost of all their
+                        registrations. Administrators can track
+                        payments and provide receipts.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Import and export</h5>
+                    <p class="card-text">
+                        Administrators may import mass registrations 
+                        using a spreadsheet. They may also export festival data 
+                        to a spreadsheet for backup or analysis.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="px-4 py-5 text-center ">
+    <p class="lead mb-3 px-4">
+        Let us help you make the administration of your festival 
+        easy for participants, teachers, and administrators.
+    </p>
+</div>
+
 {% endblock %}

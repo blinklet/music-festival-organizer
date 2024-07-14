@@ -18,7 +18,7 @@
               {{ render_field_with_errors(login_user_form.username, class_="form-control mb-2") }}
             {% endif %}
             {{ render_field_with_errors(login_user_form.password, class_="form-control mb-2") }}
-            {{ render_field_with_errors(login_user_form.remember, class="form-check-input mb-3 ms-2") }}
+            {{ render_field_with_errors(login_user_form.remember, class_="form-check-input mb-3 ms-2") }}
             {{ render_field_errors(login_user_form.csrf_token) }}
             {{ render_field(login_user_form.submit, class_="btn btn-primary mb-2") }}
         </form>
