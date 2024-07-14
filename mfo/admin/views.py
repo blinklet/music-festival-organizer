@@ -36,6 +36,8 @@ def upload_fail_get():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def index_get():
+    if '_flashes' in flask.session:
+        flask.session['_flashes'].clear()
     form = mfo.admin.forms.UploadForm()
     return flask.render_template('admin/index.html', form=form)
 
