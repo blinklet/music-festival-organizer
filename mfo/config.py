@@ -25,6 +25,7 @@ SECURITY_SEND_REGISTER_EMAIL = False
 SECURITY_CHANGEABLE = True
 SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
 SECURITY_POST_LOGIN_VIEW = '/'
+SECURITY_POST_REGISTER_VIEW = '/new_user'
 
 # Flask-SQLAlchemy variables
 if ENVIRONMENT == "development":
@@ -54,17 +55,12 @@ SESSION_USE_SIGNER = True
 # Roles defined
 # Roles (name, description, set of permissions)
 ROLES  = {
-    'USER': {
-        'name': 'User',
-        'description': 'Normal user',
-        'permissions': { 'user' }
-    },
     'PARTICIPANT': {
         'name': 'Participant',
         'description': 'Normal user',
         'permissions': { 'user' }
     },
-        'GROUP': {
+    'GROUP': {
         'name': 'Group',
         'description': 'Normal user',
         'permissions': { 'user' }

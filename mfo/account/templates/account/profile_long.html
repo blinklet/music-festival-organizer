@@ -1,5 +1,6 @@
-<!--
+<!-- mfo/account/templates/profile_long.html -->
 
+<!--
     Links with bootstrap and Flask-WTF examples 
 https://mdbootstrap.com/docs/standard/extended/profiles/ 
 
@@ -23,8 +24,23 @@ https://mdbootstrap.com/docs/standard/extended/profiles/
                 </div>
                 <div class="row justify-content-center text-center mt-4">
                     <div class="col-sm-8">
+                        {% if profile.address and profile.city and profile.province and profile.postal_code %}
                         <h4 class="text-muted">Address</h4>
-                        <p class="text-dark fs-5">{{ profile.address }}, {{ profile.city }}, {{ profile.province }}, {{ profile.postal_code }}</p>
+                        <p class="text-dark fs-5">
+                            {% if profile.address %}
+                                {{ profile.address }},&nbsp;
+                            {% endif %}
+                            {% if profile.city %}
+                                {{ profile.city }},&nbsp;
+                            {% endif %}
+                            {% if profile.province %}
+                                {{ profile.province }},&nbsp;
+                            {% endif %}
+                            {% if profile.postal_code %}
+                                {{ profile.postal_code }}
+                            {% endif %}
+                        </p>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row justify-content-center text-center mt-2">
@@ -74,7 +90,7 @@ https://mdbootstrap.com/docs/standard/extended/profiles/
     </div>
     <div class="row justify-content-between gap-2">
         <div class="col">
-            <a class="btn btn-primary d-block btn-lg mt-3" href={{ url_for("account.edit_profile") }}>Edit profile</a>
+            <a class="btn btn-primary d-block btn-lg mt-3" href={{ url_for("account.edit_profile_get") }}>Edit profile</a>
         </div>
         <div class="col">
             <a class="btn btn-success btn-lg d-block mt-3" href={{ url_for_security('change_password') }}>Change password</a>

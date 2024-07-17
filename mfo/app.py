@@ -41,15 +41,4 @@ def create_app():
     app.register_blueprint(mfo.account.views.bp)
     app.register_blueprint(mfo.database.commands.bp)
 
-    # Assign "User" role to all newly-registered users
-    # And create primary profile for each new user
-    @user_registered.connect_via(app)
-    def user_registered_sighandler(sender, user, **extra):
-        role = "Participant"
-        users.user_datastore.add_role_to_user(user, role)
-        profile = Profile(email=user.email)
-        profile.users.append(user)
-        base.db.session.add(profile)
-        base.db.session.commit()
-
     return app
