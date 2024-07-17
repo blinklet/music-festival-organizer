@@ -3,7 +3,7 @@
         "email": "user@testmail.com",
         "password": "password",
         "roles": [
-            "User"
+            "Participant"
         ],
         "profiles": [
             {
@@ -29,7 +29,7 @@
         "password": "password",
         "roles": [
             "Admin",
-            "User"
+            "Participant"
         ],
         "profiles": [
             {
