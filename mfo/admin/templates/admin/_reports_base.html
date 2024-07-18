@@ -1,0 +1,20 @@
+<!-- admin/templates/admin/_admin_base.html -->
+
+{% extends "base.html" %}
+{% block title %}Admin page{% endblock %}
+
+{% block content %}
+
+    <div class="jumbotron text-center pt-4 pb-3 bg-light">
+        <h1>Reports</h1>
+    </div>
+    
+    {% block report_content %}{% endblock %}
+
+{% endblock %}
+
+
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}" >
+{% endblock %}

@@ -167,57 +167,28 @@ def handle_forbidden(e):
     return flask.render_template('forbidden.html', role="Admin")
 
 
-@bp.get('/teachers')
+@bp.get('/report')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def teachers_get():
+def profile_report_get():
     sort_by = flask.request.args.get('sort_by', None)
-    profiles = admin_services.get_profiles('Teacher', sort_by)
-    return flask.render_template('admin/profile_report.html', report_name='Teachers', profiles=profiles, sort_by=sort_by)
+    role = flask.request.args.get('role', None)
+    report_name = flask.request.args.get('report_name', None)
 
+    profiles = admin_services.get_profiles(role, sort_by)
 
-@bp.get('/accompanists')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def accompanists_get():
-    """
-    Get accompanists data from database and display it in a bootstrap-styled table
-    """
-    sort_by = flask.request.args.get('sort_by', None)
-    stmt = select(Profile).where(Profile.roles.any(name='Accompanist'))
-    result = db.session.execute(stmt)
-    accompanists = result.scalars().all()
-    if sort_by:
-        accompanists = sorted(accompanists, key=lambda x: (getattr(x, sort_by) is None, getattr(x, sort_by, '')))
+    print(f'#### {report_name} ####')
+    print(f'#### {role} ####')
 
-    # Render the teachers template with the teachers data
-    return flask.render_template('admin/profile_report.html', report_name='Accompanists', profiles=accompanists, sort_by=sort_by)
+    return flask.render_template(
+        'admin/profile_report.html', 
+        report_name=report_name, 
+        role=role, 
+        profiles=profiles, 
+        sort_by=sort_by
+        )
 
-@bp.get('/participants')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def participants_get():
-    sort_by = flask.request.args.get('sort_by', None)
-    stmt = select(Profile).where(Profile.roles.any(name='Participant'))
-    result = db.session.execute(stmt)
-    participants = result.scalars().all()
-    if sort_by:
-        participants = sorted(participants, key=lambda x: (getattr(x, sort_by) is None, getattr(x, sort_by, '')))
-    return flask.render_template('admin/profile_report.html', report_name='Participants', profiles=participants, sort_by=sort_by)
-
-@bp.get('/groups')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def groups_get():
-    sort_by = flask.request.args.get('sort_by', None)
-    stmt = select(Profile).where(Profile.roles.any(name='Group'))
-    result = db.session.execute(stmt)
-    groups = result.scalars().all()
-    if sort_by:
-        groups = sorted(groups, key=lambda x: (getattr(x, sort_by) is None, getattr(x, sort_by, '')))
-    return flask.render_template('admin/profile_report.html', report_name='Groups', profiles=groups, sort_by=sort_by)
-
-@bp.get('/classes')
+@bp.get('/report/classes')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
