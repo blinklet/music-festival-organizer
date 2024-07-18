@@ -5,13 +5,15 @@
 
 {% block admin_content %}
 
+{% set endpoint = report_name | lower + '_get' %}
+
 <div class="container pt-4">
     <h3>{{ report_name }}</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Email</th>
+                <th><a href="{{ url_for('admin.' ~ endpoint, sort_by='name') }}">Name</a></th>
+                <th><a href="{{ url_for('admin.' ~ endpoint, sort_by='email') }}">Email</a></th>
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>
