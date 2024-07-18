@@ -8,10 +8,10 @@
 <div class="dropdown">
     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Reports</a>
     <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="{{ url_for('admin.teachers_get') }}">Teachers</a></li>
-        <li><a class="dropdown-item" href="{{ url_for('admin.accompanists_get') }}">Accompanists</a></li>
-        <li><a class="dropdown-item" href="{{ url_for('admin.participants_get') }}">Individual Participants</a></li>
-        <li><a class="dropdown-item" href="{{ url_for('admin.groups_get') }}">Group Participants</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.profile_report_get', role='Teacher', report_name='Teachers') }}">Teachers</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.profile_report_get', role='Accompanist', report_name='Accompanists') }}">Accompanists</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.profile_report_get', role='Participant', report_name='Participants') }}">Individual Participants</a></li>
+        <li><a class="dropdown-item" href="{{ url_for('admin.profile_report_get', role='Group', report_name='Groups') }}">Group Participants</a></li>
         <li><a class="dropdown-item" href="{{ url_for('admin.classes_get') }}">Classes</a></li>
     </ul>
 </div>

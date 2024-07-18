@@ -1,17 +1,18 @@
 <!-- admin/templates/admin/profile_report.html -->
 
-{% extends "/admin/_admin_base.html" %}
+{% extends "/admin/_reports_base.html" %}
 {% block title %}{{ report_name }}{% endblock %}
 
-{% block admin_content %}
+
+{% block report_content %}
 
 <div class="container pt-4">
     <h3>{{ report_name }}</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Email</th>
+                <th><a href="{{ url_for('admin.profile_report_get', report_name=report_name, role=role, sort_by='name') }}">Name</a></th>
+                <th><a href="{{ url_for('admin.profile_report_get', report_name=report_name, role=role, sort_by='email') }}">Email</a></th>
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>

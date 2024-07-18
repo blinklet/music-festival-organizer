@@ -14,6 +14,7 @@ import io
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 from mfo.database.models import Profile, FestivalClass
+import mfo.admin.services.admin_services as admin_services
 
 bp = flask.Blueprint(
     'admin',
@@ -166,58 +167,28 @@ def handle_forbidden(e):
     return flask.render_template('forbidden.html', role="Admin")
 
 
-@bp.get('/teachers')
+@bp.get('/report')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def teachers_get():
-    """
-    Get teachers data from database and display it in a bootstrap-styled table
-    """
-    # Get teachers data from database
-    #if "Teacher" in [role.name for role in existing_teacher.roles]:
+def profile_report_get():
+    sort_by = flask.request.args.get('sort_by', None)
+    role = flask.request.args.get('role', None)
+    report_name = flask.request.args.get('report_name', None)
 
-    # Get all teachers from the database. Select rows where role = teacher
-    stmt = select(Profile).where(Profile.roles.any(name='Teacher'))
-    result = db.session.execute(stmt)
-    teachers = result.scalars().all()
+    profiles = admin_services.get_profiles(role, sort_by)
 
-    # Render the teachers template with the teachers data
-    return flask.render_template('admin/profile_report.html', report_name='Teachers', profiles=teachers)
+    print(f'#### {report_name} ####')
+    print(f'#### {role} ####')
 
+    return flask.render_template(
+        'admin/profile_report.html', 
+        report_name=report_name, 
+        role=role, 
+        profiles=profiles, 
+        sort_by=sort_by
+        )
 
-@bp.get('/accompanists')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def accompanists_get():
-    """
-    Get accompanists data from database and display it in a bootstrap-styled table
-    """
-    stmt = select(Profile).where(Profile.roles.any(name='Accompanist'))
-    result = db.session.execute(stmt)
-    accompanists = result.scalars().all()
-
-    # Render the teachers template with the teachers data
-    return flask.render_template('admin/profile_report.html', report_name='Accompanists', profiles=accompanists)
-
-@bp.get('/participants')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def participants_get():
-    stmt = select(Profile).where(Profile.roles.any(name='Participant'))
-    result = db.session.execute(stmt)
-    participants = result.scalars().all()
-    return flask.render_template('admin/profile_report.html', report_name='Participants', profiles=participants)
-
-@bp.get('/groups')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def groups_get():
-    stmt = select(Profile).where(Profile.roles.any(name='Group'))
-    result = db.session.execute(stmt)
-    groups = result.scalars().all()
-    return flask.render_template('admin/profile_report.html', report_name='Groups', profiles=groups)
-
-@bp.get('/classes')
+@bp.get('/report/classes')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
