@@ -177,9 +177,6 @@ def profile_report_get():
 
     profiles = admin_services.get_profiles(role, sort_by)
 
-    print(f'#### {report_name} ####')
-    print(f'#### {role} ####')
-
     return flask.render_template(
         'admin/profile_report.html', 
         report_name=report_name, 
@@ -192,76 +189,12 @@ def profile_report_get():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
-    class_list = list()
+    sort_by = flask.request.args.get('sort_by', None)
+
     stmt = select(FestivalClass)
     _classes = db.session.execute(stmt).scalars().all()
-    for _class in _classes:
-
-        number = _class.number
-        suffix = _class.suffix
-
-        if pd.notna(number) & pd.isna(suffix):
-            if isinstance(number, (int, float)):
-                number_suffix = str(int(number)).zfill(4)
-            else:
-                number_suffix = number.strip()
-        elif pd.notna(number) & pd.notna(suffix):
-            if isinstance(number, (int, float)):
-                number=str(int(number)).zfill(4)
-            else:
-                number=number.strip()
-            suffix = str(suffix).strip()
-            number_suffix = f"{number}{suffix}"
-        
-        description = _class.description
-        type = _class.class_type
-        if _class.fee:
-            fee = _class.fee
-        else:
-            fee = 0
-        discipline = _class.discipline
-        if _class.adjudication_time:
-            adjudication_time = _class.adjudication_time
-        else:
-            adjudication_time = 0
-        if _class.move_time:
-            move_time = _class.move_time
-        else:
-            move_time = 0
-
-        if _class.entries:
-            number_of_entries = len(_class.entries)
-            total_adjudication_time = adjudication_time * number_of_entries
-            total_move_time = move_time * number_of_entries
-            total_repertoire_time = sum([sum([repertoire.duration for repertoire in entry.repertoire]) for entry in _class.entries])
-            total_time = total_adjudication_time + total_move_time + total_repertoire_time
-            total_fees = fee * number_of_entries
-        else:
-            number_of_entries = 0
-            total_adjudication_time = 0
-            total_move_time = 0
-            total_repertoire_time = 0
-            total_fees = 0
-            total_time = 0
-        
-        class_dict = {
-            "number_suffix": number_suffix,
-            "number": number,
-            "suffix": suffix,
-            "description": description,
-            "type": type,
-            "fee": fee,
-            "discipline": discipline,
-            "adjudication_time": adjudication_time,
-            "move_time": move_time,
-            "number_of_entries": number_of_entries,
-            "total_adjudication_time": total_adjudication_time,
-            "total_move_time": total_move_time,
-            "total_repertoire_time": total_repertoire_time,
-            "total_fees": total_fees,
-            "total_time": total_time
-        }
-        class_list.append(class_dict)
-
-    return flask.render_template('admin/class_report.html', report_name='Classes', classes=class_list)
+    print(f'######## {len(_classes)} classes found')
+    class_list = admin_services.get_class_list(_classes, sort_by)
+    print(f'######## {len(class_list)} classes found in returned list')
+    return flask.render_template('admin/class_report.html', classes=class_list)
 
