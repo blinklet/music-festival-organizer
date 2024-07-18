@@ -1,22 +1,22 @@
 <!-- admin/templates/admin/class_report.html -->
 
 {% extends "/admin/_reports_base.html" %}
-{% block title %}{{ report_name }}{% endblock %}
+{% block title %}Classes{% endblock %}
 
-{% block admin_content %}
+{% block report_content %}
 
 <div class="container pt-4">
-    <h3>{{ report_name }}</h3>
+    <h3>Classes</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Class</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Discipline</th>
-                <th>Entries</th>
-                <th>Total Fees</th>
-                <th>Total Time</th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='number_suffix') }}">Class</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='description') }}">Description</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='type') }}">Type</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='discipline') }}">Discipline</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='number_of_entries') }}">Entries</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='total_fees') }}">Total Fees</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='total_time') }}">Total Time</a></th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +30,7 @@
                 <td>{{ _class.total_fees }}</td>
                 <td>{{ _class.total_time }}</td>
             </tr>
+            
             {% endfor %}
         </tbody>
     </table>
