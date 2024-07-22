@@ -1,0 +1,55 @@
+{% extends "/admin/_reports_base.html" %}
+
+{% block title %}Class Information{% endblock %}
+
+{% block report_content %}
+
+<div class="container pt-4">
+    <h3 class="pb-2">Class Information</h3>
+
+    <div class="row">
+
+        <div class="row">
+            <div class="col-sm-10">
+                <p><strong>Number:</strong>{{ _class.number }}</p>
+                <p><strong>Suffix:</strong>{{ _class.suffix }}</p>
+                <p><strong>Name:</strong> {{ _class.name }}</p>
+                <p><strong>Discipline:</strong> {{ _class.discipline }}</p>
+                <p><strong>Type:</strong> {{ _class.class_type }}</p>
+                <p><strong>Fee:</strong> {{ _class.fee }}</p>
+                <p><strong>Adjudication Time:</strong> {{ _class.adjudication_time }}</p>
+                <p><strong>Move Time:</strong> {{ _class.move_time }}</p>
+
+
+                <h4>Test Pieces</h4>
+                <ul>
+                    {% if _class.test_pieces %}
+                        {% for piece in _class.test_pieces %}
+                            <li>{{ piece.title }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>None</li>
+                    {% endif %}
+                </ul>
+
+                <h4>Entries</h4>
+                <ul>
+                    {% if _class.entries %}
+                        {% for entry in _class.entries %}
+                            {% for participant in entry.participants %}
+                                <li>{{ participant.name }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <li>None</li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_css %}{% endblock %}

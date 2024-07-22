@@ -22,6 +22,7 @@ def get_profiles(profile_type, sort_by=None):
 def get_class_list(classes, sort_by=None):
     class_list = list()
     for _class in classes:
+        id = _class.id
         number = _class.number
         suffix = _class.suffix
 
@@ -38,7 +39,7 @@ def get_class_list(classes, sort_by=None):
             suffix = str(suffix).strip()
             number_suffix = f"{number}{suffix}"
         
-        description = _class.description
+        name = _class.name
         type = _class.class_type
         if _class.fee:
             fee = _class.fee
@@ -70,10 +71,11 @@ def get_class_list(classes, sort_by=None):
             total_time = 0
         
         class_dict = {
+            "id": id,
             "number_suffix": number_suffix,
             "number": number,
             "suffix": suffix,
-            "description": description,
+            "name": name,
             "type": type,
             "fee": fee,
             "discipline": discipline,

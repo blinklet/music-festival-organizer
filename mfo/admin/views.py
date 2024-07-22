@@ -193,8 +193,14 @@ def classes_get():
 
     stmt = select(FestivalClass)
     _classes = db.session.execute(stmt).scalars().all()
-    print(f'######## {len(_classes)} classes found')
     class_list = admin_services.get_class_list(_classes, sort_by)
-    print(f'######## {len(class_list)} classes found in returned list')
     return flask.render_template('admin/class_report.html', classes=class_list)
 
+@bp.get('/info/class')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def class_info_get():
+    id = flask.request.args.get('id', None)
+    stmt = select(FestivalClass).where(FestivalClass.id == id)
+    _class = db.session.execute(stmt).scalar()
+    return flask.render_template('admin/class_info.html', _class=_class)

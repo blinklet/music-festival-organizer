@@ -11,7 +11,7 @@
         <thead>
             <tr>
                 <th><a href="{{ url_for('admin.classes_get', sort_by='number_suffix') }}">Class</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='description') }}">Description</a></th>
+                <th><a href="{{ url_for('admin.classes_get', sort_by='name') }}">Name</a></th>
                 <th><a href="{{ url_for('admin.classes_get', sort_by='type') }}">Type</a></th>
                 <th><a href="{{ url_for('admin.classes_get', sort_by='discipline') }}">Discipline</a></th>
                 <th><a href="{{ url_for('admin.classes_get', sort_by='number_of_entries') }}">Entries</a></th>
@@ -22,8 +22,8 @@
         <tbody>
             {% for _class in classes %}
             <tr>
-                <td>{{ _class.number_suffix }}</td>
-                <td>{{ _class.description }}</td>
+                <td><a href="{{ url_for('admin.class_info_get', id=_class.id) }}">{{ _class.number_suffix }}</a></td>
+                <td>{{ _class.name }}</td>
                 <td>{{ _class.type }}</td>
                 <td>{{ _class.discipline }}</td>
                 <td>{{ _class.number_of_entries }}</td>
