@@ -20,29 +20,7 @@
         <div class="card-header">
             Test Pieces
         </div>
-        <div class="card-body">
-            <ul class="list-group list-group-flush">
-                {% if _class.test_pieces %}
-                    {% for piece in _class.test_pieces %}
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col-12 col-lg-5 col-xl-6">
-                                    <strong>Title:</strong> {{ piece.title }}
-                                </div>
-                                <div class="col-12 col-lg-4 col-md-7 col-xl-4">
-                                    <strong>Composer:</strong> {{ piece.composer }}
-                                </div>
-                                <div class="col-12 col-lg-3 col-md-5 col-xl-2">
-                                    <strong>Duration:</strong> {{ piece.duration }} minutes
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <li class="list-group-item">None</li>
-                {% endif %}
-            </ul>
-        </div>
+        {% include '/admin/partials/class_pieces_card_body.html' %}
     </div>
 </div>
 
