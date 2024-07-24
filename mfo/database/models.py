@@ -186,7 +186,7 @@ class FestivalClass(db.Model):
     number: Mapped[Optional[str]] = mapped_column(nullable=True)
     suffix: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(nullable=True)
     class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
     fee: Mapped[Optional[int]] = mapped_column(nullable=True)
     discipline: Mapped[Optional[str]] = mapped_column(nullable=True)

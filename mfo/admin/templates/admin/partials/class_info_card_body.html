@@ -1,0 +1,31 @@
+<div class="card-body">
+    <div class="row">
+        <div class="col-xl-2 col-sm-4 col-md-3 col-12">
+            <p><strong>Number:</strong> {{ _class.number }}</p>
+        </div>
+        <div class="col-xl-2 col-sm-3 col-12">
+            <p><strong>Suffix:</strong> {{ _class.suffix }}</p>
+        </div>
+        <div class="col-xl-8 col-12">
+            <p><strong>Name:</strong> {{ _class.name }}</p>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6 col-12">
+            <p><strong>Type:</strong> {{ _class.class_type }}</p>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6 col-12">
+            <p><strong>Discipline:</strong> {{ _class.discipline }}</p>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6 col-12">
+            <p><strong>Fee:</strong> ${{ _class.fee }}</p>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6 col-12 d-none d-sm-block d-md-none">
+            <!-- spacer -->
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-6 col-12">
+            <p><strong>Adjudication Time:</strong> {{ _class.adjudication_time }} minutes</p>
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-6 col-12 text-md-right">
+            <p><strong>Warm-up Time:</strong> {{ _class.move_time }} minutes</p>
+        </div>
+    </div>
+</div>

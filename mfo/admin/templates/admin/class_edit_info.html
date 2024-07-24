@@ -1,0 +1,111 @@
+{% extends "/admin/_reports_base.html" %}
+
+{% block title %}Class Information{% endblock %}
+
+{% block report_content %}
+
+<div class="container py-4">
+    <form method="POST" action="{{ url_for('admin.edit_class_info_post', id=_class.id) }}">
+    <div class="d-flex justify-content-between align-items-center pb-2">
+        <h3>Class {{ _class.number }}{% if _class.suffix %}{{ _class.suffix }}{% endif %}</h3>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            Class Information
+            <div class="form-group d-flex align-items-center justify-content-end">
+                <a href="{{ url_for('admin.class_info_get', id=_class.id) }}" class="btn btn-secondary px-sm-4 px-3 me-2">Cancel</a>
+                {{ form.submit(class="btn btn-primary px-sm-4 px-3") }}
+            </div>
+        </div>
+    
+        {{ form.hidden_tag() }}
+        <div class="card-body">
+            <div class="row">
+                <div class="col-xl-2 col-sm-4 col-md-3 col-12 mt-sm-0 mt-0">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="numberField" class="me-2"><strong>Number:</strong></label>
+                        {{ form.number(id="numberField", class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-2 col-sm-3 col-12 mt-sm-0 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="suffix" class="me-2"><strong>Suffix:</strong></label>
+                        {{ form.suffix(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-8 col-12 mt-2 mt-xl-0">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="name" class="me-2"><strong>Name:</strong></label>
+                        {{ form.name(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="class_type" class="me-2"><strong>Type:</strong></label>
+                        {{ form.class_type(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="discipline" class="me-2"><strong>Discipline:</strong></label>
+                        {{ form.discipline(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="fee" class="me-2"><strong>Fee:</strong></label>
+                        {{ form.fee(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4 col-sm-6 col-12 d-none d-sm-block d-md-none">
+                    <!-- spacer -->
+                </div>
+                <div class="col-xl-3 col-md-6 col-sm-6 col-12 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="adjudication_time" class="me-2"><strong>Adjudication Time:</strong></label>
+                        {{ form.adjudication_time(class="form-control three-digit-width") }}&nbsp;minutes
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 col-sm-6 col-12 mt-2">
+                    <div class="form-group d-flex align-items-center justify-content-md-end">
+                        <label for="warm-up_time" class="me-2"><strong>Warm-up Time:</strong></label>
+                        {{ form.move_time(class="form-control three-digit-width") }}&nbsp;minutes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            Test Pieces
+        </div>
+        <ul class="list-group list-group-flush">
+            {% if _class.test_pieces %}
+                {% for piece in _class.test_pieces %}
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-12 col-lg-5">
+                                <strong>Title:</strong> {{ piece.title }}
+                            </div>
+                            <div class="col-12 col-lg-4 col-md-6 ">
+                                <strong>Composer:</strong> {{ piece.composer }}
+                            </div>
+                            <div class="col-12 col-lg-3 col-md-6">
+                                <strong>Duration:</strong> {{ piece.duration }} minutes
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">None</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+
+
