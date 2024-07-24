@@ -15,6 +15,7 @@ from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 from mfo.database.models import Profile, FestivalClass
 import mfo.admin.services.admin_services as admin_services
+import mfo.admin.forms as forms
 
 bp = flask.Blueprint(
     'admin',
@@ -204,3 +205,28 @@ def class_info_get():
     stmt = select(FestivalClass).where(FestivalClass.id == id)
     _class = db.session.execute(stmt).scalar()
     return flask.render_template('admin/class_info.html', _class=_class)
+
+@bp.get('/edit/class_info')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def class_info_post():
+    id = flask.request.args.get('id', None)
+    stmt = select(FestivalClass).where(FestivalClass.id == id)
+    _class = db.session.execute(stmt).scalar()
+    form = forms.EditClassBasicInfoForm(obj=_class)
+    return flask.render_template('admin/class_edit_basic_info.html', form=form, _class=_class)
+
+# @bp.route('/edit/class', methods=['GET', 'POST'])
+# def edit_class_info():
+#     # Assuming you have a model called ClassInfo and a function to get the class by ID
+#     id = flask.request.form.get('id', None)
+#     stmt = select(FestivalClass).where(FestivalClass.id == id)
+#     _class = db.session.execute(stmt).scalar()
+#     if not _class:
+#         return flask.abort(404)
+    
+#     form = EditClassBasicInfoForm(obj=class_info)
+#     if form.validate_on_submit():
+#         # Process form data and update the class information
+#         return flask.redirect(flask.url_for('admin.edit_class_info', id=id))
+#     return flask.render_template('class_edit_basic_info.html', form=form)

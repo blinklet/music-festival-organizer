@@ -10,7 +10,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             Basic Information
-            <a href="#" class="btn btn-primary btn-sm px-4">Edit</a>
+            <a href="{{ url_for('admin.class_info_post', id=_class.id)}}" class="btn btn-primary btn-sm px-4">Edit</a>
         </div>
         <div class="card-body">
             <div class="row">
