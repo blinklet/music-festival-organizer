@@ -7,78 +7,42 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center pb-2">
         <h3>Class {{ _class.number }}{% if _class.suffix %}{{ _class.suffix }}{% endif %}</h3>
-        <a href="{{ url_for('admin.edit_class_info_get', id=_class.id) }}" class="btn btn-primary px-sm-5 px-3">Edit</a>
     </div>
     <div class="card mb-3">
-        <div class="card-header">
-            Basic Information
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            Class Information
+            <a href="{{ url_for('admin.edit_class_info_get', id=_class.id) }}" class="btn btn-primary px-sm-5 px-3">Edit</a>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 col-sm-6 col-12">
-                    <p><strong>Number:</strong> {{ _class.number }}</p>
-                </div>
-                <div class="col-md-4 col-sm-6 col-12">
-                    <p><strong>Suffix:</strong> {{ _class.suffix }}</p>
-                </div>
-                <div class="col-md-4 col-sm-6 col-12">
-                    <p><strong>Type:</strong> {{ _class.class_type }}</p>
-                </div>
-                <div class="col-12">
-                    <p><strong>Name:</strong> {{ _class.name }}</p>
-                </div>
-                <div class="col-md-4 col-sm-6 col-12">
-                    <p><strong>Discipline:</strong> {{ _class.discipline }}</p>
-                </div>
-
-                <div class="col-md-4 col-sm-6 col-12">
-                    <p><strong>Fee:</strong> ${{ _class.fee }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-3">
-        <div class="card-header">
-            Schedule Information
-        </div>
-        <div class="card-body">
-            <div class="row">
-            <div class="col-md-4 col-sm-6 col-12">
-                <p><strong>Adjudication Time:</strong> {{ _class.adjudication_time }} minutes</p>
-            </div>
-            <div class="col-md-4 col-sm-6 col-12">
-                <p><strong>Warm-up Time:</strong> {{ _class.move_time }} minutes</p>
-            </div>
-            </div>
-        </div>
+        {% include '/admin/partials/class_info_card_body.html' %}
     </div>
 
     <div class="card">
         <div class="card-header">
             Test Pieces
         </div>
-        <ul class="list-group list-group-flush">
-            {% if _class.test_pieces %}
-                {% for piece in _class.test_pieces %}
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col-12 col-lg-5">
-                                <strong>Title:</strong> {{ piece.title }}
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                {% if _class.test_pieces %}
+                    {% for piece in _class.test_pieces %}
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-12 col-lg-5 col-xl-6">
+                                    <strong>Title:</strong> {{ piece.title }}
+                                </div>
+                                <div class="col-12 col-lg-4 col-md-7 col-xl-4">
+                                    <strong>Composer:</strong> {{ piece.composer }}
+                                </div>
+                                <div class="col-12 col-lg-3 col-md-5 col-xl-2">
+                                    <strong>Duration:</strong> {{ piece.duration }} minutes
+                                </div>
                             </div>
-                            <div class="col-12 col-lg-4 col-md-6 ">
-                                <strong>Composer:</strong> {{ piece.composer }}
-                            </div>
-                            <div class="col-12 col-lg-3 col-md-6">
-                                <strong>Duration:</strong> {{ piece.duration }} minutes
-                            </div>
-                        </div>
-                    </li>
-                {% endfor %}
-            {% else %}
-                <li class="list-group-item">None</li>
-            {% endif %}
-        </ul>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item">None</li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
 </div>
 
