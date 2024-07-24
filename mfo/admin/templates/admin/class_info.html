@@ -4,13 +4,14 @@
 
 {% block report_content %}
 
-<div class="container pt-4">
-    <h3 class="pb-3">Class Information for {{ _class.number }}{{ _class.suffix }}</h3>
-
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center pb-2">
+        <h3>Class {{ _class.number }}{% if _class.suffix %}{{ _class.suffix }}{% endif %}</h3>
+        <a href="{{ url_for('admin.edit_class_info_get', id=_class.id) }}" class="btn btn-primary px-sm-5 px-3">Edit</a>
+    </div>
     <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             Basic Information
-            <a href="{{ url_for('admin.class_info_post', id=_class.id)}}" class="btn btn-primary btn-sm px-4">Edit</a>
         </div>
         <div class="card-body">
             <div class="row">
@@ -38,9 +39,8 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             Schedule Information
-            <a href="#" class="btn btn-primary btn-sm px-4">Edit</a>
         </div>
         <div class="card-body">
             <div class="row">
@@ -55,9 +55,8 @@
     </div>
 
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-header">
             Test Pieces
-            <a href="#" class="btn btn-primary btn-sm px-4">Edit</a>
         </div>
         <ul class="list-group list-group-flush">
             {% if _class.test_pieces %}
@@ -85,4 +84,4 @@
 
 {% endblock %}
 
-{% block additional_css %}{% endblock %}
+

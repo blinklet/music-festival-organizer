@@ -1,3 +1,7 @@
 /* mfo/admin/static/css/styles.css */
 
 
+.three-digit-width {
+    width: 4em; /* Adjust based on testing */
+}
+
