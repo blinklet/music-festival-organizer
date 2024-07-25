@@ -15,6 +15,7 @@
                 <th><a href="{{ url_for('admin.repertoire_get', sort_by='discipline') }}">Discipline</a></th>
                 <th><a href="{{ url_for('admin.repertoire_get', sort_by='type') }}">Type</a></th>
                 <th><a href="{{ url_for('admin.repertoire_get', sort_by='level') }}">Level</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='duration') }}">Duration</a></th>
                 <th><a href="{{ url_for('admin.repertoire_get', sort_by='classes') }}">Classes</a></th>
                 <th><a href="{{ url_for('admin.repertoire_get', sort_by='entries') }}">Entries</a></th>
             </tr>
@@ -27,8 +28,9 @@
                 <td>{{ piece.discipline }}</td>
                 <td>{{ piece.type }}</td>
                 <td>{{ piece.level }}</td>
-                <td>{{ piece.classes }}</td>
-                <td>{{ piece.entries }}</td>
+                <td class="text-center">{{ piece.duration }}</td>
+                <td class="text-center">{{ piece.classes }}</td>
+                <td class="text-center">{{ piece.entries }}</td>
             </tr>
             
             {% endfor %}

@@ -239,8 +239,8 @@ def edit_class_info_post():
                 # If the field is not blank, let populate_obj handle it normally
                 setattr(_class, fieldName, field.data)
         db.session.commit()
-        flask.redirect(flask.url_for('admin.class_info_get', id=id))
-    return flask.render_template('admin/class_info.html', _class=_class)
+        return flask.redirect(flask.url_for('admin.class_info_get', id=id))
+    return flask.render_template('admin/class_edit_info.html', form=form, _class=_class)
 
 @bp.get('/report/repertoire')
 @flask_security.auth_required()
@@ -249,7 +249,8 @@ def repertoire_get():
     sort_by = flask.request.args.get('sort_by', None)
     stmt = select(Repertoire)
     repertoire = db.session.execute(stmt).scalars().all()
-    return flask.render_template('admin/repertoire_report.html', repertoire=repertoire)
+    repertoire_list = admin_services.get_repertoire_list(repertoire, sort_by)
+    return flask.render_template('admin/repertoire_report.html', repertoire=repertoire_list)
 
 @bp.get('/info/repertoire')
 @flask_security.auth_required()
@@ -259,3 +260,40 @@ def repertoire_info_get():
     stmt = select(Repertoire).where(Repertoire.id == id)
     repertoire = db.session.execute(stmt).scalar()
     return flask.render_template('admin/repertoire_info.html', repertoire=repertoire)
+
+@bp.get('/edit/repertoire')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def repertoire_edit_get():
+    id = flask.request.args.get('id', None)
+    stmt = select(Repertoire).where(Repertoire.id == id)
+    repertoire = db.session.execute(stmt).scalar()
+    form = forms.EditRepertoireForm(obj=repertoire)
+    return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
+
+@bp.post('/edit/repertoire')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def repertoire_edit_post():
+    id = flask.request.args.get('id', None)
+    stmt = select(Repertoire).where(Repertoire.id == id)
+    repertoire = db.session.execute(stmt).scalar()
+    form = forms.EditRepertoireForm()
+    if form.validate_on_submit():
+        # if I want to use form.populate_obj(_class), 
+        # I need to consistently make sure that the values
+        # in empty database fields are set to whatever the form instance
+        # places in an empty field. The work below, enters 
+        # "None" in empty fields
+        for fieldName, field in form._fields.items():
+            # Check if the field is blank
+            if field.data == '' or field.data is None:
+                # Set the corresponding attribute in the database to None
+                setattr(repertoire, fieldName, None)
+            else:
+                # If the field is not blank, let populate_obj handle it normally
+                setattr(repertoire, fieldName, field.data)
+        db.session.commit()
+        return flask.redirect(flask.url_for('admin.repertoire_info_get', id=id))
+    return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
+

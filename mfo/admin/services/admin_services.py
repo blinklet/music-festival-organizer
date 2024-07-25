@@ -111,3 +111,54 @@ def get_class_list(classes, sort_by=None):
             pass
 
     return class_list
+
+
+def get_repertoire_list(repertoire, sort_by=None):
+    repertoire_list = list()
+    for piece in repertoire:
+
+        if piece.used_in_entries:
+            number_of_entries = len(piece.used_in_entries)
+        else:
+            number_of_entries = 0
+
+        if piece.festival_classes:
+            number_of_classes = len(piece.festival_classes)
+        else:                
+            number_of_classes = 0
+
+        pieces_dict = {
+            "id": piece.id,
+            "title": piece.title,
+            "composer": piece.composer,
+            "discipline": piece.discipline,
+            "type": piece.type,
+            "level": piece.level,
+            "duration": piece.duration,
+            "entries": number_of_entries,
+            "classes": number_of_classes
+        }
+
+        repertoire_list.append(pieces_dict)
+
+        if sort_by == 'title':
+            repertoire_list = sorted(
+                repertoire_list, 
+                key=lambda x: (
+                    x[sort_by] is not None, 
+                    x[sort_by] or ''
+                    )
+                )
+        elif sort_by is not None:
+            repertoire_list = sorted(
+                repertoire_list, 
+                key=lambda x: (
+                    x[sort_by] is not None, # Move None values to the start
+                    x[sort_by] or '', # Use empty string as fallback for None values
+                    x['title'] or '' # Add a secondary sort key to ensure consistent ordering
+                    )
+                )
+        else:
+            pass
+
+    return repertoire_list
