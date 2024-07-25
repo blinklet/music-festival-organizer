@@ -1,0 +1,75 @@
+{% extends "/admin/_reports_base.html" %}
+
+{% block title %}Edit Repertoire{% endblock %}
+
+{% block report_content %}
+
+<div class="container py-4">
+    <form method="POST" action="{{ url_for('admin.repertoire_edit_post', id=repertoire.id) }}">
+    <div class="d-flex justify-content-between align-items-center pb-2">
+        <h3>{{ repertoire.title }}</h3>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            Repertoire Information
+            <div class="form-group d-flex align-items-center justify-content-end">
+                <a href="{{ url_for('admin.repertoire_info_get', id=repertoire.id) }}" class="btn btn-secondary px-sm-4 px-3 me-2">Cancel</a>
+                {{ form.submit(class="btn btn-primary px-sm-4 px-3") }}
+            </div>
+        </div>
+    
+        {{ form.hidden_tag() }}
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12 mt-0">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="title" class="me-2"><strong>Title:</strong></label>
+                        {{ form.title(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="composer" class="me-2"><strong>Composer:</strong></label>
+                        {{ form.composer(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4 col-xl-3 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="discipline" class="me-2"><strong>Discipline:</strong></label>
+                        {{ form.discipline(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4 col-xl-3 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="type" class="me-2"><strong>Type:</strong></label>
+                        {{ form.type(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4 col-xl-3 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="level" class="me-2"><strong>Level:</strong></label>
+                        {{ form.level(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4 col-xl-3 mt-2">
+                    <div class="form-group d-flex align-items-center">
+                        <label for="duration" class="me-2"><strong>Duration:</strong></label>
+                        {{ form.duration(class="form-control") }}
+                    </div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="form-group">
+                        <label for="description" class="me-2 mb-2"><strong>Description:</strong></label>
+                        {{ form.description(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+</div>
+
+{% endblock %}
+
+

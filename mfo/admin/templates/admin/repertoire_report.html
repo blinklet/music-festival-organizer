@@ -1,0 +1,40 @@
+<!-- admin/templates/admin/repertoire_report.html -->
+
+{% extends "/admin/_reports_base.html" %}
+{% block title %}Repertoire{% endblock %}
+
+{% block report_content %}
+
+<div class="container pt-4">
+    <h3>Repertoire</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='title') }}">Title</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='composer') }}">Composer</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='discipline') }}">Discipline</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='type') }}">Type</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='level') }}">Level</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='duration') }}">Duration</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='classes') }}">Classes</a></th>
+                <th><a href="{{ url_for('admin.repertoire_get', sort_by='entries') }}">Entries</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for piece in repertoire %}
+            <tr>
+                <td><a href="{{ url_for('admin.repertoire_info_get', id=piece.id) }}">{{ piece.title }}</a></td>
+                <td>{{ piece.composer }}</td>
+                <td>{{ piece.discipline }}</td>
+                <td>{{ piece.type }}</td>
+                <td>{{ piece.level }}</td>
+                <td class="text-center">{{ piece.duration }}</td>
+                <td class="text-center">{{ piece.classes }}</td>
+                <td class="text-center">{{ piece.entries }}</td>
+            </tr>
+            
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

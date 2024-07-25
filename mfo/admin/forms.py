@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, StringField, SubmitField, HiddenField, IntegerField, SelectField
+from wtforms import FileField, StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
 class UploadForm(FlaskForm):
@@ -38,3 +38,30 @@ class EditClassBasicInfoForm(FlaskForm):
     move_time = IntegerField('Move Time', validators=[Optional()])
     submit = SubmitField('Update')
     
+class EditRepertoireForm(FlaskForm):
+    id = HiddenField('ID')
+    title = StringField('Title', validators=[DataRequired(), Length(max=60)])
+    composer = StringField('Composer', validators=[DataRequired(), Length(max=60)])
+    discipline_choices = [
+        ('', 'None'),
+        ('Strings', 'Strings'),
+        ('Piano', 'Piano'),
+        ('Voice', 'Voice'),
+        ('Winds', 'Winds'),
+    ]
+    discipline = SelectField('Discipline', choices=discipline_choices, validators=[Optional()])
+    type_choices = [
+        ('', 'None'),
+        ('Solo', 'Solo'),
+        ('Duet', 'Duet'),
+        ('Trio', 'Trio'),
+        ('Quartet', 'Quartet'),
+        ('Quintet', 'Quintet'),
+        ('Recital', 'Recital'),
+        ('Large Group', 'Large Group'),
+    ]
+    type = SelectField('Type', choices=type_choices, validators=[Optional()])
+    level = StringField('Level', validators=[Optional(), Length(max=60)])
+    duration = IntegerField('Duration', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional()], render_kw={"rows": 10, "placeholder": "Enter description here..."})
+    submit = SubmitField('Update')
