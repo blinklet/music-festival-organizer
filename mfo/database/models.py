@@ -228,8 +228,11 @@ class Repertoire(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     title: Mapped[Optional[str]] = mapped_column(nullable=True)
-    duration: Mapped[Optional[int]] = mapped_column(nullable=True)
     composer: Mapped[Optional[str]] = mapped_column(nullable=True)
+    level: Mapped[Optional[str]] = mapped_column(nullable=True)
+    type: Mapped[Optional[str]] = mapped_column(nullable=True)
+    discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
+    duration: Mapped[Optional[int]] = mapped_column(nullable=True)
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     festival_classes: Mapped[List["FestivalClass"]] = relationship(

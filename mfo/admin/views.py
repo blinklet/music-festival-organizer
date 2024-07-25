@@ -13,7 +13,7 @@ import io
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
-from mfo.database.models import Profile, FestivalClass
+from mfo.database.models import Profile, FestivalClass, Repertoire
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
 
@@ -241,3 +241,21 @@ def edit_class_info_post():
         db.session.commit()
         flask.redirect(flask.url_for('admin.class_info_get', id=id))
     return flask.render_template('admin/class_info.html', _class=_class)
+
+@bp.get('/report/repertoire')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def repertoire_get():
+    sort_by = flask.request.args.get('sort_by', None)
+    stmt = select(Repertoire)
+    repertoire = db.session.execute(stmt).scalars().all()
+    return flask.render_template('admin/repertoire_report.html', repertoire=repertoire)
+
+@bp.get('/info/repertoire')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def repertoire_info_get():
+    id = flask.request.args.get('id', None)
+    stmt = select(Repertoire).where(Repertoire.id == id)
+    repertoire = db.session.execute(stmt).scalar()
+    return flask.render_template('admin/repertoire_info.html', repertoire=repertoire)

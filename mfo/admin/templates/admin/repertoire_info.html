@@ -1,0 +1,42 @@
+{% extends "/admin/_reports_base.html" %}
+
+{% block title %}Piece Information{% endblock %}
+
+{% block report_content %}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center pb-2">
+        <h3>{{ repertoire.title }}</h3>
+    </div>
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            Repertoire Information
+            <a href="#" class="btn btn-primary px-sm-5 px-3">Edit</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-12">
+                    <p><strong>Title:</strong> {{ repertoire.title }}</p>
+                </div>
+                <div class="col-12">
+                    <p><strong>Composer:</strong> {{ repertoire.composer }}</p>
+                </div>
+                <div class="col-sm-4">
+                    <p><strong>Discipline:</strong> {{ repertoire.discipline }}</p>
+                </div>
+                <div class="col-sm-4">
+                    <p><strong>Type:</strong> {{ repertoire.type }}</p>
+                </div>
+                <div class="col-sm-4">
+                    <p><strong>Level:</strong> {{ repertoire.level }}</p>
+                </div>
+                
+                <div class="col-12">
+                    <p><strong>Description:</strong> {{ repertoire.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
