@@ -10,10 +10,12 @@ import pandas as pd
 import os
 import json
 import io
+from werkzeug.security import check_password_hash
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 from mfo.database.models import Profile, FestivalClass, Repertoire
+from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
 
@@ -38,8 +40,9 @@ def upload_fail_get():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def index_get():
-    if '_flashes' in flask.session:
-        flask.session['_flashes'].clear()
+    # # clear any flashes that may have been set
+    # if '_flashes' in flask.session:
+    #     flask.session['_flashes'].clear()
     form = mfo.admin.forms.UploadForm()
     return flask.render_template('admin/index.html', form=form)
 
@@ -297,3 +300,53 @@ def repertoire_edit_post():
         return flask.redirect(flask.url_for('admin.repertoire_info_get', id=id))
     return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
 
+@bp.get('/delete/festival_data')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def delete_festival_data_get():
+    form = forms.ConfirmFestivalDataDelete()
+    return flask.render_template('admin/delete_festival_data.html', form=form)
+
+@bp.post('/delete/festival_data')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def delete_festival_data_post():
+    form = forms.ConfirmFestivalDataDelete()
+    if form.validate_on_submit():
+        if flask_security.utils.verify_and_update_password(form.password.data, flask_security.current_user):
+            try:          
+                # Get list of users
+                users = db.session.query(User).all()
+                roles = db.session.query(Role).all()
+                
+                # Remove profile associations
+                for user in users:
+                    if hasattr(user, 'profiles'):
+                        for profile in user.profiles:
+                            db.session.delete(profile)
+                for role in roles:
+                    if hasattr(role, 'profiles'):
+                        for profile in role.profiles:
+                            db.session.delete(profile)
+                
+                # Delete profile records
+                profile_table = db.metadata.tables.get('profile')
+                if profile_table is not None:
+                    db.session.execute(profile_table.delete())
+                
+                # Clear all data except User and Role data
+                meta = db.metadata
+                for table in reversed(meta.sorted_tables):
+                    if table.name not in ['user', 'role', 'profile', 'roles_users']:
+                        db.session.execute(table.delete())
+                
+                db.session.commit()
+                flask.flash('Festival data has been deleted.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flask.flash(f'An error occurred: {str(e)}', 'danger')
+            
+            return flask.redirect(flask.url_for('admin.index_get'))
+        else:
+            flask.flash('Invalid password.', 'danger')
+    return flask.render_template('admin/delete_festival_data.html', form=form)

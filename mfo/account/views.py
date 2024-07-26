@@ -4,6 +4,7 @@ from mfo.database.base import db
 import mfo.database.utilities
 import flask_security
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from mfo.account.forms.edit_profile import ProfileEdit
 from mfo.database.users import Role
@@ -17,11 +18,27 @@ bp = flask.Blueprint(
     url_prefix='/account',
     )
 
-@bp.route('/')
+@bp.get('/')
 @flask_security.auth_required()
 def index():
     user = flask_security.current_user
     profile = mfo.database.utilities.find_primary_profile(user)
+    if profile is None:
+        profile = Profile()
+        profile.id = user.id
+        profile.email = user.email
+        for role in user.roles:
+            profile.roles.append(role)
+        db.session.add(profile)
+
+        user.profiles.append(profile)
+
+        db.session.commit()
+    else:
+        # Eagerly load the profile with its roles so they are available to the template context
+        stmt = select(Profile).options(selectinload(Profile.roles)).filter_by(id=profile.id)
+        profile = db.session.execute(stmt).scalar_one_or_none()
+
     return flask.render_template('/account/index.html', user=user, profile=profile)
 
 @bp.post('/edit_profile')
@@ -81,6 +98,17 @@ def edit_profile_post():
 def edit_profile_get():
     user = flask_security.current_user
     profile = mfo.database.utilities.find_primary_profile(user)
+    if profile is None:
+        profile = Profile()
+        profile.id = user.id
+        profile.email = user.email
+        for role in user.roles:
+            profile.roles.append(role)
+        db.session.add(profile)
+
+        user.profiles.append(profile)
+
+        db.session.commit()
     profile.rolenames = [role.name for role in profile.roles]
     form = ProfileEdit(obj=profile)
     return flask.render_template('/account/edit_profile.html', form=form)
