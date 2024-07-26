@@ -71,6 +71,16 @@ https://mdbootstrap.com/docs/standard/extended/profiles/
                 </div>
 
                 <div class="card-footer mt-4 pt-4 pb-3">
+                    <!-- Some roles do not pay fees, so do not show them -->
+                    {% set ns = namespace(roles=[]) %}
+                    {% for role in profile.roles %}
+                        {% do ns.roles.append(role.name) %}
+                    {% endfor %}
+                    {% set only_accompanist = 'Accompanist' in ns.roles and ns.roles|length == 1 %}
+                    {% set only_adjudicator = 'Adjudicator' in ns.roles and ns.roles|length == 1 %}
+                    {% set only_accompanist_and_adjudicator = 'Accompanist' in ns.roles and 'Adjudicator' in ns.roles and ns.roles|length == 2 %}
+                    {% set hide_fees = only_accompanist or only_adjudicator or only_accompanist_and_adjudicator %}
+                    {% if not hide_fees %}
                     <div class="row justify-content-center text-center">
                         <div class="col-sm-5">
                             <h4 class="text-muted">Total fees</h4>
@@ -81,6 +91,9 @@ https://mdbootstrap.com/docs/standard/extended/profiles/
                             <p class="text-dark fs-5">{{ "${:,.2f}".format(profile.fees_paid) }}</p>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="py-3"></div>
+                    {% endif %}
                 </div>
 
             </div>

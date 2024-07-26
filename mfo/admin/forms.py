@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField
+from wtforms import FileField, StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField, PasswordField
 from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
 class UploadForm(FlaskForm):
@@ -65,3 +65,8 @@ class EditRepertoireForm(FlaskForm):
     duration = IntegerField('Duration', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()], render_kw={"rows": 10, "placeholder": "Enter description here..."})
     submit = SubmitField('Update')
+
+
+class ConfirmFestivalDataDelete(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()], render_kw={"placeholder": "Enter password..."})
+    submit = SubmitField('Delete Data')
