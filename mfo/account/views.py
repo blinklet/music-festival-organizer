@@ -71,6 +71,11 @@ def edit_profile_post():
 
         # add new selected roles to profile   
         for selected_role in selected_role_names:
+            # Only allow Admin users to add Admin role
+            if selected_role == 'Admin' and 'Admin' not in user.roles:
+                print(f'#### ERROR!! User {user.email} tried to add Admin role')
+                continue
+            # Only a role if it is not already in the profile
             stmt = select(Role).where(Role.name==selected_role)
             role = db.session.execute(stmt).scalars().first()
             if role not in profile.roles:
@@ -83,7 +88,7 @@ def edit_profile_post():
         db.session.commit()
         return flask.redirect(flask.url_for('account.index'))
     
-    return flask.render_template('/account/index.html', profile=profile, form=form)
+    return flask.render_template('/account/edit_profile.html', form=form)
 
 
 @bp.get('/edit_profile')
