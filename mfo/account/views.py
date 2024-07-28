@@ -1,3 +1,5 @@
+# mfo/account/views.py
+
 import flask
 
 from mfo.database.base import db
@@ -22,30 +24,20 @@ bp = flask.Blueprint(
 @flask_security.auth_required()
 def index():
     user = flask_security.current_user
-    profile = mfo.database.utilities.find_primary_profile(user)
-    if profile is None:
-        profile = Profile()
-        profile.id = user.id
-        profile.email = user.email
-        for role in user.roles:
-            profile.roles.append(role)
-        db.session.add(profile)
+    primary_profile = mfo.database.utilities.find_primary_profile(user)
 
-        user.profiles.append(profile)
+    # Eagerly load the profile with its roles so they are available to the template context
+    stmt = select(Profile).options(selectinload(Profile.roles)).filter_by(id=primary_profile.id)
+    primary_profile = db.session.execute(stmt).scalar_one_or_none()
 
-        db.session.commit()
-    else:
-        # Eagerly load the profile with its roles so they are available to the template context
-        stmt = select(Profile).options(selectinload(Profile.roles)).filter_by(id=profile.id)
-        profile = db.session.execute(stmt).scalar_one_or_none()
-
-    return flask.render_template('/account/index.html', user=user, profile=profile)
+    return flask.render_template('/account/index.html', user=user, profile=primary_profile)
 
 @bp.post('/edit_profile')
 @flask_security.auth_required()
 def edit_profile_post():
     user = flask_security.current_user
     profile = mfo.database.utilities.find_primary_profile(user)
+    
     profile.rolenames = [role.name for role in profile.roles]
     form = ProfileEdit(obj=profile)
 
@@ -76,7 +68,8 @@ def edit_profile_post():
                     profile.roles.remove(role)
                 if role in user.roles: 
                     user.roles.remove(role)
-                
+
+        # add new selected roles to profile   
         for selected_role in selected_role_names:
             stmt = select(Role).where(Role.name==selected_role)
             role = db.session.execute(stmt).scalars().first()
@@ -90,7 +83,7 @@ def edit_profile_post():
         db.session.commit()
         return flask.redirect(flask.url_for('account.index'))
     
-    return flask.render_template('/account/edit_profile.html', form=form)
+    return flask.render_template('/account/index.html', profile=profile, form=form)
 
 
 @bp.get('/edit_profile')
@@ -105,9 +98,6 @@ def edit_profile_get():
         for role in user.roles:
             profile.roles.append(role)
         db.session.add(profile)
-
-        user.profiles.append(profile)
-
         db.session.commit()
     profile.rolenames = [role.name for role in profile.roles]
     form = ProfileEdit(obj=profile)

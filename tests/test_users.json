@@ -5,8 +5,7 @@
         "roles": [
             "Participant"
         ],
-        "profiles": [
-            {
+        "primary_profile": {
                 "client_id": null,
                 "session": null,
                 "name": "Brad Bigman",
@@ -21,8 +20,7 @@
                 "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": true
-            }
-        ]
+        }
     },
     {
         "email": "admin@testmail.com",
@@ -31,8 +29,7 @@
             "Admin",
             "Participant"
         ],
-        "profiles": [
-            {
+        "primary_profile": {
                 "client_id": null,
                 "session": null,
                 "name": "Iamin Charge",
@@ -48,7 +45,6 @@
                 "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": false
-            }
-        ]
+        }
     }
 ]

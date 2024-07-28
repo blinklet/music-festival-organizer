@@ -316,14 +316,17 @@ def delete_festival_data_post():
         if flask_security.utils.verify_and_update_password(form.password.data, flask_security.current_user):
             try:          
                 # Get list of users
-                users = db.session.query(User).all()
-                roles = db.session.query(Role).all()
+                users = db.session.scalars(select(User)).all()
+                roles = db.session.scalars(select(Role)).all()
                 
                 # Remove profile associations
                 for user in users:
                     if hasattr(user, 'profiles'):
                         for profile in user.profiles:
                             db.session.delete(profile)
+                            # clear primary_profile foreign key
+                            user.primary_profile_id = None
+
                 for role in roles:
                     if hasattr(role, 'profiles'):
                         for profile in role.profiles:
@@ -339,6 +342,16 @@ def delete_festival_data_post():
                 for table in reversed(meta.sorted_tables):
                     if table.name not in ['user', 'role', 'profile', 'roles_users']:
                         db.session.execute(table.delete())
+
+                # Add back in a blank primary profile for each user
+                for user in users:
+                    primary_profile = Profile()
+                    primary_profile.email = user.email
+                    user, primary_profile = mfo.database.utilities.set_primary_profile(user, primary_profile)
+                    for role in user.roles:
+                        primary_profile.roles.append(role)
+                    primary_profile.users.append(user)
+                    db.session.add(primary_profile)
                 
                 db.session.commit()
                 flask.flash('Festival data has been deleted.', 'success')
