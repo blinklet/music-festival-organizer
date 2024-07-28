@@ -10,6 +10,7 @@ import os
 from mfo.database.base import db
 from mfo.database.users import User
 from mfo.database.models import Profile
+import mfo.database.utilities
 
 
 bp = flask.Blueprint('database', __name__,)
@@ -52,13 +53,18 @@ def test_users():
                         password=hash_password(user_dict['password']),
                         roles=user_dict['roles'],
                     )
-            for profile in user_dict['profiles']:
-                profile['birthdate'] = datetime.strptime(profile['birthdate'], "%Y-%m-%d").date()
-                profile_entry=Profile(**profile)
-                user.profiles.append(profile_entry)
-
+            primary_profile = user_dict['primary_profile']
+            primary_profile['birthdate'] = datetime.strptime(primary_profile['birthdate'], "%Y-%m-%d").date()
+            profile_entry=Profile(**primary_profile)
+            user, profile_entry = mfo.database.utilities.set_primary_profile(user, profile_entry)
+            # add roles to profile
+            for role in user.roles:
+                profile_entry.roles.append(role)
             db.session.add(user)
+            db.session.add(profile_entry)
             print(f"Added userid: {user.email}")
+
+            
 
     db.session.commit()
     

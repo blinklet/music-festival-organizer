@@ -4,11 +4,12 @@ import flask
 import flask_security
 from sqlalchemy import select
 
+from mfo.database.base import db
 import mfo.database.users as users
-import mfo.database.base as base
 from mfo.database.models import Profile
 from mfo.database.users import Role
 from mfo.account.forms.edit_profile import ProfileEdit
+import mfo.database.utilities
 
 bp = flask.Blueprint(
     'home',
@@ -33,11 +34,19 @@ def new_user():
     user = flask_security.current_user
     users.user_datastore.add_role_to_user(user, role_name)
     stmt = select(Role).where(Role.name == role_name)
-    role = base.db.session.execute(stmt).scalars().first()
-    profile = Profile(email=user.email)
-    profile.users.append(user)
-    profile.roles.append(role)
-    base.db.session.add(profile)
-    base.db.session.commit()
-    form = ProfileEdit(obj=profile)
+    role = db.session.execute(stmt).scalars().first()
+
+    primary_profile = Profile()
+    primary_profile.email = user.email
+    user, primary_profile = mfo.database.utilities.set_primary_profile(user, primary_profile)
+    for role in user.roles:
+        primary_profile.roles.append(role)
+
+    primary_profile.users.append(user)
+
+    db.session.add(primary_profile)
+    db.session.commit()
+
+    form = ProfileEdit(obj=primary_profile)
+
     return flask.render_template('/account/edit_profile.html', form=form)

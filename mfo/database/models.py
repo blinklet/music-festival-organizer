@@ -80,6 +80,8 @@ class Profile(db.Model):
     __tablename__ = 'profile'
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    #user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=True)
+    primary: Mapped[bool] = mapped_column(default=False)
 
     client_id: Mapped[Optional[str]] = mapped_column(nullable=True)
     session: Mapped[Optional[str]] = mapped_column(nullable=True)

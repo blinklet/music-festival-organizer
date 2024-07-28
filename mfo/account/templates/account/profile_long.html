@@ -17,8 +17,8 @@ https://mdbootstrap.com/docs/standard/extended/profiles/
                 <div class="card-header bg-secondary pt-3 pb-2 text-center">
                     <h1 class="text-white">{{ profile.name }}</h1>
                     <p class="text-light fs-5">
-                        {% for role in profile.users[0].roles %}
-                            <span class="mx-2">{{ role.name}}</span>
+                        {% for role in profile.roles %}
+                            <span class="mx-2">{{ role.name }}</span>
                         {% endfor %}
                     </p>
                 </div>

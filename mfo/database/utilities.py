@@ -1,15 +1,17 @@
 def find_primary_profile(user):
-    primary = None
-    for profile in user.profiles:
-        for u in profile.users:
-            if u.id == user.id:
-                primary = profile
-    return primary
+    return user.primary_profile
 
 def find_primary_user(profile):
-    primary = None
-    for user in profile.users:
-        for p in user.profiles:
-            if p.id == user.id:
-                primary = user
-    return primary
+    return profile.user if profile.primary else None
+
+def set_primary_profile(user, profile):
+    # Unset the current primary profile if it exists
+    if user.primary_profile:
+        user.primary_profile.primary = False
+    
+    # Set the new primary profile
+    profile.primary = True
+    user.primary_profile = profile
+    user.primary_profile_id = profile.id
+
+    return user, profile
