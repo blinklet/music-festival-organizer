@@ -67,7 +67,8 @@ class ProfileEdit(FlaskForm):
             ('Teacher', 'Teacher'), 
             ('Guardian', 'Parent or Guardian'), 
             ('Accompanist', 'Accompanist'), 
-            ('Adjudicator', 'Adjudicator')
+            ('Adjudicator', 'Adjudicator'),
+            ('Admin', 'Admin'),
             ],
         default=['Participant'],
         option_widget=wtforms.widgets.CheckboxInput(),
