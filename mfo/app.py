@@ -41,4 +41,37 @@ def create_app():
     app.register_blueprint(mfo.account.views.bp)
     app.register_blueprint(mfo.database.commands.bp)
 
+    # Define helper functions
+    def update_sort(column, sort_by, sort_order):
+        if column in sort_by:
+            # Move the column to the end of the list
+            sort_by.remove(column)
+            sort_by.append(column)
+        else:
+            sort_by.append(column)
+        return sort_by
+
+    def update_order(column, sort_by, sort_order):
+        if column in sort_by:
+            index = sort_by.index(column)
+            if index < len(sort_order):
+                # Move the sort order to the end of the list
+                order = sort_order.pop(index)
+                if order == 'asc':
+                    sort_order.append('desc')
+                else:
+                    sort_order.append('asc')
+            else:
+                # Handle the case where index is out of range
+                sort_order.append('asc')
+        else:
+            sort_order.append('asc')
+        return sort_order
+
+    # Add helper functions to Jinja2 environment
+    app.jinja_env.globals.update(update_sort=update_sort)
+    app.jinja_env.globals.update(update_order=update_order)
+
     return app
+
+

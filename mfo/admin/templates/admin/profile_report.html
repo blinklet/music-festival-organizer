@@ -11,8 +11,32 @@
     <table class="table">
         <thead>
             <tr>
-                <th><a href="{{ url_for('admin.profile_report_get', report_name=report_name, role=role, sort_by='name') }}">Name</a></th>
-                <th><a href="{{ url_for('admin.profile_report_get', report_name=report_name, role=role, sort_by='email') }}">Email</a></th>
+                <th>
+                    {% if role == 'Group' %}
+
+                    <a href="{{ 
+                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
+                        sort_by=update_sort('group_name', sort_by[:], sort_order[:]), 
+                        sort_order=update_order('group_name', sort_by[:], sort_order[:])) 
+                    }}">Group</a>
+
+                    {% else %}
+
+                    <a href="{{ 
+                        url_for('admin.profile_report_get', report_name=report_name, role=role,
+                        sort_by=update_sort('name', sort_by[:], sort_order[:]), 
+                        sort_order=update_order('name', sort_by[:], sort_order[:]))
+                    }}">Name</a>
+
+                    {% endif %}
+                </th>
+                <th>
+                    <a href="{{ 
+                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
+                        sort_by=update_sort('email', sort_by[:], sort_order[:]), 
+                        sort_order=update_order('email', sort_by[:], sort_order[:])) 
+                    }}">Email</a>
+                </th>
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>

@@ -533,8 +533,8 @@ def classes(input_df, issues, info):
     class_repertoire_columns = mfo.admin.services.spreadsheet_columns.class_repertoire_columns
 
     #DEBUG
-    from pprint import pprint
-    pprint(input_df.columns)
+    # from pprint import pprint
+    # pprint(input_df.columns)
 
     for index, row in input_df.iterrows():
         for class_num_col, class_suf_col in class_columns:

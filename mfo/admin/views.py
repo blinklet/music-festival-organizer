@@ -5,7 +5,7 @@ import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select
+from sqlalchemy import select, desc
 import pandas as pd
 import os
 import json
@@ -175,30 +175,40 @@ def handle_forbidden(e):
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def profile_report_get():
-    sort_by = flask.request.args.get('sort_by', None)
+    sort_by = flask.request.args.getlist('sort_by')
+    sort_order = flask.request.args.getlist('sort_order')
+
     role = flask.request.args.get('role', None)
     report_name = flask.request.args.get('report_name', None)
 
-    profiles = admin_services.get_profiles(role, sort_by)
+    profiles = admin_services.get_profiles(role, sort_by, sort_order)
 
     return flask.render_template(
         'admin/profile_report.html', 
         report_name=report_name, 
         role=role, 
         profiles=profiles, 
-        sort_by=sort_by
+        sort_by=sort_by, 
+        sort_order=sort_order,
         )
 
 @bp.get('/report/classes')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
-    sort_by = flask.request.args.get('sort_by', None)
+    sort_by = flask.request.args.getlist('sort_by')
+    sort_order = flask.request.args.getlist('sort_order')
 
     stmt = select(FestivalClass)
     _classes = db.session.execute(stmt).scalars().all()
-    class_list = admin_services.get_class_list(_classes, sort_by)
-    return flask.render_template('admin/class_report.html', classes=class_list)
+    class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
+    return flask.render_template(
+        'admin/class_report.html', 
+        classes=class_list, 
+        sort_by=sort_by, 
+        sort_order=sort_order
+        )
+
 
 @bp.get('/info/class')
 @flask_security.auth_required()
@@ -241,19 +251,40 @@ def edit_class_info_post():
             else:
                 # If the field is not blank, let populate_obj handle it normally
                 setattr(_class, fieldName, field.data)
+
         db.session.commit()
-        return flask.redirect(flask.url_for('admin.class_info_get', id=id))
-    return flask.render_template('admin/class_edit_info.html', form=form, _class=_class)
+
+        return flask.redirect(
+            flask.url_for('admin.class_info_get', id=id)
+            )
+    
+    return flask.render_template(
+        'admin/class_edit_info.html', 
+        form=form, 
+        _class=_class
+        )
 
 @bp.get('/report/repertoire')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def repertoire_get():
-    sort_by = flask.request.args.get('sort_by', None)
+    sort_by = flask.request.args.getlist('sort_by')
+    sort_order = flask.request.args.getlist('sort_order')
     stmt = select(Repertoire)
     repertoire = db.session.execute(stmt).scalars().all()
-    repertoire_list = admin_services.get_repertoire_list(repertoire, sort_by)
-    return flask.render_template('admin/repertoire_report.html', repertoire=repertoire_list)
+
+    repertoire_list = admin_services.get_repertoire_list(
+        repertoire, 
+        sort_by,
+        sort_order,
+        )
+    
+    return flask.render_template(
+        'admin/repertoire_report.html', 
+        repertoire=repertoire_list, 
+        sort_by=sort_by, 
+        sort_order=sort_order
+        )
 
 @bp.get('/info/repertoire')
 @flask_security.auth_required()

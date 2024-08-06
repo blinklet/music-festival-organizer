@@ -10,14 +10,46 @@
     <table class="table">
         <thead>
             <tr>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='title') }}">Title</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='composer') }}">Composer</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='discipline') }}">Discipline</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='type') }}">Type</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='level') }}">Level</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='duration') }}">Duration</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='classes') }}">Classes</a></th>
-                <th><a href="{{ url_for('admin.repertoire_get', sort_by='entries') }}">Entries</a></th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('title', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('title', sort_by[:], sort_order[:])) }}">Title</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('composer', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('composer', sort_by[:], sort_order[:])) }}">Composer</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get',
+                    sort_by=update_sort('discipline', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('discipline', sort_by[:], sort_order[:])) }}">Discipline</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get',
+                    sort_by=update_sort('type', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('type', sort_by[:], sort_order[:])) }}">Type</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('level', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('level', sort_by[:], sort_order[:])) }}">Level</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('duration', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('duration', sort_by[:], sort_order[:])) }}">Duration</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('classes', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('classes', sort_by[:], sort_order[:])) }}">Classes</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.repertoire_get', 
+                    sort_by=update_sort('entries', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('entries', sort_by[:], sort_order[:])) }}">Entries</a>
+                </th>
             </tr>
         </thead>
         <tbody>
