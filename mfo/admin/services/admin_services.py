@@ -4,22 +4,59 @@ from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select
 import pandas as pd
+from collections.abc import Sequence, Mapping
 
 from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass
 
+def sort_key(x, column):
+        """
+        Retrieves the value associated with the specified key from a dictionary.
+        If the key is not found, it returns None.
+        """
+        # Depending on which function calls the sort_list() function, 
+        # I have to sort different lists that contain different types
+        # of objects.
+        # For example, a Profile object is not subscriptable, while
+        # a dictionary is subscriptable.  
+        # I need to check if the object is subscriptable
+        # and if it is not, I need to get its key value differently.
+        try:
+            value = x[column]
+        except (TypeError, KeyError, IndexError):
+            value = getattr(x, column, None)
+        # print(f"Sorting by {column}, value: {value}")  # Debug print
+        return (value is not None, value)
 
-def get_profiles(profile_type, sort_by=None):
-    if sort_by == 'name':
-        stmt = select(Profile).where(Profile.roles.any(name=profile_type)).order_by(Profile.name, Profile.email)
-    elif sort_by == 'email':
-        stmt = select(Profile).where(Profile.roles.any(name=profile_type)).order_by(Profile.email, Profile.name)
-    else:
-        stmt = select(Profile).where(Profile.roles.any(name=profile_type))
-    return db.session.execute(stmt).scalars().all()
+
+def sort_list(list_to_sort, sort_by, sort_order):
+    if sort_by is not None:
+        for column, order in zip(sort_by, sort_order):
+            if order == 'asc':
+                list_to_sort = sorted(
+                    list_to_sort, 
+                    key=lambda x: sort_key(x, column)
+                    )
+            elif order == 'desc':
+                list_to_sort = sorted(list_to_sort, 
+                    key=lambda x: sort_key(x, column), 
+                    reverse=True
+                    )
+            else:
+                raise ValueError(f"Invalid sort order: {order}")
+
+    return list_to_sort
+    
+    
+            
+
+def get_profiles(profile_type, sort_by=None, sort_order=None):
+    stmt = select(Profile).where(Profile.roles.any(name=profile_type))
+    profiles_list = db.session.execute(stmt).scalars().all()
+    return sort_list(profiles_list, sort_by, sort_order)
 
 
-def get_class_list(classes, sort_by=None):
+def get_class_list(classes, sort_by=None, sort_order=None):
     class_list = list()
     for _class in classes:
         id = _class.id
@@ -42,7 +79,7 @@ def get_class_list(classes, sort_by=None):
         name = _class.name
         type = _class.class_type
         if _class.fee:
-            fee = _class.fee
+            fee = int(_class.fee)
         else:
             fee = 0
         discipline = _class.discipline
@@ -90,30 +127,10 @@ def get_class_list(classes, sort_by=None):
         }
         class_list.append(class_dict)
 
-        if sort_by == 'number_suffix':
-            class_list = sorted(
-                class_list, 
-                key=lambda x: (
-                    x[sort_by] is not None, 
-                    x[sort_by] or ''
-                    )
-                )
-        elif sort_by is not None:
-            class_list = sorted(
-                class_list, 
-                key=lambda x: (
-                    x[sort_by] is not None, # Move None values to the start
-                    x[sort_by] or '', # Use empty string as fallback for None values
-                    x['number_suffix'] or '' # Add a secondary sort key to ensure consistent ordering
-                    )
-                )
-        else:
-            pass
-
-    return class_list
+    return sort_list(class_list, sort_by, sort_order)
 
 
-def get_repertoire_list(repertoire, sort_by=None):
+def get_repertoire_list(repertoire, sort_by=None, sort_order=None):
     repertoire_list = list()
     for piece in repertoire:
 
@@ -141,24 +158,4 @@ def get_repertoire_list(repertoire, sort_by=None):
 
         repertoire_list.append(pieces_dict)
 
-        if sort_by == 'title':
-            repertoire_list = sorted(
-                repertoire_list, 
-                key=lambda x: (
-                    x[sort_by] is not None, 
-                    x[sort_by] or ''
-                    )
-                )
-        elif sort_by is not None:
-            repertoire_list = sorted(
-                repertoire_list, 
-                key=lambda x: (
-                    x[sort_by] is not None, # Move None values to the start
-                    x[sort_by] or '', # Use empty string as fallback for None values
-                    x['title'] or '' # Add a secondary sort key to ensure consistent ordering
-                    )
-                )
-        else:
-            pass
-
-    return repertoire_list
+    return sort_list(repertoire_list, sort_by, sort_order)

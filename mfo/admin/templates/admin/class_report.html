@@ -10,14 +10,42 @@
     <table class="table">
         <thead>
             <tr>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='number_suffix') }}">Class</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='name') }}">Name</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='type') }}">Type</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='discipline') }}">Discipline</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='number_of_entries') }}">Entries</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='total_fees') }}">Total Fees</a></th>
-                <th><a href="{{ url_for('admin.classes_get', sort_by='total_time') }}">Total Time</a></th>
-            </tr>
+                <!-- The sort_by[:] and sort_order[:] ensure that a copy of the list is passed to avoid modifying the original list during URL generation. -->
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('number_suffix', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('number_suffix', sort_by[:], sort_order[:])) }}">Class</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('name', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('name', sort_by[:], sort_order[:])) }}">Name</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('type', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('type', sort_by[:], sort_order[:])) }}">Type</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('discipline', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('discipline', sort_by[:], sort_order[:])) }}">Discipline</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('number_of_entries', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('number_of_entries', sort_by[:], sort_order[:])) }}">Entries</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('total_fees', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('total_fees', sort_by[:], sort_order[:])) }}">Total&nbsp;Fees</a>
+                </th>
+                <th>
+                    <a href="{{ url_for('admin.classes_get', 
+                    sort_by=update_sort('total_time', sort_by[:], sort_order[:]), 
+                    sort_order=update_order('total_time', sort_by[:], sort_order[:])) }}">Total&nbsp;Time</a>
+                </th>
         </thead>
         <tbody>
             {% for _class in classes %}
@@ -26,9 +54,9 @@
                 <td>{{ _class.name }}</td>
                 <td>{{ _class.type }}</td>
                 <td>{{ _class.discipline }}</td>
-                <td>{{ _class.number_of_entries }}</td>
-                <td>{{ _class.total_fees }}</td>
-                <td>{{ _class.total_time }}</td>
+                <td class="text-end">{{ _class.number_of_entries }}</td>
+                <td class="text-end">{{ _class.total_fees }}</td>
+                <td class="text-end">{{ _class.total_time }}</td>
             </tr>
             
             {% endfor %}

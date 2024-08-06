@@ -185,7 +185,7 @@ class FestivalClass(db.Model):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    number: Mapped[Optional[str]] = mapped_column(nullable=True)
+    number: Mapped[str] = mapped_column(nullable=True)
     suffix: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     name: Mapped[Optional[str]] = mapped_column(nullable=True)

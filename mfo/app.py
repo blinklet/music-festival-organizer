@@ -36,9 +36,14 @@ def create_app():
     import mfo.admin.views
     import mfo.account.views
     import mfo.database.commands
+    import mfo.template_functions
     app.register_blueprint(mfo.home.views.bp)
     app.register_blueprint(mfo.admin.views.bp)
     app.register_blueprint(mfo.account.views.bp)
     app.register_blueprint(mfo.database.commands.bp)
+    app.register_blueprint(mfo.template_functions.bp)
 
+    
     return app
+
+
