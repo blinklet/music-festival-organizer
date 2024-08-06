@@ -42,6 +42,7 @@ def create_app():
     app.register_blueprint(mfo.database.commands.bp)
 
     # Define helper functions
+    @app.template_global()
     def update_sort(column, sort_by, sort_order):
         if column in sort_by:
             # Move the existing column to the end of the list
@@ -52,6 +53,7 @@ def create_app():
             sort_by.append(column)
         return sort_by
 
+    @app.template_global()
     def update_order(column, sort_by, sort_order):
         if column in sort_by:
             # If column altready exists in sort_by list,
@@ -70,8 +72,8 @@ def create_app():
         return sort_order
 
     # Add helper functions to Jinja2 environment
-    app.jinja_env.globals.update(update_sort=update_sort)
-    app.jinja_env.globals.update(update_order=update_order)
+    # app.jinja_env.globals.update(update_sort=update_sort)
+    # app.jinja_env.globals.update(update_order=update_order)
 
     return app
 
