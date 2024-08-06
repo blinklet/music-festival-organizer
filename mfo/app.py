@@ -44,27 +44,28 @@ def create_app():
     # Define helper functions
     def update_sort(column, sort_by, sort_order):
         if column in sort_by:
-            # Move the column to the end of the list
+            # Move the existing column to the end of the list
             sort_by.remove(column)
             sort_by.append(column)
         else:
+            # Or, add the new column to the end of the list
             sort_by.append(column)
         return sort_by
 
     def update_order(column, sort_by, sort_order):
         if column in sort_by:
+            # If column altready exists in sort_by list,
+            # find its corresponding sort_order value,
+            # reverse it, and move it to the end of the list
             index = sort_by.index(column)
-            if index < len(sort_order):
-                # Move the sort order to the end of the list
-                order = sort_order.pop(index)
-                if order == 'asc':
-                    sort_order.append('desc')
-                else:
-                    sort_order.append('asc')
+            order = sort_order.pop(index)
+            if order == 'asc':
+                sort_order.append('desc')
             else:
-                # Handle the case where index is out of range
                 sort_order.append('asc')
         else:
+            # Or, add the sort_order value for the new column 
+            # to the end of the list
             sort_order.append('asc')
         return sort_order
 

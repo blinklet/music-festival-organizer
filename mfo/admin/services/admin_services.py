@@ -30,29 +30,24 @@ def sort_key(x, column):
 
 
 def sort_list(list_to_sort, sort_by, sort_order):
-
-    # If sort_by is None, return the list as is
-    sorted_list = list_to_sort
-
-    # sort list by sort_by and sort_order lists
     if sort_by is not None:
-        if sort_order is None:
-            sort_order = ['asc'] * len(sort_by)
         for column, order in zip(sort_by, sort_order):
             if order == 'asc':
-                sorted_list = sorted(
+                list_to_sort = sorted(
                     list_to_sort, 
                     key=lambda x: sort_key(x, column)
                     )
             elif order == 'desc':
-                sorted_list = sorted(list_to_sort, 
+                list_to_sort = sorted(list_to_sort, 
                     key=lambda x: sort_key(x, column), 
                     reverse=True
                     )
             else:
                 raise ValueError(f"Invalid sort order: {order}")
+
+    return list_to_sort
     
-    return sorted_list
+    
             
 
 def get_profiles(profile_type, sort_by=None, sort_order=None):
