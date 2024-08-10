@@ -1,0 +1,72 @@
+<!-- mfo/admin/templates/admin/partials/class_table.html -->
+
+<table class="table" id="class-table">
+    <thead>
+        <tr>
+            <!-- The sort_by[:] and sort_order[:] ensure that a copy of the list is passed to avoid 
+                 modifying the original list during URL generation. -->
+            <th hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('number_suffix', sort_by[:], sort_order[:]), 
+                sort_order=update_order('number_suffix', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Class</a>
+            </th>
+            <th hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('name', sort_by[:], sort_order[:]), 
+                sort_order=update_order('name', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Name</a>
+            </th>
+            <th hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('type', sort_by[:], sort_order[:]), 
+                sort_order=update_order('type', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Type</a>
+            </th>
+            <th hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('discipline', sort_by[:], sort_order[:]), 
+                sort_order=update_order('discipline', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Discipline</a>
+            </th>
+            <th class="text-end" hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('number_of_entries', sort_by[:], sort_order[:]), 
+                sort_order=update_order('number_of_entries', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Entries</a>
+            </th>
+            <th class="text-end" hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('total_fees', sort_by[:], sort_order[:]), 
+                sort_order=update_order('total_fees', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Total Fees</a>
+            </th>
+            <th class="text-end" hx-boost="true">
+                <a href="{{ url_for('admin.classes_get', 
+                sort_by=update_sort('total_time', sort_by[:], sort_order[:]), 
+                sort_order=update_order('total_time', sort_by[:], sort_order[:])) }}"
+                hx-target="#class-table"
+                hx-swap="outerHTML">Total Time</a>
+            </th>
+    </thead>
+    <tbody>
+        {% for _class in classes %}
+        <tr>
+            <td><a href="{{ url_for('admin.class_info_get', id=_class.id) }}">{{ _class.number_suffix }}</a></td>
+            <td>{{ _class.name }}</td>
+            <td>{{ _class.type }}</td>
+            <td>{{ _class.discipline }}</td>
+            <td class="text-end">{{ _class.number_of_entries }}</td>
+            <td class="text-end">{{ _class.total_fees }}</td>
+            <td class="text-end">{{ _class.total_time }}</td>
+        </tr>
+        
+        {% endfor %}
+    </tbody>
+</table>
