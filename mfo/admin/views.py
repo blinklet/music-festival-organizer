@@ -202,12 +202,22 @@ def classes_get():
     stmt = select(FestivalClass)
     _classes = db.session.execute(stmt).scalars().all()
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
-    return flask.render_template(
-        'admin/class_report.html', 
-        classes=class_list, 
-        sort_by=sort_by, 
-        sort_order=sort_order
+    if flask.request.headers.get('HX-Request'):
+        # Render a different template for HTMX requests
+        return flask.render_template(
+            'admin/partials/class_table.html', 
+            classes=class_list, 
+            sort_by=sort_by, 
+            sort_order=sort_order
         )
+    else:
+        return flask.render_template(
+            'admin/class_report.html', 
+            classes=class_list, 
+            sort_by=sort_by, 
+            sort_order=sort_order
+            )
+
 
 
 @bp.get('/info/class')
