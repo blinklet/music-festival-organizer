@@ -36,6 +36,11 @@ def update_order(column, sort_by, sort_order):
         sort_order.append('asc')
     return sort_order
 
+@bp.app_template_global()
+def update_search(column, search_by):
+    search_by.append(column)
+    return search_by
+
 # Add helper functions to Jinja2 environment
 # app.jinja_env.globals.update(update_sort=update_sort)
 # app.jinja_env.globals.update(update_order=update_order)

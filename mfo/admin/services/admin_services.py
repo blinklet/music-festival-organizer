@@ -30,7 +30,7 @@ def sort_key(x, column):
 
 
 def sort_list(list_to_sort, sort_by, sort_order):
-    if sort_by is not None:
+    if len(sort_by) > 0:
         for column, order in zip(sort_by, sort_order):
             if order == 'asc':
                 list_to_sort = sorted(

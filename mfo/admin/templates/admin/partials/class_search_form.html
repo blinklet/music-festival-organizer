@@ -1,0 +1,24 @@
+<div class="search-container mb-3">
+    <form id="search-form" method="GET" action="{{ url_for('admin.classes_get', sort_by=sort_by[:], sort_order=sort_order[:]) }}">
+       <input type="text" class="form-control" name="search-number-suffix" placeholder="Search Number Suffix">
+       <input type="text" class="form-control" name="search-name" placeholder="Search Name">
+       <select class="form-control" name="search-type" placeholder="Search Type">
+       {% for value, label in form.class_type.choices %}
+              <option value="{{ value }}">{{ label }}</option>
+       {% endfor %}
+       </select>
+       <select class="form-control" name="search-discipline" placeholder="Search Discipline">
+       {% for value, label in form.discipline.choices %}
+              <option value="{{ value }}">{{ label }}</option>
+       {% endfor %}
+       </select>
+       <input type="hidden" name="sort_by" value="{{ sort_by[:] | tojson  }}">
+       <input type="hidden" name="sort_order" value="{{ sort_order[:] | tojson  }}">
+       <button type="submit" 
+       class="btn btn-primary"
+       hx-include="[name='search-form'], [name='sort_by'], [name='sort_order']"
+       hx-target="#class-table"
+       hx-push-url="true"
+       hx-swap="outerHTML">Search</button>
+   </form>
+  </div>

@@ -5,7 +5,7 @@ import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, or_
 import pandas as pd
 import os
 import json
@@ -198,24 +198,56 @@ def profile_report_get():
 def classes_get():
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+    
+    form = forms.ClassSearchForm()
+
+    # search_number_suffix = flask.request.args.get('search-number-suffix', '')
+    # search_name = flask.request.args.get('search-name', '')
+    # search_type = flask.request.args.get('search-type', '')
+    # search_discipline = flask.request.args.get('search-discipline', '')
+
+    # print(f"Search number suffix: {search_number_suffix}")
+    # print(f"Search name: {search_name}")
+    # print(f"Search type: {search_type}")
+    # print(f"Search discipline: {search_discipline}")
+    print(f"Sort by: {sort_by}")
+    print(f"Sort order: {sort_order}")
 
     stmt = select(FestivalClass)
+
+    # if search_number_suffix:
+    #     stmt = stmt.where(
+    #         or_(
+    #             FestivalClass.number.ilike(f'%{search_number_suffix}%'),
+    #             FestivalClass.suffix.ilike(f'%{search_number_suffix}%')
+    #         )
+    #     )
+    # if search_name:
+    #     stmt = stmt.where(FestivalClass.name.ilike(f'%{search_name}%'))
+    # if search_type:
+    #     stmt = stmt.where(FestivalClass.type.ilike(f'%{search_type}%'))
+    # if search_discipline:
+    #     stmt = stmt.where(FestivalClass.discipline.ilike(f'%{search_discipline}%'))
+
     _classes = db.session.execute(stmt).scalars().all()
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
+
     if flask.request.headers.get('HX-Request'):
         # Render a different template for HTMX requests
         return flask.render_template(
             'admin/partials/class_table.html', 
             classes=class_list, 
             sort_by=sort_by, 
-            sort_order=sort_order
-        )
+            sort_order=sort_order,
+            form=form
+            )
     else:
         return flask.render_template(
             'admin/class_report.html', 
             classes=class_list, 
             sort_by=sort_by, 
-            sort_order=sort_order
+            sort_order=sort_order,
+            form=form
             )
 
 
