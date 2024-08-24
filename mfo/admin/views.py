@@ -58,13 +58,7 @@ def index_post():
 
         if not succeeded:
             flask.flash(message, 'danger')
-            # Get out of the innerHTML so that the redirect works
-            # https://htmx.org/docs/#redirect
-            # (This is different than the confirm_post() function because the form in the 
-            # confirm_form.html template is not submitted with htmx; it is a normal POST request)
-            response = flask.jsonify("")
-            response.headers['HX-Redirect'] = flask.url_for('admin.upload_fail_get')
-            return response
+            return flask.redirect(flask.url_for('admin.upload_fail_get'))
         
         flask.flash(message, 'success')
 
@@ -89,11 +83,11 @@ def confirm_get():
     if issues_json:
         issues = json.loads(issues_json)
         flask.flash("Issues found. Review issues", 'warning')
-        return flask.render_template('admin/partials/list_issues.html', issues=issues, form=form)
+        return flask.render_template('admin/list_issues.html', issues=issues, form=form)
     else:
         flask.flash("No issues found. Click Confirm to add spreadsheet data to MFO", 'success')
         issues = []
-        return flask.render_template('admin/partials/list_issues.html', issues=issues, form=form)
+        return flask.render_template('admin/list_issues.html', issues=issues, form=form)
     # Note that the form in the confirm_form.html template included in the 
     # partials/list_issues.html template is not submitted with htmx; it is a normal POST request
     # so when the form is submitted, the confirm_post() function is called with a normal POST request
@@ -126,43 +120,18 @@ def confirm_post():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def generate_text_file():
-    # Get the file name from the form data
-    file_name = flask.request.form.get('filename', 'issues.txt')  # Default to 'issues.txt' if not provided
+    file_name = flask.request.form.get('filename', 'issues.txt')
 
-    # Create an in-memory binary file
     output = io.BytesIO()
     
-    # Example issues list, typically this would be dynamic
     issues_json = flask.session.get('issues', None)
     issues = json.loads(issues_json)
 
-    # Write each issue to the output, appending a newline to each one
     for issue in issues:
         output.write((issue + "\n").encode('utf-8'))
-    
-    # Set the cursor to the beginning of the file
+
     output.seek(0)
-    
-    # Save the file content and file name in the session
-    flask.session['file_content'] = output.getvalue()
-    flask.session['file_name'] = file_name
 
-    # Return a JSON response with the download URL
-    return flask.jsonify({'redirect': flask.url_for('admin.download_file')})
-
-@bp.route('/download_file')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def download_file():
-    # Retrieve file content and file name from session
-    file_content = flask.session.get('file_content', None)
-    file_name = flask.session.get('file_name', 'issues.txt')
-
-    if not file_content:
-        return '<p class="error">No file to download</p>'
-
-    output = io.BytesIO(file_content)
-    output.seek(0)
     return flask.send_file(output, mimetype='text/plain', as_attachment=True, download_name=file_name)
 
 
@@ -202,21 +171,13 @@ def classes_get():
     stmt = select(FestivalClass)
     _classes = db.session.execute(stmt).scalars().all()
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
-    if flask.request.headers.get('HX-Request'):
-        # Render a different template for HTMX requests
-        return flask.render_template(
-            'admin/partials/class_table.html', 
-            classes=class_list, 
-            sort_by=sort_by, 
-            sort_order=sort_order
+
+    return flask.render_template(
+        'admin/class_report.html', 
+        classes=class_list, 
+        sort_by=sort_by, 
+        sort_order=sort_order
         )
-    else:
-        return flask.render_template(
-            'admin/class_report.html', 
-            classes=class_list, 
-            sort_by=sort_by, 
-            sort_order=sort_order
-            )
 
 
 

@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField, PasswordField
+from flask_wtf.file import FileField, FileRequired
+from wtforms import StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField, PasswordField
 from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
 class UploadForm(FlaskForm):
-    file = FileField('Spreadsheet File', [InputRequired()])
+    file = FileField('Spreadsheet File', [FileRequired()])
     submit = SubmitField('Upload')
 
 class ConfirmForm(FlaskForm):
