@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h3>Review Issues</h3>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row pb-3">
+        <div class="col-sm-9 pb-3 pb-md-0 align-middle"> 
+            Review the issues list, below, and resolve issues in the spreadsheet data. 
+            Scroll to the end and click <i>Cancel</i> to discard the changes.
+        </div>
+        <div class="col-sm-3 text-center text-md-end align-middle">
+            <button type="button" class="btn btn-primary pt-2" data-bs-toggle="modal" data-bs-target="#filenameModal">Save Issues List</button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Issue</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for issue in issues %}
+            <tr> 
+                <td>{{ issue }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
