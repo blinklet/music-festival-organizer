@@ -1,0 +1,21 @@
+<!-- admin/templates/admin/upload_registrations.html -->
+
+{% extends "/admin/_admin_base.html" %}
+{% block title %}Spreadsheet upload{% endblock %}
+
+{% block admin_content %}
+
+{% include "flash.html" %}
+
+<div class="container pt-4">
+    <div id="file-form">
+        {{ form.file.label(class="form-label h4") }}
+        <form method="POST" action="{{ url_for('admin.upload_registrations_post') }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ form.file(class="form-control mb-3") }}
+            {{ form.submit(class="btn btn-primary mb-3") }}
+        </form>
+    </div>
+</div>
+
+{% endblock %}

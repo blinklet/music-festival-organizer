@@ -28,29 +28,21 @@ bp = flask.Blueprint(
     )
 
 
-@bp.get('/upload_fail')
+@bp.get('/upload_registrations')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def upload_fail_get():
-    form = mfo.admin.forms.UploadForm()
-    return flask.render_template('admin/index.html', form=form)
-
-
-@bp.get('/')
-@flask_security.auth_required()
-@flask_security.roles_required('Admin')
-def index_get():
+def upload_registrations_get():
     # # clear any flashes that may have been set
     # if '_flashes' in flask.session:
     #     flask.session['_flashes'].clear()
     form = mfo.admin.forms.UploadForm()
-    return flask.render_template('admin/index.html', form=form)
+    return flask.render_template('admin/upload_registrations.html', form=form)
 
 
 @bp.post('/')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
-def index_post():
+def upload_registrations_post():
     form = mfo.admin.forms.UploadForm()
     if form.validate_on_submit():
         file = form.file.data
@@ -58,7 +50,7 @@ def index_post():
 
         if not succeeded:
             flask.flash(message, 'danger')
-            return flask.redirect(flask.url_for('admin.upload_fail_get'))
+            return flask.redirect(flask.url_for('admin.upload_registrations_get'))
         
         flask.flash(message, 'success')
 
@@ -107,13 +99,13 @@ def confirm_post():
             issues, info = spreadsheet.gather_issues(df)
             spreadsheet.commit_to_db()
             flask.flash("Changes were committed to the database.", 'success')
-            return flask.redirect(flask.url_for('admin.index_get'))
+            return flask.redirect(flask.url_for('admin.upload_registrations_get'))
         elif form.cancel.data:
             flask.flash("Upload cancelled by user. Database unchanged.", 'warning')
         else:
             flask.flash("Unexpected error! Changes were not committed to the database.", 'danger')
     
-    return flask.redirect(flask.url_for('admin.upload_fail_get'))
+    return flask.redirect(flask.url_for('admin.upload_registrations_get'))
 
 
 @bp.post('/generate_text_file')
@@ -361,7 +353,7 @@ def delete_festival_data_post():
                 db.session.rollback()
                 flask.flash(f'An error occurred: {str(e)}', 'danger')
             
-            return flask.redirect(flask.url_for('admin.index_get'))
+            return flask.redirect(flask.url_for('admin.upload_registrations_get'))
         else:
             flask.flash('Invalid password.', 'danger')
     return flask.render_template('admin/delete_festival_data.html', form=form)
