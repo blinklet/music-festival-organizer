@@ -4,7 +4,7 @@ from wtforms import StringField, SubmitField, HiddenField, IntegerField, SelectF
 from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
 class UploadForm(FlaskForm):
-    file = FileField('Spreadsheet File', [FileRequired()])
+    file = FileField('Upload Registrations File', [FileRequired()])
     submit = SubmitField('Upload')
 
 class ConfirmForm(FlaskForm):
