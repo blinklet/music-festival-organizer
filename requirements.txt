@@ -9,3 +9,4 @@ pandas
 odfpy
 openpyxl
 Flask-Session[cachelib]
+tabula-py[jpype]

@@ -3,7 +3,11 @@ from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, HiddenField, IntegerField, SelectField, TextAreaField, PasswordField
 from wtforms.validators import DataRequired, InputRequired, Length, Optional
 
-class UploadForm(FlaskForm):
+class UploadSyllabusForm(FlaskForm):
+    file = FileField('Upload Syllabus File', [FileRequired()])
+    submit = SubmitField('Upload')
+
+class UploadRegistrationsForm(FlaskForm):
     file = FileField('Upload Registrations File', [FileRequired()])
     submit = SubmitField('Upload')
 
