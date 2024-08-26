@@ -14,6 +14,7 @@ from werkzeug.security import check_password_hash
 
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
+import mfo.admin.services.syllabus as syllabus
 from mfo.database.models import Profile, FestivalClass, Repertoire
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
@@ -28,6 +29,33 @@ bp = flask.Blueprint(
     )
 
 
+@bp.get('/upload_syllabus')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def upload_syllabus_get():
+    form = mfo.admin.forms.UploadSyllabusForm()
+    return flask.render_template('admin/upload_syllabus.html', form=form)
+
+@bp.post('/upload_syllabus')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def upload_syllabus_post():
+    form = mfo.admin.forms.UploadSyllabusForm()
+    if form.validate_on_submit():
+        file = form.file.data
+        if file.filename.endswith('.pdf'):
+            syllabus.add_to_db(file)
+            # I might make a different template for showing any issues or other ionformation related to a successful upload
+            # For now, just redirect back to the Syllabus load page to show flask.flash messages, if they exist
+            return flask.redirect(flask.url_for('admin.upload_syllabus_get')) 
+        else:
+            flask.flash(
+                f"Uploaded file is not a PDF file." +
+                f"Please select the Syllabus PDF file",
+                'danger'
+                )
+            return flask.redirect(flask.url_for('admin.upload_syllabus_get'))
+
 @bp.get('/upload_registrations')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -35,15 +63,15 @@ def upload_registrations_get():
     # # clear any flashes that may have been set
     # if '_flashes' in flask.session:
     #     flask.session['_flashes'].clear()
-    form = mfo.admin.forms.UploadForm()
+    form = mfo.admin.forms.UploadRegistrationsForm()
     return flask.render_template('admin/upload_registrations.html', form=form)
 
 
-@bp.post('/')
+@bp.post('/upload_registrations')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def upload_registrations_post():
-    form = mfo.admin.forms.UploadForm()
+    form = mfo.admin.forms.UploadRegistrationsForm()
     if form.validate_on_submit():
         file = form.file.data
         df, succeeded, message = spreadsheet.read_sheet(file)
