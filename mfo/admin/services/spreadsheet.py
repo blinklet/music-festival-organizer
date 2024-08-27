@@ -604,6 +604,11 @@ def classes(input_df, issues, info):
                             }
                         )
 
+                # clean up suffix in a few special cases for QCMF
+                # if pd.notna(suffix):
+                #     if "(" in suffix and ")" in suffix:
+                #         suffix = suffix.split(" (")[0]
+
                 classes.append({'number': number, 'suffix': suffix, 'type': type, 'test_pieces': test_pieces, 'index': index})
 
     for row in classes:
@@ -912,6 +917,7 @@ def entries(input_df, issues, info):
     at corrections or additions to the original entry. We will highlight the second entry 
     as an issue to be verified.
     """
+
     repertoire_columns = mfo.admin.services.spreadsheet_columns.class_repertoire_columns
 
     for index, row in input_df.iterrows():
@@ -1206,10 +1212,29 @@ def entries(input_df, issues, info):
 
 
 
+def clean_suffixes(input_df, issues, info):
+    """
+    Where the class suffix contains a bracketed value, remove the bracketed value
+    """
+    class_suffix_columns = [
+        col for col in input_df.columns if col.startswith('class_suffix_')
+    ]
+
+    for index, row in input_df.iterrows():
+        for class_suffix_col in class_suffix_columns:
+            suffix = row[class_suffix_col]
+            if pd.notna(suffix):
+                if "(" in suffix and ")" in suffix:
+                    old_suffix = suffix
+                    suffix = suffix.split(" (")[0]
+                    input_df.at[index, class_suffix_col] = suffix
+                    info.append(f"** Row {index +2}: Cleaned class suffix: {old_suffix}")
+
 
 def gather_issues(input_df):
     issues = mfo.utilities.CustomList()
     info = mfo.utilities.CustomList()
+    clean_suffixes(input_df, issues, info)
     all_profiles(input_df, issues, info)
     related_profiles(input_df, issues, info)
     repertoire(input_df, issues, info)
