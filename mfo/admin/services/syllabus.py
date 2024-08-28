@@ -96,21 +96,21 @@ def load_database(combined_df):
             # if there are no classes with the same number in the database, add all the rows in the group
             if not db_classes:
                 for index, row in group.iterrows():
-                    
                     suffix, class_type, discipline = infer_attributes(row)
-
                     festival_class = FestivalClass(
-                    number=row.number, 
-                    suffix=suffix, 
-                    name=row.description, 
-                    class_type=class_type,
-                    discipline=discipline,
-                    fee=row.fee)
+                        number=row.number, 
+                        suffix=suffix, 
+                        name=row.description, 
+                        class_type=class_type,
+                        discipline=discipline,
+                        fee=row.fee,
+                        )
                     db.session.add(festival_class)
                     existing_classes.append((row.number, suffix))
                     
             else:
-                # Update existing classes in the database with information from the dataframe
+                # If at least one class with the same number exists in the database,
+                # update existing classes in the database with information from the dataframe
                 for db_class in db_classes:
                     for index, row in group.iterrows():
                         suffix, class_type, discipline = infer_attributes(row)
@@ -133,14 +133,16 @@ def load_database(combined_df):
                             name=row.description, 
                             class_type=class_type,
                             discipline=discipline,
-                            fee=row.fee)
+                            fee=row.fee
+                            )
                         db.session.add(festival_class)
                         existing_classes.append((row.number, suffix))
 
-                # Add class from the database that are not in the dataframe, 
+                # Update classes from the database that are not in the dataframe group, 
                 # using the fields from the first row in the dataframe group
                 for db_class in db_classes:
                     row = group.iloc[0]
+                    suffix, class_type, discipline = infer_attributes(row)
                     if (db_class.number, db_class.suffix) not in existing_classes:
                         db_class.name = row.description
                         db_class.class_type = class_type
