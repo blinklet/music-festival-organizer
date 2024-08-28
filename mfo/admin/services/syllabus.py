@@ -84,39 +84,70 @@ def load_database(combined_df):
     """
     # issues = mfo.utilities.CustomList()
 
+    existing_classes = []
+    
     try:
-        for index, row in combined_df.iterrows():
+        # find all rows in combined_df that have the same number
+        grouped_df = combined_df.groupby('number')
+        for number, group in grouped_df:
+            # get list of classes with the same number from the database
+            stmt = sa.select(FestivalClass).where(FestivalClass.number == number)
+            db_classes = db.session.execute(stmt).scalars().all()
+            # if there are no classes with the same number in the database, add all the rows in the group
+            if not db_classes:
+                for index, row in group.iterrows():
+                    
+                    suffix, class_type, discipline = infer_attributes(row)
 
-            # In dataframes converted from PDF, empty strings are not None, so we need to convert them
-            if row.suffix == "":
-                suffix = None
-            else:
-                suffix = row.suffix
-
-            class_type, discipline = infer_attributes(row)
-
-            stmt = sa.select(FestivalClass).where(
-                FestivalClass.number == row.number,
-                #FestivalClass.suffix == suffix,
-            )
-            festival_classes = db.session.execute(stmt).scalars().all()
-
-            if not festival_classes:
-                festival_class = FestivalClass(
+                    festival_class = FestivalClass(
                     number=row.number, 
                     suffix=suffix, 
                     name=row.description, 
                     class_type=class_type,
                     discipline=discipline,
                     fee=row.fee)
-                db.session.add(festival_class)
-            else:
-                for festival_class in festival_classes:
-                    festival_class.name = row.description
-                    festival_class.class_type = class_type
-                    festival_class.discipline = discipline
-                    festival_class.fee = row.fee
                     db.session.add(festival_class)
+                    existing_classes.append((row.number, suffix))
+                    
+            else:
+                # Update existing classes in the database with information from the dataframe
+                for db_class in db_classes:
+                    for index, row in group.iterrows():
+                        suffix, class_type, discipline = infer_attributes(row)
+                        if (db_class.number, db_class.suffix) == (row.number, suffix):
+                            db_class.name = row.description
+                            db_class.class_type = class_type
+                            db_class.discipline = discipline
+                            db_class.fee = row.fee
+                            db.session.add(db_class)
+                            existing_classes.append((row.number, suffix))
+                            break
+                
+                # Add new classes from the dataframe to the database
+                for index, row in group.iterrows():
+                    suffix, class_type, discipline = infer_attributes(row)
+                    if (row.number, suffix) not in existing_classes:
+                        festival_class = FestivalClass(
+                            number=row.number, 
+                            suffix=suffix, 
+                            name=row.description, 
+                            class_type=class_type,
+                            discipline=discipline,
+                            fee=row.fee)
+                        db.session.add(festival_class)
+                        existing_classes.append((row.number, suffix))
+
+                # Add class from the database that are not in the dataframe, 
+                # using the fields from the first row in the dataframe group
+                for db_class in db_classes:
+                    row = group.iloc[0]
+                    if (db_class.number, db_class.suffix) not in existing_classes:
+                        db_class.name = row.description
+                        db_class.class_type = class_type
+                        db_class.discipline = discipline
+                        db_class.fee = row.fee
+                        db.session.add(db_class)
+                        existing_classes.append((row.number, suffix))
 
         flask.flash("Syllabus added to database.", "success")
         db.session.commit()
@@ -132,6 +163,12 @@ def infer_attributes(row):
     class number (which seems to correspond with discipline) and keywords 
     in the class description like "Solo" and "Trio".
     """
+
+    if row.suffix == "":
+        suffix = None
+    else:
+        suffix = row.suffix
+
     class_number = int(row['number'])
     class_description = row['description']
 
@@ -188,7 +225,7 @@ def infer_attributes(row):
     else:
         class_type = "Solo"
 
-    return (class_type, discipline)
+    return (suffix, class_type, discipline)
 
 
 
