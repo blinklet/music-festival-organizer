@@ -93,19 +93,28 @@ def load_database(combined_df):
             else:
                 suffix = row.suffix
 
+            class_type, discipline = infer_attributes(row)
+
             stmt = sa.select(FestivalClass).where(
                 FestivalClass.number == row.number,
-                FestivalClass.suffix == suffix,
+                #FestivalClass.suffix == suffix,
             )
-            festival_class = db.session.execute(stmt).scalar_one_or_none()
+            festival_classes = db.session.execute(stmt).scalars().all()
 
-            if festival_class is None:
-                festival_class = FestivalClass(number=row.number, suffix=suffix, name=row.description, fee=row.fee)
+            if not festival_classes:
+                festival_class = FestivalClass(
+                    number=row.number, 
+                    suffix=suffix, 
+                    name=row.description, 
+                    class_type=class_type,
+                    discipline=discipline,
+                    fee=row.fee)
                 db.session.add(festival_class)
             else:
-                if festival_class.name == None:
-                    # issues.append(f"**** Class {row['number']}{row['suffix']}: added description and fee from Syllabus")
+                for festival_class in festival_classes:
                     festival_class.name = row.description
+                    festival_class.class_type = class_type
+                    festival_class.discipline = discipline
                     festival_class.fee = row.fee
                     db.session.add(festival_class)
 
@@ -116,6 +125,71 @@ def load_database(combined_df):
         db.session.rollback()
         flask.flash(f"Error adding Syllabus to database: {e}. Database not updated.", "danger")
         # issues.append(f"**** Error adding Syllabus to database: {e}")
+
+def infer_attributes(row):
+    """
+    Fill in "class_type" and "discipline" by inferring information from the 
+    class number (which seems to correspond with discipline) and keywords 
+    in the class description like "Solo" and "Trio".
+    """
+    class_number = int(row['number'])
+    class_description = row['description']
+
+    # Infer discipline based on class number
+    if 200 <= class_number <= 706:
+        discipline = "Vocal Ensemble"
+    elif 1000 <= class_number <= 1999:
+        discipline = "Vocal"
+    elif 2000 <= class_number <= 2899:
+        discipline = "Piano"
+    elif 2900 <= class_number <= 2999:
+        discipline = "Organ"
+    elif 3000 <= class_number <= 3999:
+        discipline = "Strings"
+    elif 4000 <= class_number <= 4099:
+        discipline = "Strings"  # Guitar
+    elif 4100 <= class_number <= 4299:
+        discipline = "Recorder"
+    elif 4300 <= class_number <= 4399:
+        discipline = "Strings" # Ukulele
+    elif 4400 <= class_number <= 4999:
+        discipline = "Strings"  # Harp
+    elif 5000 <= class_number <= 5999:
+        discipline = "Woodwinds"
+    elif 6000 <= class_number <= 6999:
+        discipline = "Brass"
+    elif 7000 <= class_number <= 7999:
+        discipline = "Percussion"
+    elif 8000 <= class_number <= 8999:
+        discipline = "Instrumental"
+    elif 9000 <= class_number <= 9999:
+        discipline = "Musical Theatre"
+    else:
+        discipline = None
+
+    # Infer class type based on keywords in class description
+    keywords = class_description.lower().split()
+    if "solo" in keywords:
+        class_type = "Solo"
+    elif "recital" in keywords:
+        class_type = "Recital"
+    elif "duet" in keywords:
+        class_type = "Duet"
+    elif "trio" in keywords:
+        class_type = "Trio"
+    elif "quartet" in keywords:
+        class_type = "Quartet"
+    elif "quintet" in keywords:
+        class_type = "Quintet"
+    elif "composition" in keywords:
+        class_type = "Composition"
+    elif any(keyword in keywords for keyword in ["ensemble", "band", "orchestra", "consort", "group"]):
+        class_type = "Ensemble"
+    else:
+        class_type = "Solo"
+
+    return (class_type, discipline)
+
 
 
 def add_to_db(pdf_file):
