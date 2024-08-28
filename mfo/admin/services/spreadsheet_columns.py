@@ -261,9 +261,9 @@ class_column_type = {
     '12': 'Trio',
     '13': 'Quartet',
     '14': 'Quintet',
-    '15': 'Large Group',
-    '16': 'Large Group',
-    '17': 'Large Group',
+    '15': 'Ensemble',
+    '16': 'Ensemble',
+    '17': 'Ensemble',
 }
 
 class_repertoire_columns = {

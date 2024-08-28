@@ -8,7 +8,7 @@ class UploadSyllabusForm(FlaskForm):
     submit = SubmitField('Upload')
 
 class UploadRegistrationsForm(FlaskForm):
-    file = FileField('Upload Registrations File', [FileRequired()])
+    file = FileField('Upload Entries File', [FileRequired()])
     submit = SubmitField('Upload')
 
 class ConfirmForm(FlaskForm):
@@ -26,7 +26,7 @@ class EditClassBasicInfoForm(FlaskForm):
         ('Quartet', 'Quartet'),
         ('Quintet', 'Quintet'),
         ('Recital', 'Recital'),
-        ('Large Group', 'Large Group'),
+        ('Ensemble', 'Ensemble'),
     ]
     class_type = SelectField('Class Type', choices=class_type_choices, validators=[Optional()])
     name = StringField('Name', validators=[Optional(), Length(max=60)])
@@ -63,7 +63,7 @@ class EditRepertoireForm(FlaskForm):
         ('Quartet', 'Quartet'),
         ('Quintet', 'Quintet'),
         ('Recital', 'Recital'),
-        ('Large Group', 'Large Group'),
+        ('Ensemble', 'Ensemble'),
     ]
     type = SelectField('Type', choices=type_choices, validators=[Optional()])
     level = StringField('Level', validators=[Optional(), Length(max=60)])

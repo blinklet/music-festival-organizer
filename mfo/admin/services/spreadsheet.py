@@ -622,6 +622,7 @@ def classes(input_df, issues, info):
             FestivalClass.number == number,
             FestivalClass.suffix == suffix,
         )
+
         festival_class = db.session.execute(stmt).scalar_one_or_none()
 
         if pd.isna(suffix):
@@ -634,8 +635,14 @@ def classes(input_df, issues, info):
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
-                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was previously recorded as type: {festival_class.class_type} and has been found again as type: {type}\n  ** Currently-recorded type will remain unchanged")
+                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was currently recorded as type: {festival_class.class_type} and has been registered as type: {type}\n  ** Currently-recorded type will remain unchanged")
                     type = festival_class.class_type
+
+            if pd.isna(festival_class.adjudication_time):
+                festival_class.adjudication_time = ADJUDICATION_TIME[type]
+            
+            if pd.isna(festival_class.move_time):
+                festival_class.move_time = MOVE_TIME[type]
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
             
@@ -973,7 +980,7 @@ def entries(input_df, issues, info):
                         comments=comments,
                     )
                     db.session.add(new_entry)
-                    info.append(f"** Row {index+2}: Added large group entry for '{group_name}' in class {class_number}{print_suffix}")
+                    info.append(f"** Row {index+2}: Added ensemble entry for '{group_name}' in class {class_number}{print_suffix}")
 
                     accompanist_name_col = "accompanist_name_" + str(group_index)
                     accompanist_phone_col = "accompanist_phone_" + str(group_index)
@@ -988,7 +995,7 @@ def entries(input_df, issues, info):
                         stmt = select(Profile).where(Profile.name == accompanist_name)
                         accompanist = db.session.execute(stmt).scalar_one_or_none()
                         new_entry.accompanists.append(accompanist)
-                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to large group entry")
+                        info.append(f"** Row {index+2}: Added accompanist {accompanist_name} to ensemble entry")
                     
                     entry_repertoire_columns = repertoire_columns[str(group_index)]
 
@@ -1017,9 +1024,9 @@ def entries(input_df, issues, info):
                             repertoire_piece = db.session.execute(stmt).scalar_one_or_none()
                             if repertoire_piece:
                                 new_entry.repertoire.append(repertoire_piece)
-                                info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to large group entry for {group_name} in class {class_number}{print_suffix}")
+                                info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to ensemble entry for {group_name} in class {class_number}{print_suffix}")
                             else:
-                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in class {class_number}{print_suffix} in large group entry for {group_name} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
+                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in class {class_number}{print_suffix} in ensemble entry for {group_name} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
                                 new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
@@ -1233,7 +1240,8 @@ def clean_suffixes(input_df, issues, info):
 
 def gather_issues(input_df):
     issues = mfo.utilities.CustomList()
-    info = mfo.utilities.CustomList()
+    info = [] # debug
+    #info = mfo.utilities.CustomList()
     clean_suffixes(input_df, issues, info)
     all_profiles(input_df, issues, info)
     related_profiles(input_df, issues, info)
