@@ -107,7 +107,8 @@ DEFAULT_ADJUDICATION_TIME = {
     'Trio': 20,
     'Quartet': 25,
     'Quintet': 30,
-    'Large Group': 35,
+    'Ensemble': 35,
+    'Composition': 10,
 }
 DEFAULT_MOVE_TIME = {
     'Solo': 2,
@@ -116,7 +117,8 @@ DEFAULT_MOVE_TIME = {
     'Trio': 4,
     'Quartet': 5,
     'Quintet': 5,
-    'Large Group': 5,
+    'Ensemble': 5,
+    'Composition': 2,
 }
 DEFAULT_FEE = {
     'Solo': 12,
@@ -125,6 +127,7 @@ DEFAULT_FEE = {
     'Trio': 12,
     'Quartet': 12,
     'Quintet': 12,
-    'Large Group': 25,
+    'Ensemble': 25,
+    'Composition': 12,
 }
 

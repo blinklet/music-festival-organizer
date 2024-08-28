@@ -97,15 +97,16 @@ def load_database(combined_df):
             if not db_classes:
                 for index, row in group.iterrows():
                     suffix, class_type, discipline = infer_attributes(row)
-                    festival_class = FestivalClass(
-                        number=row.number, 
-                        suffix=suffix, 
-                        name=row.description, 
-                        class_type=class_type,
-                        discipline=discipline,
-                        fee=row.fee,
-                        )
-                    db.session.add(festival_class)
+                    if (row.number, suffix) not in existing_classes:
+                        festival_class = FestivalClass(
+                            number=row.number, 
+                            suffix=suffix, 
+                            name=row.description, 
+                            class_type=class_type,
+                            discipline=discipline,
+                            fee=row.fee,
+                            )
+                        db.session.add(festival_class)
                     existing_classes.append((row.number, suffix))
                     
             else:
@@ -114,14 +115,15 @@ def load_database(combined_df):
                 for db_class in db_classes:
                     for index, row in group.iterrows():
                         suffix, class_type, discipline = infer_attributes(row)
-                        if (db_class.number, db_class.suffix) == (row.number, suffix):
-                            db_class.name = row.description
-                            db_class.class_type = class_type
-                            db_class.discipline = discipline
-                            db_class.fee = row.fee
-                            db.session.add(db_class)
-                            existing_classes.append((row.number, suffix))
-                            break
+                        if (row.number, suffix) not in existing_classes:
+                            if (db_class.number, db_class.suffix) == (row.number, suffix):
+                                db_class.name = row.description
+                                db_class.class_type = class_type
+                                db_class.discipline = discipline
+                                db_class.fee = row.fee
+                                db.session.add(db_class)
+                                existing_classes.append((row.number, suffix))
+                            # break
                 
                 # Add new classes from the dataframe to the database
                 for index, row in group.iterrows():
@@ -176,7 +178,7 @@ def infer_attributes(row):
 
     # Infer discipline based on class number
     if 200 <= class_number <= 706:
-        discipline = "Vocal Ensemble"
+        discipline = "Vocal" # Ensemble
     elif 1000 <= class_number <= 1999:
         discipline = "Vocal"
     elif 2000 <= class_number <= 2899:
@@ -208,21 +210,27 @@ def infer_attributes(row):
 
     # Infer class type based on keywords in class description
     keywords = class_description.lower().split()
-    if "solo" in keywords:
+    if any(keyword in keywords for keyword in [
+        "solo", "solos", "concerto", "concertos", "sonata", "sonatas"
+        ]):
         class_type = "Solo"
-    elif "recital" in keywords:
+    elif any(keyword in keywords for keyword in ["recital", "recitals"]):
         class_type = "Recital"
-    elif "duet" in keywords:
+    elif any(keyword in keywords for keyword in ["duet", "duets"]):
         class_type = "Duet"
-    elif "trio" in keywords:
+    elif any(keyword in keywords for keyword in ["trio", "trios"]):
         class_type = "Trio"
-    elif "quartet" in keywords:
+    elif any(keyword in keywords for keyword in ["quartet", "quartets"]):
         class_type = "Quartet"
-    elif "quintet" in keywords:
+    elif any(keyword in keywords for keyword in ["quintet", "quintets"]):
         class_type = "Quintet"
-    elif "composition" in keywords:
+    elif any(keyword in keywords for keyword in ["composition", "compositions"]):
         class_type = "Composition"
-    elif any(keyword in keywords for keyword in ["ensemble", "band", "orchestra", "consort", "group"]):
+    elif any(keyword in keywords for keyword in [
+        "choir", "chorus", "ensemble", "band", 
+        "orchestra", "consort", "group", "ensembles",
+        "groups"
+        ]):
         class_type = "Ensemble"
     else:
         class_type = "Solo"
