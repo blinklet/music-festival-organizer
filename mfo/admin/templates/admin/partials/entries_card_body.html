@@ -1,0 +1,71 @@
+<div class="card-body">
+    <ul class="list-group list-group-flush">
+        {% if _class.entries %}
+            {% for entry in _class.entries %}
+                <li class="list-group-item">
+                <div class="row">
+                    {% if entry.participants|length == 1 %}
+                        {% set participant = entry.participants[0] %}
+                
+                        <div class="col-12">
+                            {% if _class.class_type == "Ensemble" %}
+                                <strong>Group:</strong> {{ participant.group_name }}<br>
+                            {% else %}
+                                <strong>Participant:</strong> {{ participant.name }}<br>
+                            {% endif %}
+                        </div>
+                        <div class="col-12">
+                            {% if entry.repertoire|length == 1 %}
+                                <strong>Piece:</strong> 
+                                <a href="{{ url_for('admin.repertoire_info_get', id=entry.repertoire[0].id) }}">{{ entry.repertoire[0].title }}</a>
+                                -- {{ entry.repertoire[0].composer }}
+                                -- {{ entry.repertoire[0].duration }} minutes
+                            {% else %}
+                                <strong>Pieces:</strong>
+                                {% for piece in entry.repertoire %}
+                                <a href="{{ url_for('admin.repertoire_info_get', id=piece.id) }}">{{ piece.title }}</a> -- 
+                                    {{ piece.composer }} -- 
+                                    {{ piece.duration }} minutes<br>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                            <div class="col-12">
+                                {% if _class.class_type == "Ensemble" %}
+                                    <strong>Groups:</strong>
+                                    {% for participant in entry.participants %}
+                                        {{ participant.group_name }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <strong>Participants:</strong>
+                                    {% for participant in entry.participants %}
+                                        {{ participant.name }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                {% if entry.repertoire|length == 1 %}
+                                    <strong>Piece:</strong> 
+                                    <a href="{{ url_for('admin.repertoire_info_get', id=entry.repertoire[0].id) }}">{{ entry.repertoire[0].title }}</a>
+                                    -- {{ entry.repertoire[0].composer }}
+                                    -- {{ entry.repertoire[0].duration }} minutes
+                                {% else %}
+                                    <strong>Pieces:</strong>
+                                    {% for piece in entry.repertoire %}
+                                        <a href="{{ url_for('admin.repertoire_info_get', id=piece.id) }}">{{ piece.title }}</a> -- 
+                                        {{ piece.composer }} -- 
+                                        {{ piece.duration }} minutes<br>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                    {% endif %}
+                    </div>
+                </li>
+                
+            {% endfor %}
+            
+        {% else %}
+            <li class="list-group-item">None</li>
+        {% endif %}
+    </ul>
+</div>

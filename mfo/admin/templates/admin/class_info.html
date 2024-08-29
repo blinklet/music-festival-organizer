@@ -18,12 +18,16 @@
 
     <div class="card">
         <div class="card-header">
-            Test Pieces
+            Entries
         </div>
-        {% include '/admin/partials/class_pieces_card_body.html' %}
+        {% include '/admin/partials/entries_card_body.html' %}
     </div>
 </div>
 
+{% endblock %}
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('admin.static', filename='css/styles.css') }}">
 {% endblock %}
 
 
