@@ -10,15 +10,15 @@
     </div>
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center py-2">
-            Class Information
-            <a href="{{ url_for('admin.edit_class_info_get', id=_class.id) }}" class="btn btn-primary px-sm-5 px-3">Edit</a>
+            <strong>Class Information</strong>
+            <a href="{{ url_for('admin.edit_class_info_get', id=_class.id) }}" class="btn btn-primary px-sm-4 px-3">Edit</a>
         </div>
         {% include '/admin/partials/class_info_card_body.html' %}
     </div>
 
     <div class="card">
-        <div class="card-header">
-            Entries
+        <div class="card-header py-3">
+            <strong>Entries</strong>
         </div>
         {% include '/admin/partials/entries_card_body.html' %}
     </div>
