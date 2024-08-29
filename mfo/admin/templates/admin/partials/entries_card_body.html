@@ -1,0 +1,41 @@
+<div class="card-body">
+    <ul class="list-group list-group-flush">
+        {% if _class.entries %}
+            {% for entry in _class.entries %}
+                <li class="list-group-item">
+                    <div class="row">
+                        {% if entry.participants|length > 1 %}
+                        <div class="col-12 col-lg-3 col-xl-4">
+                        {% else %}
+                        <div class="col-12 col-lg-3 col-xl-2">
+                        {% endif %}
+                            {% if _class.class_type == "Ensemble" %}
+                                {% for participant in entry.participants %}
+                                    {{ participant.group_name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% for participant in entry.participants %}
+                                    <span class="fw-semibold">{{ participant.name }}</span>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% if entry.participants|length > 1 %}
+                        <div class="col-12 col-lg-9 col-xl-8">
+                        {% else %}
+                        <div class="col-12 col-lg-9 col-xl-10">
+                        {% endif %}
+                            {% for piece in entry.repertoire %}
+                                <a href="{{ url_for('admin.repertoire_info_get', id=piece.id) }}">{{ piece.title }}</a> -- 
+                                {{ piece.composer }} -- 
+                                {{ piece.duration }} minutes<br>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+            
+        {% else %}
+            <li class="list-group-item">None</li>
+        {% endif %}
+    </ul>
+</div>
