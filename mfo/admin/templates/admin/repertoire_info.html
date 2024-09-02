@@ -31,7 +31,7 @@
                     <p><strong>Level:</strong> {{ repertoire.level }}</p>
                 </div>
                 <div class="col-sm-6 col-lg-4 col-xl-3">
-                    <p><strong>Duration:</strong> {{ repertoire.duration }}&nbsp;minutes</p>
+                    <p><strong>Duration:</strong> {{ format_time(repertoire.duration) }}</p>
                 </div>
                 <div class="col-12">
                     <p class="mb-1"><strong>Description:</strong></p>

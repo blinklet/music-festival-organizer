@@ -21,55 +21,57 @@
         {{ form.hidden_tag() }}
         <div class="card-body">
             <div class="row">
-                <div class="col-xl-2 col-sm-4 col-md-3 col-12 mt-sm-0 mt-0">
+                <div class="col-xl-2 col-lg-3 col-sm-6 col-12 mt-sm-0 mt-0">
                     <div class="form-group d-flex align-items-center">
                         <label for="numberField" class="me-2"><strong>Number:</strong></label>
                         {{ form.number(id="numberField", class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-2 col-sm-3 col-12 mt-sm-0 mt-2">
+                <div class="col-xl-2 col-lg-3 col-sm-6 col-12 mt-sm-0 mt-2">
                     <div class="form-group d-flex align-items-center">
                         <label for="suffix" class="me-2"><strong>Suffix:</strong></label>
                         {{ form.suffix(class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-8 col-12 mt-2 mt-xl-0">
+                <div class="col-xl-8 col-lg-6 col-12 mt-2 mt-xl-0">
                     <div class="form-group d-flex align-items-center">
                         <label for="name" class="me-2"><strong>Name:</strong></label>
                         {{ form.name(class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                <div class="col-lg-4 col-md-6 col-12 mt-2">
                     <div class="form-group d-flex align-items-center">
                         <label for="class_type" class="me-2"><strong>Type:</strong></label>
                         {{ form.class_type(class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                <div class="col-lg-4 col-md-6 col-12 mt-2">
                     <div class="form-group d-flex align-items-center">
                         <label for="discipline" class="me-2"><strong>Discipline:</strong></label>
                         {{ form.discipline(class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4 col-sm-6 col-12 mt-2">
+                <div class="col-lg-4 col-md-6 col-12 mt-2">
                     <div class="form-group d-flex align-items-center">
                         <label for="fee" class="me-2"><strong>Fee:</strong></label>
                         {{ form.fee(class="form-control") }}
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4 col-sm-6 col-12 d-none d-sm-block d-md-none">
+                <div class="col-12 d-none d-md-block d-xl-none">
                     <!-- spacer -->
                 </div>
-                <div class="col-xl-3 col-md-6 col-sm-6 col-12 mt-2">
+                <div class="col-xl-6 col-md-6 col-12 mt-2">
                     <div class="form-group d-flex align-items-center">
-                        <label for="adjudication_time" class="me-2"><strong>Adjudication Time:</strong></label>
-                        {{ form.adjudication_time(class="form-control three-digit-width") }}&nbsp;minutes
+                        <label for="adjudication_time" class="me-2 text-nowrap"><strong>Adjudication Time:</span></strong></label>
+                        {{ form.adjudication_mins(class="form-control") }} <span class="ms-1 me-2">mins</span> 
+                        {{ form.adjudication_secs(class="form-control") }} <span class="ms-1">s</span>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6 col-sm-6 col-12 mt-2">
+                <div class="col-xl-6 col-md-6 col-12 mt-2">
                     <div class="form-group d-flex align-items-center justify-content-md-end">
-                        <label for="warm-up_time" class="me-2"><strong>Warm-up Time:</strong></label>
-                        {{ form.move_time(class="form-control three-digit-width") }}&nbsp;minutes
+                        <label for="warm-up_time" class="me-2 text-nowrap"><strong>Warm-up Time:</strong></label>
+                        {{ form.move_mins(class="form-control") }} <span class="ms-1 me-2">mins</span> 
+                        {{ form.move_secs(class="form-control") }} <span class="ms-1">s</span>
                     </div>
                 </div>
             </div>

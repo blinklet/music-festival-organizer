@@ -101,24 +101,24 @@ TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
 
 # Class default data
 DEFAULT_ADJUDICATION_TIME = {
-    'Solo': 10,
-    'Recital': 15,
-    'Duet': 15,
-    'Trio': 20,
-    'Quartet': 25,
-    'Quintet': 30,
-    'Ensemble': 35,
-    'Composition': 10,
+    'Solo': 600,  # times are in seconds
+    'Recital': 900,
+    'Duet': 900,
+    'Trio': 1200,
+    'Quartet': 1500,
+    'Quintet': 1800,
+    'Ensemble': 2100,
+    'Composition': 600,
 }
 DEFAULT_MOVE_TIME = {
-    'Solo': 2,
-    'Recital': 4,
-    'Duet': 3,
-    'Trio': 4,
-    'Quartet': 5,
-    'Quintet': 5,
-    'Ensemble': 5,
-    'Composition': 2,
+    'Solo': 120, # times are in seconds
+    'Recital': 240,
+    'Duet': 180,
+    'Trio': 240,
+    'Quartet': 300,
+    'Quintet': 300,
+    'Ensemble': 300,
+    'Composition': 120,
 }
 DEFAULT_FEE = {
     'Solo': 12,
@@ -130,4 +130,17 @@ DEFAULT_FEE = {
     'Ensemble': 25,
     'Composition': 12,
 }
+
+DISCIPLINES = [
+    "Vocal", 
+    "Piano", 
+    "Organ", 
+    "Strings",
+    "Recorder",
+    "Woodwinds",
+    "Brass",
+    "Percussion",
+    "Instrumental",
+    "Musical Theatre",
+    ]
 
