@@ -1,6 +1,7 @@
 # mfo/template_functions.py
 
 import flask
+from markupsafe import Markup
 
 bp = flask.Blueprint(
     'jinja_functions',
@@ -39,3 +40,18 @@ def update_order(column, sort_by, sort_order):
 # Add helper functions to Jinja2 environment
 # app.jinja_env.globals.update(update_sort=update_sort)
 # app.jinja_env.globals.update(update_order=update_order)
+
+@bp.app_template_global()
+def format_time(seconds, show_seconds=True):
+    if seconds is None:
+        return "None"
+    
+    if show_seconds:
+        minutes, remaining_seconds = divmod(seconds, 60)
+        if remaining_seconds:
+            return Markup(f"<span class='ms-1'></span>{minutes:2d}<span class='ms-1 me-2'>min</span>{remaining_seconds:2d}<span class='ms-1'>s</span>")
+        else:
+            return Markup(f"<span class='ms-1'></span>{minutes:2d}<span class='ms-1'>min</span>")
+    else:
+        rounded_minutes = round(seconds / 60)
+        return Markup(f"<span class='ms-1'></span>{rounded_minutes:2d}<span class='ms-1'>min</span>")

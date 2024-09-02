@@ -22,8 +22,17 @@ from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
 from mfo.database.users import User, Role
 
+def convert_to_seconds(time_value):
+    """
+    Convert time value to seconds. If the value 
+    is large, assume it's already in seconds.
+    """
+    if time_value > 30:
+        return time_value  # Assume it's already in seconds
+    return time_value * 60  # Convert minutes to seconds
+
+
 def read_sheet(file):
-    
     try:
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(file.stream.read().decode("utf-8")))
@@ -591,7 +600,7 @@ def classes(input_df, issues, info):
                     if pd.notna(title) and pd.notna(composer):
                         title = str(title).strip()
                         if pd.notna(duration):
-                            duration = int(duration)
+                            duration = convert_to_seconds(int(duration))
                         else:
                             duration = None
                         composer = str(composer).strip()
@@ -639,10 +648,10 @@ def classes(input_df, issues, info):
                     type = festival_class.class_type
 
             if pd.isna(festival_class.adjudication_time):
-                festival_class.adjudication_time = ADJUDICATION_TIME[type]
+                festival_class.adjudication_time = convert_to_seconds(ADJUDICATION_TIME[type])
             
             if pd.isna(festival_class.move_time):
-                festival_class.move_time = MOVE_TIME[type]
+                festival_class.move_time = convert_to_seconds(MOVE_TIME[type])
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
             
@@ -679,8 +688,8 @@ def classes(input_df, issues, info):
                 number=number,
                 suffix=suffix,
                 class_type=type,
-                adjudication_time = ADJUDICATION_TIME[type],
-                move_time = MOVE_TIME[type],
+                adjudication_time = convert_to_seconds(ADJUDICATION_TIME[type]),
+                move_time = convert_to_seconds(MOVE_TIME[type]),
                 fee = FEE[type]
             )
             db.session.add(new_festival_class)
@@ -866,7 +875,7 @@ def repertoire(input_df, issues, info):
 
                 if pd.notna(duration):
                     if isinstance(duration, (int, float)):
-                        duration=int(duration)
+                        duration=convert_to_seconds(int(duration))
                     else:
                         issues.append(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
                         duration = None
@@ -900,17 +909,17 @@ def repertoire(input_df, issues, info):
 
         if existing_repertoire:
             info.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
-            if existing_repertoire.duration != duration:
+            if existing_repertoire.duration != convert_to_seconds(duration):
                 issues.append(f"**** Row: {index+2}: Repertore {title} by {composer} already exists but duration is different. Existing duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
         else:
             new_repertoire = Repertoire(
                 title=title,
-                duration=duration,
+                duration=convert_to_seconds(duration),
                 composer=composer,
             )
 
             db.session.add(new_repertoire)
-            info.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} minutes added")
+            info.append(f"** Row: {index+2}: Repertore {title} by {composer} duration {duration} seconds added")
 
 def entries(input_df, issues, info):
     """
@@ -1011,7 +1020,7 @@ def entries(input_df, issues, info):
                         if pd.notna(title) and pd.notna(composer):
                             title = str(title).strip()
                             if pd.notna(duration):
-                                duration = int(duration)
+                                duration = convert_to_seconds(int(duration))
                             else:
                                 duration = None
                             composer = str(composer).strip()
@@ -1171,7 +1180,7 @@ def entries(input_df, issues, info):
                         if pd.notna(title) and pd.notna(composer):
                             title = str(title).strip()
                             if pd.notna(duration):
-                                duration = int(duration)
+                                duration = convert_to_seconds(int(duration))
                             else:
                                 duration = None
                             composer = str(composer).strip()

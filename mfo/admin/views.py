@@ -199,8 +199,6 @@ def classes_get():
         sort_order=sort_order
         )
 
-
-
 @bp.get('/info/class')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -218,6 +216,18 @@ def edit_class_info_get():
     stmt = select(FestivalClass).where(FestivalClass.id == id)
     _class = db.session.execute(stmt).scalar()
     form = forms.EditClassBasicInfoForm(obj=_class)
+    if pd.notna(_class.adjudication_time):
+        adjudication_mins, adjudication_secs = divmod(_class.adjudication_time, 60)
+    else:
+        adjudication_mins, adjudication_secs = 0, 0
+    form.adjudication_mins.data = adjudication_mins
+    form.adjudication_secs.data = adjudication_secs
+    if pd.notna(_class.move_time):
+        move_mins, move_secs = divmod(_class.move_time, 60)
+    else:
+        move_mins, move_secs = 0, 0
+    form.move_mins.data = move_mins
+    form.move_secs.data = move_secs
     return flask.render_template('admin/class_edit_info.html', form=form, _class=_class)
 
 @bp.post('/edit/class_info')
@@ -229,11 +239,21 @@ def edit_class_info_post():
     _class = db.session.execute(stmt).scalar()
     form = forms.EditClassBasicInfoForm()
     if form.validate_on_submit():
-        # if I want to use form.populate_obj(_class), 
-        # I need to consistently make sure that the values
-        # in empty database fields are set to whatever the form instance
-        # places in an empty field. The work below, enters 
-        # "None" in empty fields
+
+        minutes = int(flask.request.form['adjudication_mins']) # form fields are strings
+        seconds = int(flask.request.form['adjudication_secs'])
+        total_seconds = minutes * 60 + seconds
+        _class.adjudication_time = total_seconds
+
+        minutes = int(flask.request.form['move_mins'])
+        seconds = int(flask.request.form['move_secs'])
+        total_seconds = minutes * 60 + seconds
+        _class.move_time = total_seconds
+
+        # If I want to use form.populate_obj(_class), I need
+        # to consistently make sure that the values in empty database 
+        # fields are set to whatever the form instance places in an 
+        # empty field. The loop, below, enters "None" in empty fields.
         for fieldName, field in form._fields.items():
             # Check if the field is blank
             if field.data == '' or field.data is None:
@@ -294,6 +314,11 @@ def repertoire_edit_get():
     stmt = select(Repertoire).where(Repertoire.id == id)
     repertoire = db.session.execute(stmt).scalar()
     form = forms.EditRepertoireForm(obj=repertoire)
+
+    duration_mins, duration_secs = divmod(repertoire.duration, 60)
+    form.duration_mins.data = duration_mins
+    form.duration_secs.data = duration_secs
+
     return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
 
 @bp.post('/edit/repertoire')
@@ -305,6 +330,12 @@ def repertoire_edit_post():
     repertoire = db.session.execute(stmt).scalar()
     form = forms.EditRepertoireForm()
     if form.validate_on_submit():
+
+        minutes = int(flask.request.form['duration_mins'])
+        seconds = int(flask.request.form['duration_secs'])
+        total_seconds = minutes * 60 + seconds
+        repertoire.duration = total_seconds  # 'duration' matches with database field
+
         # if I want to use form.populate_obj(_class), 
         # I need to consistently make sure that the values
         # in empty database fields are set to whatever the form instance

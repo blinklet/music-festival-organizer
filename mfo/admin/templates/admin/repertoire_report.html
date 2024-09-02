@@ -35,16 +35,16 @@
                     sort_by=update_sort('level', sort_by[:], sort_order[:]), 
                     sort_order=update_order('level', sort_by[:], sort_order[:])) }}">Level</a>
                 </th>
-                <th>
+                <th class="time-width">
                     <a href="{{ url_for('admin.repertoire_get', 
                     sort_by=update_sort('duration', sort_by[:], sort_order[:]), 
                     sort_order=update_order('duration', sort_by[:], sort_order[:])) }}">Duration</a>
                 </th>
-                <th>
+                <!-- <th>
                     <a href="{{ url_for('admin.repertoire_get', 
                     sort_by=update_sort('classes', sort_by[:], sort_order[:]), 
                     sort_order=update_order('classes', sort_by[:], sort_order[:])) }}">Classes</a>
-                </th>
+                </th> -->
                 <th>
                     <a href="{{ url_for('admin.repertoire_get', 
                     sort_by=update_sort('entries', sort_by[:], sort_order[:]), 
@@ -60,8 +60,8 @@
                 <td>{{ piece.discipline }}</td>
                 <td>{{ piece.type }}</td>
                 <td>{{ piece.level }}</td>
-                <td class="text-center">{{ piece.duration }}</td>
-                <td class="text-center">{{ piece.classes }}</td>
+                <td>{{ format_time(piece.duration) }}</td>
+                <!-- <td class="text-center">{{ piece.classes }}</td> -->
                 <td class="text-center">{{ piece.entries }}</td>
             </tr>
             
