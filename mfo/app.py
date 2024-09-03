@@ -18,6 +18,11 @@ def create_app():
     # Configure the app
     app.config.from_pyfile('config.py')
 
+    # Disable template loading explanation when running the app in debug mode.
+    # Debug mode overrides the EXPLAIN_TEMPLATE_LOADING setting when it is 
+    # configured from the config.py file. So, we need to set it again here.
+    app.config['EXPLAIN_TEMPLATE_LOADING'] = False
+
     # Register Flask-SQLAlchemy
     base.db.init_app(app)
 
