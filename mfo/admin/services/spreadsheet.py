@@ -9,18 +9,17 @@ easier to read and maintain.
 
 import pandas as pd
 import io
-import os
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
 from datetime import datetime
-from itertools import chain
 
 import mfo.admin.services.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
 from mfo.database.users import User, Role
+from mfo.admin.services.admin_services import infer_discipline
 
 def convert_to_seconds(time_value):
     """
@@ -647,11 +646,16 @@ def classes(input_df, issues, info):
                     issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was currently recorded as type: {festival_class.class_type} and has been registered as type: {type}\n  ** Currently-recorded type will remain unchanged")
                     type = festival_class.class_type
 
+            discipline = infer_discipline(int(number))
+
             if pd.isna(festival_class.adjudication_time):
-                festival_class.adjudication_time = convert_to_seconds(ADJUDICATION_TIME[type])
+                festival_class.adjudication_time = convert_to_seconds(ADJUDICATION_TIME[discipline][type])
             
             if pd.isna(festival_class.move_time):
-                festival_class.move_time = convert_to_seconds(MOVE_TIME[type])
+                festival_class.move_time = convert_to_seconds(MOVE_TIME[discipline][type])
+
+            if pd.isna(festival_class.fee):
+                festival_class.fee = FEE[type]
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
             
@@ -684,13 +688,15 @@ def classes(input_df, issues, info):
                         info.append(f"** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
 
         else:
+            discipline = infer_discipline(int(number))
+
             new_festival_class = FestivalClass(
                 number=number,
                 suffix=suffix,
                 class_type=type,
-                adjudication_time = convert_to_seconds(ADJUDICATION_TIME[type]),
-                move_time = convert_to_seconds(MOVE_TIME[type]),
-                fee = FEE[type]
+                adjudication_time = convert_to_seconds(ADJUDICATION_TIME[discipline][type]),
+                move_time = convert_to_seconds(MOVE_TIME[discipline][type]),
+                fee = FEE[type],
             )
             db.session.add(new_festival_class)
             info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")

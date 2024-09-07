@@ -1,9 +1,10 @@
 # /mfo/database/models/profiles.py
 
 from mfo.database.base import db
-from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey, Integer
+from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey, Integer, DECIMAL
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
+from decimal import Decimal
 import datetime
 
 
@@ -157,8 +158,9 @@ class Profile(db.Model):
         "Entry", secondary=participants_entries, back_populates="participants"
     )
 
-    total_fee: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
-    fees_paid: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
+    total_fee: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True, default=0.00)
+    fees_paid: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True, default=0.00)
+
     comments: Mapped[Optional[str]] = mapped_column(nullable=True)
     national_festival: Mapped[Optional[bool]] = mapped_column(nullable=True, default=False)
 
@@ -190,7 +192,7 @@ class FestivalClass(db.Model):
 
     name: Mapped[Optional[str]] = mapped_column(nullable=True)
     class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
-    fee: Mapped[Optional[int]] = mapped_column(nullable=True)
+    fee: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True)
     discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
     adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
     move_time: Mapped[Optional[int]] = mapped_column(nullable=True)
