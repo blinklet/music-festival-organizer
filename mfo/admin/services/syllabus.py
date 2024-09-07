@@ -7,6 +7,7 @@ import io
 
 from mfo.database.base import db
 from mfo.database.models import FestivalClass
+from mfo.admin.services.admin_services import infer_attributes
 import mfo.utilities
 
 
@@ -93,7 +94,8 @@ def load_database(combined_df):
             # get list of classes with the same number from the database
             stmt = sa.select(FestivalClass).where(FestivalClass.number == number)
             db_classes = db.session.execute(stmt).scalars().all()
-            # if there are no classes with the same number in the database, add all the rows in the group
+            # if there are no classes with the same number in the database, 
+            # add all the rows in the group
             if not db_classes:
                 for index, row in group.iterrows():
                     suffix, class_type, discipline = infer_attributes(row)
@@ -105,7 +107,10 @@ def load_database(combined_df):
                             class_type=class_type,
                             discipline=discipline,
                             fee=row.fee,
+                            adjudication_time = flask.current_app.config["DEFAULT_ADJUDICATION_TIME"][discipline][class_type],
+                            move_time = flask.current_app.config["DEFAULT_MOVE_TIME"][discipline][class_type],
                             )
+
                         db.session.add(festival_class)
                     existing_classes.append((row.number, suffix))
                     
@@ -121,24 +126,16 @@ def load_database(combined_df):
                                 db_class.class_type = class_type
                                 db_class.discipline = discipline
                                 db_class.fee = row.fee
+
+                                # overwrite adjudication_time and move_time with defaults, if none exist
+                                if pd.isna(db_class.adjudication_time):
+                                    db_class.adjudication_time = flask.current_app.config["DEFAULT_ADJUDICATION_TIME"][discipline][class_type]
+                                
+                                if pd.isna(db_class.move_time):
+                                    db_class.move_time = flask.current_app.config["DEFAULT_MOVE_TIME"][discipline][class_type]
+
                                 db.session.add(db_class)
                                 existing_classes.append((row.number, suffix))
-                            # break
-                
-                # Add new classes from the dataframe to the database
-                for index, row in group.iterrows():
-                    suffix, class_type, discipline = infer_attributes(row)
-                    if (row.number, suffix) not in existing_classes:
-                        festival_class = FestivalClass(
-                            number=row.number, 
-                            suffix=suffix, 
-                            name=row.description, 
-                            class_type=class_type,
-                            discipline=discipline,
-                            fee=row.fee
-                            )
-                        db.session.add(festival_class)
-                        existing_classes.append((row.number, suffix))
 
                 # Update classes from the database that are not in the dataframe group, 
                 # using the fields from the first row in the dataframe group
@@ -150,6 +147,13 @@ def load_database(combined_df):
                         db_class.class_type = class_type
                         db_class.discipline = discipline
                         db_class.fee = row.fee
+
+                        if pd.isna(db_class.adjudication_time):
+                            db_class.adjudication_time = flask.current_app.config["DEFAULT_ADJUDICATION_TIME"][discipline][class_type]
+                                
+                        if pd.isna(db_class.move_time):
+                            db_class.move_time = flask.current_app.config["DEFAULT_MOVE_TIME"][discipline][class_type]
+
                         db.session.add(db_class)
                         existing_classes.append((row.number, suffix))
 
@@ -161,81 +165,7 @@ def load_database(combined_df):
         flask.flash(f"Error adding Syllabus to database: {e}. Database not updated.", "danger")
         # issues.append(f"**** Error adding Syllabus to database: {e}")
 
-def infer_attributes(row):
-    """
-    Fill in "class_type" and "discipline" by inferring information from the 
-    class number (which seems to correspond with discipline) and keywords 
-    in the class description like "Solo" and "Trio".
-    """
 
-    if row.suffix == "":
-        suffix = None
-    else:
-        suffix = row.suffix
-
-    class_number = int(row['number'])
-    class_description = row['description']
-
-    # Infer discipline based on class number
-    if 200 <= class_number <= 706:
-        discipline = "Vocal" # Ensemble
-    elif 1000 <= class_number <= 1999:
-        discipline = "Vocal"
-    elif 2000 <= class_number <= 2899:
-        discipline = "Piano"
-    elif 2900 <= class_number <= 2999:
-        discipline = "Organ"
-    elif 3000 <= class_number <= 3999:
-        discipline = "Strings"
-    elif 4000 <= class_number <= 4099:
-        discipline = "Strings"  # Guitar
-    elif 4100 <= class_number <= 4299:
-        discipline = "Recorder"
-    elif 4300 <= class_number <= 4399:
-        discipline = "Strings" # Ukulele
-    elif 4400 <= class_number <= 4999:
-        discipline = "Strings"  # Harp
-    elif 5000 <= class_number <= 5999:
-        discipline = "Woodwinds"
-    elif 6000 <= class_number <= 6999:
-        discipline = "Brass"
-    elif 7000 <= class_number <= 7999:
-        discipline = "Percussion"
-    elif 8000 <= class_number <= 8999:
-        discipline = "Instrumental"
-    elif 9000 <= class_number <= 9999:
-        discipline = "Musical Theatre"
-    else:
-        discipline = None
-
-    # Infer class type based on keywords in class description
-    keywords = class_description.lower().split()
-    if any(keyword in keywords for keyword in [
-        "solo", "solos", "concerto", "concertos", "sonata", "sonatas"
-        ]):
-        class_type = "Solo"
-    elif any(keyword in keywords for keyword in ["recital", "recitals"]):
-        class_type = "Recital"
-    elif any(keyword in keywords for keyword in ["duet", "duets"]):
-        class_type = "Duet"
-    elif any(keyword in keywords for keyword in ["trio", "trios"]):
-        class_type = "Trio"
-    elif any(keyword in keywords for keyword in ["quartet", "quartets"]):
-        class_type = "Quartet"
-    elif any(keyword in keywords for keyword in ["quintet", "quintets"]):
-        class_type = "Quintet"
-    elif any(keyword in keywords for keyword in ["composition", "compositions"]):
-        class_type = "Composition"
-    elif any(keyword in keywords for keyword in [
-        "choir", "chorus", "ensemble", "band", 
-        "orchestra", "consort", "group", "ensembles",
-        "groups"
-        ]):
-        class_type = "Ensemble"
-    else:
-        class_type = "Solo"
-
-    return (suffix, class_type, discipline)
 
 
 
