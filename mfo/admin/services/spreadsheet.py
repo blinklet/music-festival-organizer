@@ -9,13 +9,10 @@ easier to read and maintain.
 
 import pandas as pd
 import io
-import os
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
 from datetime import datetime
-from itertools import chain
-from decimal import Decimal
 
 import mfo.admin.services.spreadsheet_columns
 import mfo.utilities

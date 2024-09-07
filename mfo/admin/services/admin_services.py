@@ -1,13 +1,10 @@
 # mfo/admin/services/data_services.py
 
-from werkzeug.exceptions import Forbidden
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select
 import pandas as pd
-from collections.abc import Sequence, Mapping
 
 from mfo.database.base import db
-from mfo.database.models import Profile, FestivalClass
+from mfo.database.models import Profile
 
 def sort_key(x, column):
         """

@@ -2,13 +2,10 @@ import pandas as pd
 import flask
 import tabula
 import sqlalchemy as sa
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-import io
 
 from mfo.database.base import db
 from mfo.database.models import FestivalClass
 from mfo.admin.services.admin_services import infer_attributes
-import mfo.utilities
 
 
 def verify_pdf(tables):

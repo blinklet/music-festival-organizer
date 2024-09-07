@@ -2,7 +2,6 @@
 
 import os
 import dotenv
-from cachelib import SimpleCache
 from decimal import Decimal
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
