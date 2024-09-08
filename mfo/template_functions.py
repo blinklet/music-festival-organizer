@@ -43,15 +43,29 @@ def update_order(column, sort_by, sort_order):
 
 @bp.app_template_global()
 def format_time(seconds, show_seconds=True):
-    if seconds is None:
-        return "None"
+    if seconds is None or seconds == 0:
+        return ""
     
     if show_seconds:
         minutes, remaining_seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        
+        display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
+        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min" if minutes else ""
+        display_seconds = f"<span class='ms-1 me-1'>{remaining_seconds:2d}</span>s"
+
         if remaining_seconds:
-            return Markup(f"<span class='ms-1'></span>{minutes:2d}<span class='ms-1 me-2'>min</span>{remaining_seconds:2d}<span class='ms-1'>s</span>")
+            return Markup(f"{display_hours}{display_minutes}{display_seconds}")
         else:
-            return Markup(f"<span class='ms-1'></span>{minutes:2d}<span class='ms-1'>min</span>")
+            return Markup(f"{display_hours}{display_minutes}")
     else:
         rounded_minutes = round(seconds / 60)
-        return Markup(f"<span class='ms-1'></span>{rounded_minutes:2d}<span class='ms-1'>min</span>")
+        hours, minutes = divmod(rounded_minutes, 60)
+
+        display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
+        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min"
+
+        if minutes:
+            return Markup(f"{display_hours}{display_minutes}")
+        else:
+            return Markup(f"{display_hours}")
