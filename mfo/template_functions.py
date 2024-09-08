@@ -51,7 +51,7 @@ def format_time(seconds, show_seconds=True):
         hours, minutes = divmod(minutes, 60)
         
         display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
-        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min" if minutes else ""
+        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min" if seconds > 59 else ""
         display_seconds = f"<span class='ms-1 me-1'>{remaining_seconds:2d}</span>s"
 
         if remaining_seconds:
@@ -65,7 +65,4 @@ def format_time(seconds, show_seconds=True):
         display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
         display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min"
 
-        if minutes:
-            return Markup(f"{display_hours}{display_minutes}")
-        else:
-            return Markup(f"{display_hours}")
+        return Markup(f"{display_hours}{display_minutes}")
