@@ -20,6 +20,7 @@ from mfo.database.base import db
 from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
 from mfo.database.users import User, Role
 from mfo.admin.services.admin_services import infer_discipline
+from mfo.template_functions import format_time
 
 def convert_to_seconds(time_value):
     """
@@ -32,6 +33,13 @@ def convert_to_seconds(time_value):
 
 
 def read_sheet(file):
+    # If no class data exists, assume Syllabus has not yet been imported
+    # and stop.
+    if not db.session.query(FestivalClass).first():
+        succeeded = False
+        message = 'No class data exists. Please import the Syllabus first.'
+        return None, succeeded, message
+
     try:
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(file.stream.read().decode("utf-8")))
@@ -199,13 +207,13 @@ def all_profiles(input_df, issues, info):
                 )
                 if pd.notna(phone) and (existing_accompanist.phone != phone):
                     issues.append(
-                        f"**** Row {index +2}: Accompanist '{name}': "
+                        f"Row {index +2}: Accompanist '{name}': "
                         f"found a different phone number '{phone}'. "
                         f"Keeping original phone number '{existing_accompanist.phone}'"
                     )
                 if pd.notna(email) and (existing_accompanist.email != email):
                     issues.append(
-                        f"**** Row {index +2}: Accompanist '{name}': "
+                        f"Row {index +2}: Accompanist '{name}': "
                         f"found a different email '{email}'. "
                         f"Keeping original email '{existing_accompanist.email}'"
                     )
@@ -566,7 +574,7 @@ def classes(input_df, issues, info):
                 suffix = str(suffix).strip()
                 good_number = True
             elif pd.isna(number) & pd.notna(suffix):
-                issues.append(f"**** Row {index+2}: Error: Class number missing")
+                issues.append(f"Row {index+2}: Error: Class number missing")
                 good_number = False
             elif pd.isna(number) & pd.isna(suffix):
                 good_number = False
@@ -643,7 +651,7 @@ def classes(input_df, issues, info):
 
             if pd.notna(festival_class.class_type):
                 if festival_class.class_type != type:
-                    issues.append(f"**** Row {index+2}: Class {number}{print_suffix} may be recorded as wrong type.\n  ** It was currently recorded as type: {festival_class.class_type} and has been registered as type: {type}\n  ** Currently-recorded type will remain unchanged")
+                    issues.append(f"Row {index+2}: Class {number}{print_suffix} recorded in entry may have wrong type. In the Syllabus it is type: {festival_class.class_type} but the entry registered it as type: {type}. The Syllabus will remain unchanged")
                     type = festival_class.class_type
 
             discipline = infer_discipline(int(number))
@@ -699,7 +707,7 @@ def classes(input_df, issues, info):
                 fee = FEE[type],
             )
             db.session.add(new_festival_class)
-            info.append(f"** Row {index+2}: Class {number}{print_suffix}, type: {type},  added")
+            issues.append(f"Row {index+2}: Class {number}{print_suffix}, type: {type}, found in entry but does not exist in Syllabus. If accepted, this class number and suffix will be added to Syllabus with no title, and may contain incorrect fee and performance type")
 
             for x in test_pieces:
                 title = x['title']
@@ -876,27 +884,27 @@ def repertoire(input_df, issues, info):
                     else:
                         title=str(title).strip()
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has missing title")
+                    issues.append(f"Row: {index+2}: Repertoire has missing title")
                     title = None
 
                 if pd.notna(duration):
                     if isinstance(duration, (int, float)):
                         duration=convert_to_seconds(int(duration))
                     else:
-                        issues.append(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
+                        issues.append(f"Row: {index+2}: Repertoire has invalid duration: '{duration}'")
                         duration = None
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has invalid duration: '{duration}'")
+                    issues.append(f"Row: {index+2}: Repertoire has invalid duration: '{duration}'")
                     duration = None
 
                 if pd.notna(composer):
                     if isinstance(composer, (int, float)):
-                        issues.append(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
+                        issues.append(f"Row: {index+2}: Repertoire has invalid composer: '{composer}'")
                         composer = None
                     else:
                         composer = str(composer).strip()      
                 else:
-                    issues.append(f"**** Row: {index+2}: Repertoire has invalid composer: '{composer}'")
+                    issues.append(f"Row: {index+2}: Repertoire has invalid composer: '{composer}'")
                     composer = None
             
                 repertoire_pieces.append({'title': title, 'duration': duration, 'composer': composer, 'index': index})
@@ -916,7 +924,7 @@ def repertoire(input_df, issues, info):
         if existing_repertoire:
             info.append(f"** Row: {index+2}: Repertore {title} by {composer} already exists **")
             if existing_repertoire.duration != convert_to_seconds(duration):
-                issues.append(f"**** Row: {index+2}: Repertore {title} by {composer} already exists but duration is different. Existing duration was {existing_repertoire.duration} minutes long, duplicate entry was {duration} minutes long")
+                issues.append(f"Row: {index+2}: Repertoire {title} by {composer} already exists but duration is different. Existing duration is {format_time(existing_repertoire.duration)}, duplicate duration is {format_time(duration)}. We will keep the existing duration.")
         else:
             new_repertoire = Repertoire(
                 title=title,
@@ -1041,7 +1049,7 @@ def entries(input_df, issues, info):
                                 new_entry.repertoire.append(repertoire_piece)
                                 info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to ensemble entry for {group_name} in class {class_number}{print_suffix}")
                             else:
-                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in class {class_number}{print_suffix} in ensemble entry for {group_name} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
+                                issues.append(f"Row {index+2}: Repertoire '{title}' by '{composer}' in class {class_number}{print_suffix} in ensemble entry for {group_name} not found in database. Will add repertoire to database. Check that this is not a misspelling")
                                 new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
@@ -1061,13 +1069,13 @@ def entries(input_df, issues, info):
                 group.total_fee = total_fee
                 info.append(f"** Row {index+2}: Total fees for group {group_name} set to {total_fee}")
             else:
-                issues.append(f"**** Row {index+2}: Duplicate total fees for group {group_name}. Check that this is not a duplicate entry")
+                issues.append(f"Row {index+2}: Duplicate total fees for group {group_name}. Check that this is not a duplicate entry")
 
             if group.fees_paid == 0:
                 group.fees_paid = fees_paid
                 info.append(f"** Row {index+2}: Fees paid for group {group_name} set to {fees_paid}")
             else:
-                issues.append(f"**** Row {index+2}: Duplicate fees paid for group {group_name}. Check that this is not a duplicate entry")
+                issues.append(f"Row {index+2}: Duplicate fees paid for group {group_name}. Check that this is not a duplicate entry")
 
 
         elif row.type.strip() == "Individual participant (Solo, Recital, Duet, Trio,  Quartet, or Quintet Class)":
@@ -1164,7 +1172,7 @@ def entries(input_df, issues, info):
                                 new_entry.participants.append(additional_participant)
                                 info.append(f"** Row {index+2}: Added additional participant {participant_name} to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
                             else:
-                                issues.append(f"**** Row {index+2}: Additional participant '{participant_name}' in entry class {class_number}{print_suffix} not found in database. Will add participant to DB. Check that this is not a misspelling")
+                                issues.append(f"Row {index+2}: Additional participant '{participant_name}' in entry class {class_number}{print_suffix} not found in database. Will add participant to database. Check that this is not a misspelling")
                                 new_participant = Profile(name=participant_name)
                                 db.session.add(new_participant)
                                 new_entry.participants.append(new_participant)                   
@@ -1201,7 +1209,7 @@ def entries(input_df, issues, info):
                                 new_entry.repertoire.append(repertoire_piece)
                                 info.append(f"** Row {index+2}: Added repertoire '{title}' by '{composer}' to entry for {full_name} in {festival_class.class_type} class {class_number}{print_suffix}")
                             else:
-                                issues.append(f"**** Row {index+2}: Repertoire '{title}' by '{composer}' in entry class {class_number}{print_suffix} not found in database. Will add repertoire to DB. Check that this is not a misspelling")
+                                issues.append(f"Row {index+2}: Repertoire '{title}' by '{composer}' in entry class {class_number}{print_suffix} not found in database. Will add repertoire to database. Check that this is not a misspelling")
                                 new_repertoire = Repertoire(title=title, duration=duration, composer=composer)
                                 db.session.add(new_repertoire)
                                 new_entry.repertoire.append(new_repertoire)
@@ -1221,13 +1229,13 @@ def entries(input_df, issues, info):
                 participant.total_fee = total_fee
                 info.append(f"** Row {index+2}: Total fees for {full_name} set to {total_fee}")
             else:
-                issues.append(f"**** Row {index+2}: Duplicate total fees for {full_name}. Check that this is not a duplicate entry")
+                issues.append(f"Row {index+2}: Duplicate total fees for {full_name}. Check that this is not a duplicate entry")
 
             if participant.fees_paid == 0:
                 participant.fees_paid = fees_paid
                 info.append(f"** Row {index+2}: Fees paid for {full_name} set to {fees_paid}")
             else:
-                issues.append(f"**** Row {index+2}: Duplicate fees paid for {full_name}. Check that this is not a duplicate entry")
+                issues.append(f"Row {index+2}: Duplicate fees paid for {full_name}. Check that this is not a duplicate entry")
 
         else:
             pass
@@ -1254,9 +1262,10 @@ def clean_suffixes(input_df, issues, info):
 
 
 def gather_issues(input_df):
-    issues = mfo.utilities.CustomList()
-    info = [] # debug
-    #info = mfo.utilities.CustomList()
+    issues = []
+    #issues = mfo.utilities.CustomList() # debug
+    info = [] 
+    #info = mfo.utilities.CustomList() # debug
     clean_suffixes(input_df, issues, info)
     all_profiles(input_df, issues, info)
     related_profiles(input_df, issues, info)
