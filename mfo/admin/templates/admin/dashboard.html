@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Admin Dashboard
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <header class="mb-4">
+            <h1 class="display-6">Welcome to the Admin Dashboard</h1>
+        </header>
+        <nav class="mb-4">
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Import data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Settings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Logout</a>
+                </li>
+            </ul>
+        </nav>
+        <main>
+            <h2 class="h4">Dashboard Content Goes Here</h2>
+            <!-- Add your dashboard content here -->
+        </main>
+    </div>
+{% endblock %}

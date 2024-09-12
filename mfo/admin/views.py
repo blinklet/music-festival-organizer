@@ -28,6 +28,12 @@ bp = flask.Blueprint(
     url_prefix='/admin',
     )
 
+@bp.get ('/dashboard')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def dashboard():
+    # need to add some data gathering here
+    return flask.render_template('admin/dashboard.html')
 
 @bp.get('/upload_syllabus')
 @flask_security.auth_required()
@@ -47,7 +53,7 @@ def upload_syllabus_post():
             syllabus.add_to_db(file)
             # I might make a different template for showing any issues or other ionformation related to a successful upload
             # For now, just redirect back to the Syllabus load page to show flask.flash messages, if they exist
-            return flask.redirect(flask.url_for('admin.upload_syllabus_get')) 
+            return flask.redirect(flask.url_for('admin.upload_registrations_get')) 
         else:
             flask.flash(
                 f"Uploaded file is not a PDF file." +
@@ -63,6 +69,13 @@ def upload_registrations_get():
     # # clear any flashes that may have been set
     # if '_flashes' in flask.session:
     #     flask.session['_flashes'].clear()
+    # check if classes exist in the database
+    stmt = select(FestivalClass)
+    classes = db.session.execute(stmt).scalars().first()
+    if not classes:
+        flask.flash("No classes found in the database. Please upload a Syllabus file before uploading registration entries.", 'warning')
+        return flask.redirect(flask.url_for('admin.upload_syllabus_get'))
+    
     form = mfo.admin.forms.UploadRegistrationsForm()
     return flask.render_template('admin/upload_registrations.html', form=form)
 
@@ -412,7 +425,7 @@ def delete_festival_data_post():
                 db.session.rollback()
                 flask.flash(f'An error occurred: {str(e)}', 'danger')
             
-            return flask.redirect(flask.url_for('admin.upload_registrations_get'))
+            return flask.redirect(flask.url_for('admin.upload_syllabus_get'))
         else:
             flask.flash('Invalid password.', 'danger')
     return flask.render_template('admin/delete_festival_data.html', form=form)

@@ -2,6 +2,7 @@
 
 import flask
 from markupsafe import Markup
+import inspect
 
 bp = flask.Blueprint(
     'jinja_functions',
@@ -43,6 +44,14 @@ def update_order(column, sort_by, sort_order):
 
 @bp.app_template_global()
 def format_time(seconds, show_seconds=True):
+
+    # This function is used as a Jinja2 template filter, but it can also be called
+    # directly from Python code. When called from Jinja2, the function will return
+    # a Markup object that can be safely rendered in an HTML template. When called
+    # from Python code, the function will return a string.
+    stack = inspect.stack()
+    called_from_jinja = any('jinja2' in frame.filename for frame in stack)
+
     if seconds is None or seconds == 0:
         return ""
     
@@ -50,9 +59,14 @@ def format_time(seconds, show_seconds=True):
         minutes, remaining_seconds = divmod(seconds, 60)
         hours, minutes = divmod(minutes, 60)
         
-        display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
-        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min" if seconds > 59 else ""
-        display_seconds = f"<span class='ms-1 me-1'>{remaining_seconds:2d}</span>s"
+        if called_from_jinja:
+            display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
+            display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min" if seconds > 59 else ""
+            display_seconds = f"<span class='ms-1 me-1'>{remaining_seconds:2d}</span>s"
+        else:
+            display_hours = f"{hours:2d} h " if hours else ""
+            display_minutes = f"{minutes:2d} min " if seconds > 59 else ""
+            display_seconds = f"{remaining_seconds:2d} s"
 
         if remaining_seconds:
             return Markup(f"{display_hours}{display_minutes}{display_seconds}")
@@ -62,7 +76,11 @@ def format_time(seconds, show_seconds=True):
         rounded_minutes = round(seconds / 60)
         hours, minutes = divmod(rounded_minutes, 60)
 
-        display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
-        display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min"
+        if called_from_jinja:
+            display_hours = f"<span class='ms-1 me-1'>{hours:2d}</span>h" if hours else ""
+            display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min"
+        else:
+            display_hours = f"{hours:2d} h " if hours else ""
+            display_minutes = f"{minutes:2d} min"
 
         return Markup(f"{display_hours}{display_minutes}")

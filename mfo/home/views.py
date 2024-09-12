@@ -25,7 +25,21 @@ bp = flask.Blueprint(
 def index():
     if '_flashes' in flask.session:
         flask.session['_flashes'].clear()
+
+    if flask_security.current_user and flask_security.current_user.is_authenticated:
+        if any('admin' in role.permissions for role in flask_security.current_user.roles):
+            return flask.redirect(flask.url_for('admin.dashboard'))
+        else:
+            return flask.redirect(flask.url_for('home.dashboard'))
+
     return flask.render_template('/home/index.html')
+
+
+@bp.get ('/dashboard')
+@flask_security.auth_required()
+def dashboard():
+    return flask.render_template('/home/dashboard.html')
+
 
 @bp.get('/new_user')
 @flask_security.auth_required()

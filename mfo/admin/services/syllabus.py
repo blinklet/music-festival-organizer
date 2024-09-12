@@ -154,7 +154,7 @@ def load_database(combined_df):
                         db.session.add(db_class)
                         existing_classes.append((row.number, suffix))
 
-        flask.flash("Syllabus added to database.", "success")
+        flask.flash("Syllabus added to database. Now you may upload the entries spreadsheet", "success")
         db.session.commit()
         
     except Exception as e:
