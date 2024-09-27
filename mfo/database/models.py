@@ -1,7 +1,7 @@
 # /mfo/database/models/profiles.py
 
 from mfo.database.base import db
-from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey, Integer, DECIMAL
+from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint, ForeignKey, String, Boolean, Integer, DateTime, Date, DECIMAL
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
 from decimal import Decimal
@@ -105,25 +105,25 @@ class Profile(db.Model):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     #user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), nullable=True)
-    primary: Mapped[bool] = mapped_column(default=False)
+    primary: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    client_id: Mapped[Optional[str]] = mapped_column(nullable=True)
-    session: Mapped[Optional[str]] = mapped_column(nullable=True)
+    client_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    session: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    name: Mapped[Optional[str]] = mapped_column(nullable=True)
-    group_name: Mapped[Optional[str]] = mapped_column(nullable=True)
-    identifier: Mapped[Optional[int]] = mapped_column(nullable=True, default=0)
+    name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    group_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    identifier: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=0)
     
-    birthdate: Mapped[Optional[datetime.date]] = mapped_column(nullable=True)
+    birthdate: Mapped[Optional[datetime.date]] = mapped_column(Date, nullable=True)
     
-    address: Mapped[Optional[str]] = mapped_column(nullable=True)
-    city: Mapped[Optional[str]] = mapped_column(nullable=True)
-    postal_code: Mapped[Optional[str]] = mapped_column(nullable=True)
-    province: Mapped[Optional[str]] = mapped_column(nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    postal_code: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    province: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    email: Mapped[Optional[str]] = mapped_column(nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    phone: Mapped[Optional[str]] = mapped_column(nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     teachers: Mapped[List["Profile"]] = relationship(
         "Profile",
@@ -184,8 +184,8 @@ class Profile(db.Model):
     total_fee: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True, default=0.00)
     fees_paid: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True, default=0.00)
 
-    comments: Mapped[Optional[str]] = mapped_column(nullable=True)
-    national_festival: Mapped[Optional[bool]] = mapped_column(nullable=True, default=False)
+    comments: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    national_festival: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
 
     users: Mapped[List["User"]] = relationship(
         "User",
@@ -239,11 +239,11 @@ class Season(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
 
-    season_name: Mapped[int] = mapped_column(nullable=True)
-    festival_start_date: Mapped[datetime.date] = mapped_column(nullable=True)
-    registration_start_date: Mapped[datetime.date] = mapped_column(nullable=True)
-    registration_end_date: Mapped[datetime.date] = mapped_column(nullable=True)
-    festival_end_date: Mapped[datetime.date] = mapped_column(nullable=True)
+    season_name: Mapped[str] = mapped_column(String, nullable=True)
+    festival_start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
+    registration_start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
+    registration_end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
+    festival_end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     
     festival: Mapped["Festival"] = relationship("Festival", back_populates="seasons")
     classes: Mapped[List["FestivalClass"]] = relationship(
@@ -281,12 +281,12 @@ class FestivalClass(db.Model):
     number: Mapped[str] = mapped_column(nullable=True)
     suffix: Mapped[Optional[str]] = mapped_column(nullable=True)
 
-    name: Mapped[Optional[str]] = mapped_column(nullable=True)
-    class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    class_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     fee: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True)
-    discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
-    adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
-    move_time: Mapped[Optional[int]] = mapped_column(nullable=True)
+    discipline: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    adjudication_time: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    move_time: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     test_pieces: Mapped[List["Repertoire"]] = relationship(
         "Repertoire", secondary=class_repertoire, back_populates="festival_classes"
@@ -314,8 +314,8 @@ class Entry(db.Model):
     repertoire: Mapped[List["Repertoire"]] = relationship(
         "Repertoire", secondary=entry_repertoire, back_populates="used_in_entries"
     )
-    timestamp: Mapped[Optional[datetime.datetime]] = mapped_column(nullable=True)
-    comments: Mapped[Optional[str]] = mapped_column(nullable=True)
+    timestamp: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
+    comments: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     class_id: Mapped[int] = mapped_column(Integer, ForeignKey('classes.id'))
     festival_class: Mapped["FestivalClass"] = relationship("FestivalClass", back_populates="entries")
@@ -323,9 +323,6 @@ class Entry(db.Model):
     # Each entry is connected to one season
     season_id: Mapped[int] = mapped_column(Integer, ForeignKey('seasons.id'))
     season: Mapped["Season"] = relationship("Season", back_populates="entries")
-    # Since each season is connected to a festival, I do not need to connect the entry to the festival
-    # festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
-    # festival: Mapped["Festival"] = relationship("Festival", back_populates="entries")
 
 
 class Repertoire(db.Model):
@@ -333,13 +330,13 @@ class Repertoire(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    title: Mapped[Optional[str]] = mapped_column(nullable=True)
-    composer: Mapped[Optional[str]] = mapped_column(nullable=True)
-    level: Mapped[Optional[str]] = mapped_column(nullable=True)
-    type: Mapped[Optional[str]] = mapped_column(nullable=True)
-    discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
-    duration: Mapped[Optional[int]] = mapped_column(nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    title: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    composer: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    discipline: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    duration: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     festival_classes: Mapped[List["FestivalClass"]] = relationship(
         "FestivalClass", secondary=class_repertoire, back_populates="test_pieces"
@@ -359,8 +356,8 @@ class School(db.Model):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    name: Mapped[Optional[str]] = mapped_column(nullable=True)
-    notes: Mapped[Optional[int]] = mapped_column(nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    notes: Mapped[Optional[int]] = mapped_column(String, nullable=True)
      
     contacts: Mapped[list[Profile]] = relationship(
         "Profile", secondary=schools_contacts, back_populates="contact_for_schools"
