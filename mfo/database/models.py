@@ -76,6 +76,29 @@ entry_repertoire = Table(
     Column('repertoire_id', ForeignKey('repertoire.id'), primary_key=True)
 )
 
+participants_seasons = Table(
+    'participants_seasons', db.metadata,
+    Column('participant_id', Integer, ForeignKey('profile.id'), primary_key=True),
+    Column('season_id', Integer, ForeignKey('seasons.id'), primary_key=True)
+)
+
+schools_seasons = Table(
+    'schools_seasons', db.metadata,
+    Column('school_id', Integer, ForeignKey('schools.id'), primary_key=True),
+    Column('season_id', Integer, ForeignKey('seasons.id'), primary_key=True)
+)
+
+festivals_users = Table(
+    'festivals_users', db.metadata,
+    Column('festival_id', Integer, ForeignKey('festivals.id'), primary_key=True),
+    Column('user_id', Integer, ForeignKey('user.id'), primary_key=True)
+)
+
+seasons_classes = Table(
+    'seasons_classes', db.metadata,
+    Column('season_id', Integer, ForeignKey('seasons.id'), primary_key=True),
+    Column('class_id', Integer, ForeignKey('classes.id'), primary_key=True)
+)
 
 class Profile(db.Model):
     __tablename__ = 'profile'
@@ -176,10 +199,78 @@ class Profile(db.Model):
         back_populates="profiles"
     )
 
+    # Each profile may be conected to one or more festival seasons
+    seasons: Mapped[List["Season"]] = relationship(
+        "Season",
+        secondary=participants_seasons,
+        back_populates="participants"
+    )
+
     __table_args__ = (
         UniqueConstraint('name', 'email', name='profile_patricipant_uc'),
         UniqueConstraint('group_name', 'email', name='profile_group_uc')
     )
+
+
+class Festival(db.Model):
+    __tablename__ = 'festivals'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    
+    name: Mapped[str] = mapped_column(nullable=True)
+    location: Mapped[Optional[str]] = mapped_column(nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(nullable=True)
+    
+    seasons: Mapped[List["Season"]] = relationship(
+        "Season", 
+        back_populates="festival"
+    )
+
+    users: Mapped[List["User"]] = relationship(
+        "User",
+        secondary=festivals_users,
+        back_populates="festivals"
+    )
+
+
+class Season(db.Model):
+    __tablename__ = 'seasons'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
+
+    season_name: Mapped[int] = mapped_column(nullable=True)
+    festival_start_date: Mapped[datetime.date] = mapped_column(nullable=True)
+    registration_start_date: Mapped[datetime.date] = mapped_column(nullable=True)
+    registration_end_date: Mapped[datetime.date] = mapped_column(nullable=True)
+    festival_end_date: Mapped[datetime.date] = mapped_column(nullable=True)
+    
+    festival: Mapped["Festival"] = relationship("Festival", back_populates="seasons")
+    classes: Mapped[List["FestivalClass"]] = relationship(
+        "FestivalClass", secondary=seasons_classes, back_populates="seasons"
+    )
+    entries: Mapped[List["Entry"]] = relationship("Entry", back_populates="season")
+    repertoire: Mapped[List["Repertoire"]] = relationship("Repertoire", back_populates="season")
+
+    schools: Mapped[List["School"]] = relationship(
+        "School",
+        secondary=schools_seasons,
+        back_populates="seasons"
+    )
+
+    participants: Mapped[List["Profile"]] = relationship(
+        "Profile",
+        secondary=participants_seasons,
+        back_populates="seasons"
+    )
+
+    __table_args__ = (
+        UniqueConstraint('id', 'festival_id', name='festival_season_uc'),
+    )
+    # Note: I chose not to make both 'id' and 'festival_id primary keys because I 
+    # want to be able to have multiple seasons per festival and because it would
+    # make relationships more complex. I chose to make the combination
+    # of 'id' and 'festival_id' unique to ensure that each season is unique to a festival.
 
 
 class FestivalClass(db.Model):
@@ -201,7 +292,12 @@ class FestivalClass(db.Model):
         "Repertoire", secondary=class_repertoire, back_populates="festival_classes"
     )
 
-    entries: Mapped[list["Entry"]] = relationship("Entry", back_populates="festival_class")
+    # Each class may be connected to multiple seasons
+    seasons: Mapped[List["Season"]] = relationship(
+        "Season", secondary=seasons_classes, back_populates="classes"
+    )
+
+    entries: Mapped[List["Entry"]] = relationship("Entry", back_populates="festival_class")
 
 
 class Entry(db.Model):
@@ -224,6 +320,12 @@ class Entry(db.Model):
     class_id: Mapped[int] = mapped_column(Integer, ForeignKey('classes.id'))
     festival_class: Mapped["FestivalClass"] = relationship("FestivalClass", back_populates="entries")
 
+    # Each entry is connected to one season
+    season_id: Mapped[int] = mapped_column(Integer, ForeignKey('seasons.id'))
+    season: Mapped["Season"] = relationship("Season", back_populates="entries")
+    # Since each season is connected to a festival, I do not need to connect the entry to the festival
+    # festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
+    # festival: Mapped["Festival"] = relationship("Festival", back_populates="entries")
 
 
 class Repertoire(db.Model):
@@ -247,6 +349,9 @@ class Repertoire(db.Model):
         "Entry", secondary=entry_repertoire, back_populates="repertoire"
     )
 
+    # Each repertoire is connected to one festival and is available for all that festival's seasons
+    season_id: Mapped[int] = mapped_column(Integer, ForeignKey('seasons.id'))
+    season: Mapped["Season"] = relationship("Season", back_populates="repertoire")
 
 
 class School(db.Model):
@@ -269,3 +374,5 @@ class School(db.Model):
         "Profile", secondary=schools_teachers, back_populates="teaches_at_schools"
     )
 
+    seasons: Mapped[List["Season"]] = relationship(
+        "Season", secondary=schools_seasons, back_populates="schools")
