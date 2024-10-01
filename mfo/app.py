@@ -9,6 +9,7 @@ import flask_session
 import mfo.database.users as users
 import mfo.database.base as base
 from mfo.database.models import Profile
+from mfo.home.forms import ExtendedLoginForm
 
 def create_app():
 
@@ -27,7 +28,7 @@ def create_app():
     base.db.init_app(app)
 
     # Register Flask-Security-Too
-    app.security = Security(app, users.user_datastore)
+    app.security = Security(app, users.user_datastore, login_form=ExtendedLoginForm)
 
     # Register Bootstrap-Flask
     bootstrap = Bootstrap5()

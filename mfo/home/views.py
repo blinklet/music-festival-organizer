@@ -3,13 +3,16 @@
 import flask
 import flask_security
 from sqlalchemy import select
+from flask_security.utils import verify_and_update_password
 
 from mfo.database.base import db
 import mfo.database.users as users
 from mfo.database.models import Profile
-from mfo.database.users import Role
+from mfo.database.users import Role, User
 from mfo.account.forms.edit_profile import ProfileEdit
 import mfo.database.utilities
+from mfo.database.models import Festival, Season
+from mfo.home.forms import ExtendedLoginForm
 
 bp = flask.Blueprint(
     'home',
@@ -64,3 +67,43 @@ def new_user():
     form = ProfileEdit(obj=primary_profile)
 
     return flask.render_template('/account/edit_profile.html', form=form)
+
+@bp.get('/login')
+def custom_login_get():
+    form = ExtendedLoginForm(flask.request.form)
+    return flask.render_template('security/login_user.html', login_user_form=form)
+
+@bp.post('/login')
+def custom_login_post():
+    form = ExtendedLoginForm(flask.request.form)
+    if form.validate():
+        stmt = select(User).where(User.email == form.email.data)
+        user = db.session.execute(stmt).scalars().first()
+        
+        if user and verify_and_update_password(form.password.data, user):
+            # Check if the user has access to the specified Festival and Season
+            stmt = select(Festival).where(Festival.name == form.festival.data)
+            festival = db.session.execute(stmt).scalars().first()
+            
+            if festival:
+                stmt = select(Season).where(
+                    Season.name == form.season.data, 
+                    Season.festival_id == festival.id
+                    )
+                season = db.session.execute(stmt).scalars().first()
+                
+                if season and user_has_access(user, festival, season):
+                    flask_security.login_user(user, remember=form.remember.data)
+                    return flask.redirect(flask.url_for('home.index'))
+                else:
+                    flask.flash('Invalid Season', 'error')
+            else:
+                flask.flash('Invalid Festival', 'error')
+        else:
+            flask.flash('Invalid email or password', 'error')
+            return flask.render_template('security/login_user.html', login_user_form=form)
+    
+def user_has_access(user, festival, season):
+    # Implement your logic to check if the user has access to the festival and season
+    # For example, you might check if the user is associated with the festival and season
+    return True  # Replace with actual access check logic
