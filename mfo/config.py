@@ -98,6 +98,7 @@ ROLES  = {
 }
 
 TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
+TEST_FESTIVALS_FILE = os.environ.get("TEST_FESTIVALS_FILE")
 
 
 # Class default data

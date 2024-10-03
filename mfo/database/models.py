@@ -88,11 +88,16 @@ schools_seasons = Table(
     Column('season_id', Integer, ForeignKey('seasons.id'), primary_key=True)
 )
 
-festivals_users = Table(
-    'festivals_users', db.metadata,
-    Column('festival_id', Integer, ForeignKey('festivals.id'), primary_key=True),
-    Column('user_id', Integer, ForeignKey('user.id'), primary_key=True)
-)
+class UserFestivalsRoles(db.Model):
+    __tablename__ = 'users_festivals_roles'
+    
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'), primary_key=True)
+    role_id: Mapped[int] = mapped_column(Integer, ForeignKey('role.id'), primary_key=True)
+    festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'), primary_key=True)
+    
+    user: Mapped['User'] = relationship('User', back_populates='roles_festivals')
+    role: Mapped['Role'] = relationship('Role', back_populates='users_festivals')
+    festival: Mapped['Festival'] = relationship('Festival', back_populates='roles_users')
 
 seasons_classes = Table(
     'seasons_classes', db.metadata,
@@ -226,10 +231,9 @@ class Festival(db.Model):
         back_populates="festival"
     )
 
-    users: Mapped[List["User"]] = relationship(
-        "User",
-        secondary=festivals_users,
-        back_populates="festivals"
+    roles_users: Mapped[List["UserFestivalsRoles"]] = relationship(
+        'UserFestivalsRoles',
+        back_populates='festival'
     )
 
 
@@ -239,11 +243,11 @@ class Season(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
 
-    season_name: Mapped[str] = mapped_column(String, nullable=True)
-    festival_start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
+    name: Mapped[str] = mapped_column(String, nullable=True)
+    start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     registration_start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     registration_end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
-    festival_end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
+    end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     
     festival: Mapped["Festival"] = relationship("Festival", back_populates="seasons")
     classes: Mapped[List["FestivalClass"]] = relationship(

@@ -1,0 +1,44 @@
+[
+    {
+        "name": "PEI Queens County Music Festival",
+        "location": "PEI",
+        "notes": "Queens County Music Festival (QCMF)",
+        "seasons": [
+            {
+                "name": "2024",
+                "start_date": "2024-01-01",
+                "registration_start_date": "2024-03-01",
+                "registration_end_date": "2024-05-31",
+                "end_date": "2024-06-30"
+            },
+            {
+                "name": "2023",
+                "start_date": "2023-01-01",
+                "registration_start_date": "2023-03-01",
+                "registration_end_date": "2023-05-31",
+                "end_date": "2023-06-30"
+            }
+        ]
+    },
+    {
+        "name": "Test Festival 1",
+        "location": "Toronto",
+        "notes": "This is a test festival",
+        "seasons": [
+            {
+                "name": "2024",
+                "start_date": "2024-01-01",
+                "registration_start_date": "2024-03-01",
+                "registration_end_date": "2024-05-31",
+                "end_date": "2024-06-30"
+            },
+            {
+                "name": "2023",
+                "start_date": "2023-01-01",
+                "registration_start_date": "2023-03-01",
+                "registration_end_date": "2023-05-31",
+                "end_date": "2023-06-30"
+            }
+        ]
+    }
+]

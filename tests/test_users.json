@@ -2,8 +2,16 @@
     {
         "email": "user@testmail.com",
         "password": "password",
-        "roles": [
-            "Participant"
+        "festivals": [
+            {
+                "name": "PEI Queens County Music Festival",
+                "seasons": [
+                    "2024"
+                ],
+                "roles": [
+                    "Participant"
+                ]
+            }
         ],
         "primary_profile": {
                 "client_id": null,
@@ -25,9 +33,28 @@
     {
         "email": "admin@testmail.com",
         "password": "password",
-        "roles": [
-            "Admin",
-            "Participant"
+        "festivals": [
+            {
+                "name": "PEI Queens County Music Festival",
+                "seasons": [
+                    "2024",
+                    "2023"
+                ],
+                "roles": [
+                    "Admin",
+                    "Participant"
+                ]
+            },
+            {
+                "name": "Test Festival 1",
+                "seasons": [
+                    "2024",
+                    "2023"
+                ],
+                "roles": [
+                    "Accompanist"
+                ]
+            }
         ],
         "primary_profile": {
                 "client_id": null,
