@@ -113,22 +113,19 @@ def test_users():
                         print(f"Role {role} does not exist. Skipping this role.")
                         continue
                     
-                    try:
-                        # Check if the association already exists
-                        stmt = select(UserFestivalsRoles).where(
-                            UserFestivalsRoles.user == user,
-                            UserFestivalsRoles.role == role,
-                            UserFestivalsRoles.festival == festival
-                        )
-                        association = db.session.execute(stmt).scalars().one()
+                    # Check if the association already exists
+                    stmt = select(UserFestivalsRoles).where(
+                        UserFestivalsRoles.user == user,
+                        UserFestivalsRoles.role == role,
+                        UserFestivalsRoles.festival == festival
+                    )
+                    association = db.session.execute(stmt).scalars().one_or_none()
+                    if association:
                         print("Association already exists.")
-                    except NoResultFound:
-                        # If no existing association is found, create a new one
+                    else:
                         association = UserFestivalsRoles(user=user, role=role, festival=festival)
                         db.session.add(association)
                         print(f"Added {user_dict['email']} role {role.name} to festival {festival.name}")
-
-
 
             primary_profile = user_dict['primary_profile']
             primary_profile['birthdate'] = datetime.strptime(primary_profile['birthdate'], "%Y-%m-%d").date()
@@ -138,8 +135,6 @@ def test_users():
             db.session.add(user)
             db.session.add(profile_entry)
             print(f"Added userid: {user.email}")
-
-            
 
     db.session.commit()
     

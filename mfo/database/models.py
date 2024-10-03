@@ -244,6 +244,7 @@ class Season(db.Model):
     festival_id: Mapped[int] = mapped_column(Integer, ForeignKey('festivals.id'))
 
     name: Mapped[str] = mapped_column(String, nullable=True)
+    primary: Mapped[bool] = mapped_column(Boolean, default=False)
     start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     registration_start_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
     registration_end_date: Mapped[datetime.date] = mapped_column(Date, nullable=True)
