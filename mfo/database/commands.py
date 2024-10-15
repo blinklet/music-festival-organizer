@@ -62,6 +62,7 @@ def test_festivals():
         else:
             festival = Festival()
             festival.name = festival_dict['name']
+            festival.nickname = festival_dict['nickname']
             festival.location = festival_dict['location']
             festival.notes = festival_dict['notes']
             print(f"Added festival: {festival.name}")
@@ -73,6 +74,7 @@ def test_festivals():
                     continue
                 season_entry = Season()
                 season_entry.name = season['name']
+                season_entry.primary = season['primary']
                 season_entry.start_date = datetime.strptime(season['start_date'], "%Y-%m-%d").date()
                 season_entry.registration_start_date = datetime.strptime(season['registration_start_date'], "%Y-%m-%d").date()
                 season_entry.registration_end_date = datetime.strptime(season['registration_end_date'], "%Y-%m-%d").date()

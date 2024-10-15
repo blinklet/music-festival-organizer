@@ -223,6 +223,8 @@ class Festival(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     
     name: Mapped[str] = mapped_column(nullable=True)
+    nickname: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
     location: Mapped[Optional[str]] = mapped_column(nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(nullable=True)
     
@@ -270,12 +272,11 @@ class Season(db.Model):
     )
 
     __table_args__ = (
-        UniqueConstraint('id', 'festival_id', name='festival_season_uc'),
+        # Each season is unique to a festival
+        UniqueConstraint('id', 'festival_id', name='unique_festival_season'),
+        # Each festival has only one primary season
+        UniqueConstraint('festival_id', 'primary', name='unique_festival_primary'),
     )
-    # Note: I chose not to make both 'id' and 'festival_id primary keys because I 
-    # want to be able to have multiple seasons per festival and because it would
-    # make relationships more complex. I chose to make the combination
-    # of 'id' and 'festival_id' unique to ensure that each season is unique to a festival.
 
 
 class FestivalClass(db.Model):

@@ -3,6 +3,7 @@
 import os
 import dotenv
 from decimal import Decimal
+from flask_security import uia_email_mapper
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(app_dir)
@@ -100,6 +101,11 @@ ROLES  = {
 TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
 TEST_FESTIVALS_FILE = os.environ.get("TEST_FESTIVALS_FILE")
 
+SECURITY_LOGIN_URL = '/login-bad'
+
+# SECURITY_USER_IDENTITY_ATTRIBUTES = [
+#     {"email": {"mapper": uia_email_mapper, "case_insensitive": True}},
+# ]
 
 # Class default data
 

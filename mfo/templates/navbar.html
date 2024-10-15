@@ -15,7 +15,7 @@
                     {% include "navbar_profile.html" %}
                 {% else %}
                     <a class="nav-link" href="{{ url_for_security('register') }}">Register</a>
-                    <a class="nav-link" href="{{ url_for_security('login') }}">Login</a>
+                    <a class="nav-link" href="{{ url_for('home.custom_login_get') }}">Login</a>
                 {% endif %}
             </div>
         </div>

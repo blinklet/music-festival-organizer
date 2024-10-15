@@ -49,7 +49,4 @@ def create_app():
     app.register_blueprint(mfo.database.commands.bp)
     app.register_blueprint(mfo.template_functions.bp)
 
-    
     return app
-
-

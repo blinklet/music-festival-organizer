@@ -1,3 +1,11 @@
+# mfo/database/utilities.py
+
+import flask
+from sqlalchemy import select
+
+from mfo.database.base import db
+from mfo.database.models import Festival
+
 def find_primary_profile(user):
     return user.primary_profile
 
@@ -15,3 +23,9 @@ def set_primary_profile(user, profile):
     user.primary_profile_id = profile.id
 
     return user, profile
+
+def get_current_festival():
+    festival_id = flask.session.get('current_festival')
+    stmt = select(Festival).where(Festival.id == festival_id)
+    festival = db.session.execute(stmt).scalars().one_or_none()
+    return festival
