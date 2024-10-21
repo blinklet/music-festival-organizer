@@ -163,6 +163,7 @@ cython_debug/
 
 # Environment variables file
 .dotenv
+*.env
 
 # Libreoffice Calc files
 *.ods
@@ -170,3 +171,6 @@ cython_debug/
 
 # Flask-Session
 session/
+
+
+settings.json

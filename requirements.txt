@@ -10,3 +10,6 @@ odfpy
 openpyxl
 Flask-Session[cachelib]
 tabula-py[jpype]
+redis
+cachelib
+psycopg2-binary

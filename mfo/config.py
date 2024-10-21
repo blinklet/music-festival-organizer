@@ -1,12 +1,18 @@
 # mfo/config.py
 
 import os
-import dotenv
+from dotenv import load_dotenv
 from decimal import Decimal
+import redis
+from datetime import timedelta
+from cachelib import FileSystemCache
+
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(app_dir)
-dotenv.load_dotenv()
+
+FLASK_ENV = os.getenv('FLASK_ENV')
+load_dotenv(dotenv_path=f'{project_dir}/{FLASK_ENV}.env')
 
 # General Config
 ENVIRONMENT = os.environ.get("FLASK_ENVIRONMENT")
@@ -30,8 +36,7 @@ SECURITY_POST_REGISTER_VIEW = '/new_user'
 # Flask-SQLAlchemy variables
 if ENVIRONMENT == "development":
     # For development, use a SQLite database located in the project folder
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")\
-        or 'sqlite:///' + os.path.join(project_dir, 'app.sqlite')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(project_dir, 'app.sqlite')
 else:
     # For production, get the database URI from environment variable
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
@@ -43,13 +48,23 @@ SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS"
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}  
 
 # Flask-Session variables
-SESSION_TYPE = 'filesystem'
-SESSION_FILE_DIR = os.path.join(project_dir, 'session')
-SESSION_FILE_THRESHOLD = 50
-SESSION_PERMANENT = False
-SESSION_USE_SIGNER = True
-#SESSION_SERIALIZATION_FORMAT = 'json'
+SESSION_TYPE = os.environ.get('SESSION_TYPE')
+SESSION_PERMANENT = True
+PERMANENT_SESSION_LIFETIME = timedelta(
+    seconds=int(os.environ.get("PERMANENT_SESSION_LIFETIME"))
+)
 
+if SESSION_TYPE == 'filesystem':
+    SESSION_TYPE = 'cachelib'
+    SESSION_THRESHOLD = int(os.environ.get('SESSION_THRESHOLD')) 
+    SESSION_CACHELIB = FileSystemCache(
+        threshold=SESSION_THRESHOLD, 
+        cache_dir=os.path.join(project_dir, 'session'),
+        default_timeout=PERMANENT_SESSION_LIFETIME.total_seconds()
+    )
+else:
+    SESSION_TYPE = 'redis'
+    SESSION_REDIS = redis.Redis.from_url(os.environ.get('REDIS_URL'))
 
 
 # Roles defined
