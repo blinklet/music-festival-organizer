@@ -74,7 +74,7 @@ def test_users():
 @bp.cli.command('create')
 @flask.cli.with_appcontext
 def create():
-    db.drop_all()
+    #db.drop_all()
     db.create_all()
 
     roles_dict = flask.current_app.config['ROLES']

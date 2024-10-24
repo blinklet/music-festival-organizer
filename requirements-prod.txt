@@ -1,0 +1,17 @@
+# requirements.txt
+
+setuptools
+flask
+python-dotenv
+Flask-Security-Too[fsqla,common]
+bootstrap-flask
+phonenumbers
+pandas
+odfpy
+openpyxl
+Flask-Session[cachelib]
+tabula-py[jpype]
+redis
+cachelib
+psycopg2
+gunicorn
