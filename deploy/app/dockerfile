@@ -20,9 +20,10 @@ RUN apt-get update && apt-get install -y \
 COPY --from=first-stage /ps-install /usr/local
 
 WORKDIR /mfo-app
-COPY mfo/  ./mfo
-COPY tests/  ./tests
-COPY production.env requirements-prod.txt ./
+COPY requirements-prod.txt ./
+# COPY mfo/  ./mfo
+# COPY tests/  ./tests
+# COPY production.env requirements-prod.txt ./
 
 ENV FLASK_APP="mfo.app"
 ENV FLASK_ENV="production"

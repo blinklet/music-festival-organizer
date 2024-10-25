@@ -3,6 +3,19 @@ name: mfo
 services:
   app:
     image: mfo-app
+    volumes:
+      - type: bind
+        source: ./mfo
+        target: /mfo-app/mfo
+        read_only: true
+      - type: bind
+        source: ./tests
+        target: /mfo-app/tests
+        read_only: true
+      - type: bind
+        source: ./production.env
+        target: /mfo-app/production.env
+        read_only: true
     networks:
       - frontend_network
       - backend_network
@@ -18,7 +31,7 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - type: volume
-        source: mfo-data
+        source: data
         target: /var/lib/postgresql/data
     networks:
       - backend_network
@@ -59,4 +72,4 @@ networks:
     driver: bridge
 
 volumes:
-  mfo-data:
+  data:
