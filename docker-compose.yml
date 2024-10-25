@@ -1,0 +1,62 @@
+name: mfo
+
+services:
+  app:
+    image: mfo-app
+    networks:
+      - frontend_network
+      - backend_network
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: fake-password
+      POSTGRES_DB: postgres
+    volumes:
+      - type: volume
+        source: mfo-data
+        target: /var/lib/postgresql/data
+    networks:
+      - backend_network
+
+  cache:
+    image: redis
+    networks:
+      - backend_network
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./deploy/nginx/configs/host
+        target: /etc/nginx/conf.d
+        read_only: true
+      - type: bind
+        source: ./deploy/nginx/certs/host
+        target: /etc/nginx/certs
+        read_only: true
+    networks:
+      - frontend_network
+      - external_network
+    depends_on:
+      - app
+
+networks:
+  backend_network:
+    driver: bridge
+    internal: true
+  frontend_network:
+    driver: bridge
+    internal: true
+  external_network:
+    driver: bridge
+
+volumes:
+  mfo-data:
