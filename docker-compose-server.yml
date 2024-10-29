@@ -50,11 +50,11 @@ services:
       - "443:443"
     volumes:
       - type: bind
-        source: ./deploy/nginx/configs/host
+        source: ./deploy/nginx/configs/server
         target: /etc/nginx/conf.d
         read_only: true
       - type: bind
-        source: ./deploy/nginx/certs/host
+        source: ./deploy/nginx/certs/server
         target: /etc/nginx/certs
         read_only: true
     networks:
