@@ -1,25 +1,30 @@
-# Application variables
-# ---------------------
-FLASK_ENVIRONMENT = development
-FLASK_APP = app
-FLASK_DEBUG = True
+# /production.env
+
+FLASK_ENVIRONMENT = production
 # Generate a key using "secrets.token_urlsafe()"
 FLASK_SECRET_KEY = LGBoUEDCCpgwxy5jZxpu9e01MTnRVqnG6A8ceD7Z4YU
-# FLASK_SERVER_NAME = 127.0.0.1:5000
 FLASK_EXPLAIN_TEMPLATE_LOADING = False
-
 
 # Flask-SQLAlchemy variables
 # --------------------------
-# The connection string of the app's database.
-SQLALCHEMY_DATABASE_URI = ""
-# Print database-related actions to the console for debugging purposes.
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:fake-password@mfo-db:5432/postgres"
 SQLALCHEMY_ECHO = False
 
+# Flask-Session variables
+# -----------------------
+SESSION_TYPE = "redis"
+PERMANENT_SESSION_LIFETIME = 2678400
+
+# Redis variables
+# ---------------
+REDIS_URL = "redis://mfo-cache:6379"
 
 # Flask-Security variables
-# ---------------------
+# ------------------------
 # generate a salt using "secrets.SystemRandom().getrandbits(128)"
 SECURITY_PASSWORD_SALT  = 307680677384259925768439955171685999662
 
-TEST_USERS_FILE = "/home/brian/Projects/Music Festival Program/music-festival-organizer/tests/test_users.json"
+# command line variables
+# ----------------------
+TEST_USERS_FILE = "/mfo-app/tests/test_users.json"
+TEST_FESTIVALS_FILE = "/mfo-app/tests/test_festivals.json"

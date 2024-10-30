@@ -13,4 +13,5 @@ Flask-Session[cachelib]
 tabula-py[jpype]
 redis
 cachelib
-psycopg2-binary
+psycopg2
+gunicorn

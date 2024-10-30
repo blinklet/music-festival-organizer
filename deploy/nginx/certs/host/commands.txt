@@ -1,0 +1,19 @@
+In *deploy/nginx/certs/host/* run the following command
+
+```
+ssh-keygen -t rsa -b 4096 -m PEM
+```
+
+When asked where to store the key, put it in the *deploy/nginx/certs/host/* directory by entering in the relative path with filename which, in my case, is: `key.pem`.
+
+This results in two files being created: *key.pem* AND *key.pem.pub*.
+
+Then, create the cert
+
+```
+openssl req -new -x509 -key key.pem -out cert.pem -days 100
+```
+
+The private key is *key.pem* and the certificate is *cert.pem*. So those are the files to use as the certificate and the key that signs the certificate
+
+And, of course, add the private key and certificate files to your *.gitignore* file:

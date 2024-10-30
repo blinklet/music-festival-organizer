@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 import mfo.admin.services.syllabus as syllabus
-from mfo.database.models import Profile, FestivalClass, Repertoire
+from mfo.database.models import Profile, FestivalClass, Repertoire, profiles_roles
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
@@ -380,47 +380,30 @@ def delete_festival_data_post():
     form = forms.ConfirmFestivalDataDelete()
     if form.validate_on_submit():
         if flask_security.utils.verify_and_update_password(form.password.data, flask_security.current_user):
-            try:          
-                # Get list of users
-                users = db.session.scalars(select(User)).all()
-                roles = db.session.scalars(select(Role)).all()
-                
-                # Remove profile associations
-                for user in users:
-                    if hasattr(user, 'profiles'):
-                        for profile in user.profiles:
-                            db.session.delete(profile)
-                            # clear primary_profile foreign key
-                            user.primary_profile_id = None
+            try:
+                with db.session.no_autoflush:     
+                    # Get list of users that have a primary profile configured
+                    stmt = select(User.primary_profile_id).where(User.primary_profile_id.isnot(None))
+                    primary_profile_ids = db.session.execute(stmt).scalars().all()
 
-                for role in roles:
-                    if hasattr(role, 'profiles'):
-                        for profile in role.profiles:
-                            db.session.delete(profile)
-                
-                # Delete profile records
-                profile_table = db.metadata.tables.get('profile')
-                if profile_table is not None:
-                    db.session.execute(profile_table.delete())
-                
-                # Clear all data except User and Role data
-                meta = db.metadata
-                for table in reversed(meta.sorted_tables):
-                    if table.name not in ['user', 'role', 'profile', 'roles_users']:
-                        db.session.execute(table.delete())
+                    # Find profiles that are not primary profiles
+                    stmt = select(Profile).where(Profile.id.notin_(primary_profile_ids))
+                    profiles_to_delete = db.session.execute(stmt).scalars().all()
 
-                # Add back in a blank primary profile for each user
-                for user in users:
-                    primary_profile = Profile()
-                    primary_profile.email = user.email
-                    user, primary_profile = mfo.database.utilities.set_primary_profile(user, primary_profile)
-                    for role in user.roles:
-                        primary_profile.roles.append(role)
-                    primary_profile.users.append(user)
-                    db.session.add(primary_profile)
-                
-                db.session.commit()
-                flask.flash('Festival data has been deleted.', 'success')
+                    # Delete the profiles
+                    for profile in profiles_to_delete:
+                        db.session.execute(profiles_roles.delete().where(profiles_roles.c.profile_id == profile.id))
+                        db.session.delete(profile)                                
+               
+                    # Clear all remaining data except tables already cleared
+                    meta = db.metadata
+                    for table in reversed(meta.sorted_tables):
+                        if table.name not in ['user', 'role', 'profile', 'roles_users', 'profiles_roles']:
+                            db.session.execute(table.delete())
+                    
+                    db.session.commit()
+                    flask.flash('Festival data has been deleted.', 'success')
+
             except Exception as e:
                 db.session.rollback()
                 flask.flash(f'An error occurred: {str(e)}', 'danger')
@@ -428,4 +411,5 @@ def delete_festival_data_post():
             return flask.redirect(flask.url_for('admin.upload_syllabus_get'))
         else:
             flask.flash('Invalid password.', 'danger')
+
     return flask.render_template('admin/delete_festival_data.html', form=form)
