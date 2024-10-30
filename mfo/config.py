@@ -34,7 +34,7 @@ SECURITY_POST_LOGIN_VIEW = '/'
 SECURITY_POST_REGISTER_VIEW = '/new_user'
 
 # Flask-SQLAlchemy variables
-if ENVIRONMENT == "development":
+if ENVIRONMENT == "development" or ENVIRONMENT == "lightweight":
     # For development, use a SQLite database located in the project folder
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(project_dir, 'app.sqlite')
 else:
@@ -112,7 +112,11 @@ ROLES  = {
     },
 }
 
-TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
+if ENVIRONMENT == "development" or ENVIRONMENT == "lightweight":
+    TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
+    TEST_USERS_FILE = os.path.join(project_dir, TEST_USERS_FILE)
+else:
+    TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
 
 
 # Class default data

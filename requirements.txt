@@ -1,5 +1,6 @@
 # requirements.txt
 
+setuptools
 flask
 python-dotenv
 Flask-Security-Too[fsqla,common]
