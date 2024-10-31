@@ -6,6 +6,8 @@ import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc
+from sqlalchemy.sql import exists
+from sqlalchemy.orm import selectinload
 import pandas as pd
 import os
 import json
@@ -15,7 +17,7 @@ from werkzeug.security import check_password_hash
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 import mfo.admin.services.syllabus as syllabus
-from mfo.database.models import Profile, FestivalClass, Repertoire, profiles_roles
+from mfo.database.models import Entry, Profile, FestivalClass, Repertoire, profiles_roles
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
@@ -201,7 +203,13 @@ def classes_get():
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
 
-    stmt = select(FestivalClass)
+    stmt = select(FestivalClass).options(
+        selectinload(FestivalClass.entries),
+        selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
+    ).where(
+        exists().where(Entry.class_id == FestivalClass.id)
+    )
+
     _classes = db.session.execute(stmt).scalars().all()
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
 
