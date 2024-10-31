@@ -6,7 +6,7 @@ import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc
-from sqlalchemy.sql import exists
+from sqlalchemy.sql import exists, func
 from sqlalchemy.orm import selectinload
 import pandas as pd
 import os
@@ -203,11 +203,14 @@ def classes_get():
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
 
-    stmt = select(FestivalClass).options(
-        selectinload(FestivalClass.entries),
-        selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
-    ).where(
-        exists().where(Entry.class_id == FestivalClass.id)
+    stmt = (
+        select(FestivalClass)
+        .join(Entry, Entry.class_id == FestivalClass.id)
+        .group_by(FestivalClass.id)
+        .having(func.count(Entry.id) > 0)
+        .options(
+            selectinload(FestivalClass.entries).selectinload(Entry.repertoire)  # Load repertoire for each Entry
+        )
     )
 
     _classes = db.session.execute(stmt).scalars().all()
