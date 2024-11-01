@@ -305,7 +305,11 @@ def edit_class_info_post():
 def repertoire_get():
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
-    stmt = select(Repertoire)
+    stmt = select(Repertoire).options(
+        selectinload(Repertoire.festival_classes).load_only(FestivalClass.id),
+        selectinload(Repertoire.used_in_entries).load_only(Entry.id)
+    )
+
     repertoire = db.session.execute(stmt).scalars().all()
 
     repertoire_list = admin_services.get_repertoire_list(
