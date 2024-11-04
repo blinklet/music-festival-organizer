@@ -200,8 +200,7 @@ def profile_report_get():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
-    sort_by = flask.request.args.getlist('sort_by')
-    sort_order = flask.request.args.getlist('sort_order')
+    form = forms.ClassSortForm()
 
     stmt = (
         select(FestivalClass)
@@ -214,14 +213,20 @@ def classes_get():
     )
 
     _classes = db.session.execute(stmt).scalars().all()
-    class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
+    class_list = admin_services.get_class_list(_classes)
 
     return flask.render_template(
         'admin/class_report.html', 
         classes=class_list, 
-        sort_by=sort_by, 
-        sort_order=sort_order
+        form=form
         )
+
+@bp.post('/report/classes')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def classes_post():
+    form = forms.ClassSortForm()
+    return flask.redirect(flask.url_for('admin.classes_get'))
 
 @bp.get('/info/class')
 @flask_security.auth_required()

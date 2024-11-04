@@ -91,3 +91,40 @@ class EditRepertoireForm(FlaskForm):
 class ConfirmFestivalDataDelete(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired()], render_kw={"placeholder": "Enter password..."})
     submit = SubmitField('Delete Data')
+
+
+class ClassSortForm(FlaskForm):
+    field_choices = [
+        ("none", ""),
+        ("number", "Number"),
+        ("name", "Name"),
+        ("type", "Type"),
+        ("discipline", "Discipline"),
+        ("entries", "Entries"),
+        ("total_fees", "Total fees"),
+        ("total_time", "Total time"),
+    ]
+
+    order_choices = [
+        ("asc", "Ascending"),
+        ("desc", "Descending"),
+    ]
+
+    page_choices = [
+        ("short", "10"),
+        ("medium", "20"),
+        ("long", "50"),
+        ("all", "All"),
+    ]
+
+    reset = SubmitField('Reset')
+    submit = SubmitField('Sort')
+
+
+    sort1 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order1 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    sort2 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    
