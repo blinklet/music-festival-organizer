@@ -28,7 +28,9 @@ def sort_key(x, column):
 
 def sort_list(list_to_sort, sort_by, sort_order):
     if sort_by is not None:
-        for column, order in zip(sort_by, sort_order):
+        sort_criteria = list(zip(sort_by, sort_order))
+
+        for column, order in reversed(sort_criteria):
             if order == 'asc':
                 list_to_sort = sorted(
                     list_to_sort, 

@@ -200,8 +200,20 @@ def profile_report_get():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def classes_get():
+    form = forms.ClassSortForm()
+
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+
+    # fill in form fields with sort_by and sort_order values
+    if sort_by:
+        sort_criteria = zip(sort_by, sort_order)
+        for i, (sort_field, order_field) in enumerate(sort_criteria, start=1):
+            setattr(getattr(form, f'sort{i}'), 'data', sort_field)
+            setattr(getattr(form, f'order{i}'), 'data', order_field)
+    else:
+        form.sort1.data = 'number_suffix'
+        form.order1.data = 'asc'
 
     stmt = (
         select(FestivalClass)
@@ -209,20 +221,42 @@ def classes_get():
         .group_by(FestivalClass.id)
         .having(func.count(Entry.id) > 0)
         .options(
-            selectinload(FestivalClass.entries).selectinload(Entry.repertoire)  # Load repertoire for each Entry
+            selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
         )
     )
-
     _classes = db.session.execute(stmt).scalars().all()
+
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
 
     return flask.render_template(
         'admin/class_report.html', 
+        sort_by=sort_by,
+        sort_order=sort_order,
         classes=class_list, 
-        sort_by=sort_by, 
-        sort_order=sort_order
+        form=form
         )
 
+@bp.post('/report/classes')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def classes_post():
+    form = forms.ClassSortForm()
+    if form.validate_on_submit():
+        if form.reset.data:
+            return flask.redirect(flask.url_for('admin.classes_get'))
+        else:
+            # Get sort_by and sort_order lists from the submitted form
+            sort_by = []
+            sort_order = []
+            for i in range(1, 4):
+                sort_field = getattr(form, f'sort{i}').data
+                order_field = getattr(form, f'order{i}').data
+                if sort_field != 'none': # 'none' is defined in the form's field_choice for no input
+                    sort_by.append(sort_field)
+                    sort_order.append(order_field)
+            # Display table with new sort_by and sort_order values
+            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order))
+    
 @bp.get('/info/class')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
