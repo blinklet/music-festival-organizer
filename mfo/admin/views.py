@@ -5,7 +5,7 @@ import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, asc
 from sqlalchemy.sql import exists, func
 from sqlalchemy.orm import selectinload
 import pandas as pd
@@ -204,6 +204,8 @@ def classes_get():
 
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+    page = int(flask.request.args.get('page', 1))
+    per_page = int(flask.request.args.get('per_page', 10))
 
     # fill in form fields with sort_by and sort_order values
     if sort_by:
@@ -216,7 +218,10 @@ def classes_get():
         form.order1.data = 'asc'
 
     stmt = (
-        select(FestivalClass)
+        select(
+            FestivalClass,
+            func.count(Entry.id).label('number_of_entries')
+        )
         .join(Entry, Entry.class_id == FestivalClass.id)
         .group_by(FestivalClass.id)
         .having(func.count(Entry.id) > 0)
@@ -224,6 +229,23 @@ def classes_get():
             selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
         )
     )
+
+    if sort_by and sort_order:
+        for column, order in zip(sort_by, sort_order):
+            if column == 'number_of_entries':
+                if order == 'asc':
+                    stmt = stmt.order_by(asc(func.count(Entry.id)))
+                elif order == 'desc':
+                    stmt = stmt.order_by(desc(func.count(Entry.id)))
+            else:
+                if order == 'asc':
+                    stmt = stmt.order_by(asc(getattr(FestivalClass, column)))
+                elif order == 'desc':
+                    stmt = stmt.order_by(desc(getattr(FestivalClass, column)))
+
+
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+
     _classes = db.session.execute(stmt).scalars().all()
 
     class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
@@ -233,7 +255,9 @@ def classes_get():
         sort_by=sort_by,
         sort_order=sort_order,
         classes=class_list, 
-        form=form
+        form=form,
+        page=page,
+        per_page=per_page,
         )
 
 @bp.post('/report/classes')

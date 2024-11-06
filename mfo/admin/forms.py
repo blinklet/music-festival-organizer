@@ -1,3 +1,5 @@
+# mfo/admin/forms.py
+
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from wtforms import ValidationError, StringField, SubmitField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField
@@ -97,10 +99,10 @@ class ClassSortForm(FlaskForm):
     # these name of each label must match the key in the _classes dictionary
     field_choices = [
         ("none", ""),
-        ("number_suffix", "Class Number"),
+        ("number", "Class Number"),
         ("name", "Name"),
         ("discipline", "Discipline"),
-        ("type", "Type"),
+        ("class_type", "Type"),
         ("number_of_entries", "Entries"),
         ("total_fees", "Total fees"),
         ("total_time", "Total time"),
