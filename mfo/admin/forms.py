@@ -94,17 +94,19 @@ class ConfirmFestivalDataDelete(FlaskForm):
 
 
 class ClassSortForm(FlaskForm):
+    # these name of each label must match the key in the _classes dictionary
     field_choices = [
         ("none", ""),
-        ("number", "Number"),
+        ("number_suffix", "Class Number"),
         ("name", "Name"),
-        ("type", "Type"),
         ("discipline", "Discipline"),
-        ("entries", "Entries"),
+        ("type", "Type"),
+        ("number_of_entries", "Entries"),
         ("total_fees", "Total fees"),
         ("total_time", "Total time"),
     ]
 
+    # these name of each label must the strings in the admin_services.sort_list() function
     order_choices = [
         ("asc", "Ascending"),
         ("desc", "Descending"),
@@ -127,4 +129,3 @@ class ClassSortForm(FlaskForm):
     order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
     sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
-    

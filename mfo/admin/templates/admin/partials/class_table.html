@@ -10,10 +10,10 @@
                 Name
             </th>
             <th>
-                Type
+                Discipline
             </th>
             <th>
-                Discipline
+                Type
             </th>
             <th class="text-end">
                 Entries
@@ -30,8 +30,8 @@
         <tr>
             <td><a href="{{ url_for('admin.class_info_get', id=_class.id) }}">{{ _class.number_suffix }}</a></td>
             <td>{{ _class.name }}</td>
-            <td>{{ _class.type }}</td>
             <td>{{ _class.discipline }}</td>
+            <td>{{ _class.type }}</td>
             <td class="text-end">{{ _class.number_of_entries }}</td>
             <td class="text-end">{{ _class.total_fees }}</td>
             <td class="text-end">{{ format_time(_class.total_time, show_seconds=False) }}</td>
