@@ -217,7 +217,8 @@ def classes_get():
         form.sort1.data = 'number_suffix'
         form.order1.data = 'asc'
 
-    subquery_entries = (
+
+    class_entries = (
         select(
             Entry.class_id,
             func.count(Entry.id).label('number_of_entries')
@@ -225,81 +226,47 @@ def classes_get():
         .group_by(Entry.class_id)
     ).subquery()
 
-    subquery_duration = (
-        select(
-            Entry.class_id,
-            func.sum(Repertoire.duration).label('total_repertoire_duration')
-        )
-        .join(entry_repertoire, entry_repertoire.c.entry_id == Entry.id)
-        .join(Repertoire, Repertoire.id == entry_repertoire.c.repertoire_id)
-        .group_by(Entry.class_id)
-    ).subquery()
-        
     stmt = (
         select(
-            # FestivalClass,
+            FestivalClass.id.label('id'),
             func.concat(FestivalClass.number, FestivalClass.suffix).label('number_suffix'),
-            (FestivalClass.name).label('name'),
+            FestivalClass.name.label('name'),
             FestivalClass.discipline.label('discipline'),
             FestivalClass.class_type.label('class_type'),
-            subquery_entries.c.number_of_entries,
-            (FestivalClass.fee * subquery_entries.c.number_of_entries).label('total_fees'),
-            (subquery_duration.c.total_repertoire_duration +
-                (subquery_entries.c.number_of_entries * FestivalClass.adjudication_time) +
-                (subquery_entries.c.number_of_entries * FestivalClass.move_time)
+            class_entries.c.number_of_entries,
+            (FestivalClass.fee * class_entries.c.number_of_entries).label('total_fees'),
+            (func.sum(Repertoire.duration) +
+                (FestivalClass.adjudication_time * class_entries.c.number_of_entries) +
+                (FestivalClass.move_time * class_entries.c.number_of_entries)
             ).label('total_time')
         )
-        .outerjoin(subquery_entries, subquery_entries.c.class_id == FestivalClass.id)
-        .outerjoin(subquery_duration, subquery_duration.c.class_id == FestivalClass.id)
-        .join(Entry, Entry.class_id == FestivalClass.id)  # Ensure Entry is joined
-        .group_by(FestivalClass.id, subquery_entries.c.number_of_entries)
+        .join(FestivalClass.entries)
+        .join(Entry.repertoire)
+        .join(class_entries, FestivalClass.id == class_entries.c.class_id)
+        .group_by(
+            FestivalClass.id,
+            FestivalClass.number,
+            FestivalClass.suffix,
+            FestivalClass.name,
+            FestivalClass.discipline,
+            FestivalClass.class_type,
+            FestivalClass.fee,
+            class_entries.c.number_of_entries,
+        )
         .having(func.count(Entry.id) > 0)
-        # .options(
-        #     selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
-        # )
     )
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
-            if column == 'number_of_entries':
-                if order == 'asc':
-                    stmt = stmt.order_by(asc(subquery_entries.c.number_of_entries))
-                elif order == 'desc':
-                    stmt = stmt.order_by(desc(subquery_entries.c.number_of_entries))
-            elif column == 'total_fees':
-                if order == 'asc':
-                    stmt = stmt.order_by(asc(FestivalClass.fee * subquery_entries.c.number_of_entries))
-                elif order == 'desc':
-                    stmt = stmt.order_by(desc(FestivalClass.fee * subquery_entries.c.number_of_entries))
-            elif column == 'total_time':
-                if order == 'asc':
-                    stmt = stmt.order_by(asc(
-                        subquery_duration.c.total_repertoire_duration +
-                        (subquery_entries.c.number_of_entries * FestivalClass.adjudication_time) +
-                        (subquery_entries.c.number_of_entries * FestivalClass.move_time)
-                    ))
-                elif order == 'desc':
-                    stmt = stmt.order_by(desc(
-                        subquery_duration.c.total_repertoire_duration +
-                        (subquery_entries.c.number_of_entries * FestivalClass.adjudication_time) +
-                        (subquery_entries.c.number_of_entries * FestivalClass.move_time)
-                    ))
-            else:
-                if order == 'asc':
-                    stmt = stmt.order_by(asc(getattr(FestivalClass, column)))
-                elif order == 'desc':
-                    stmt = stmt.order_by(desc(getattr(FestivalClass, column)))
+            if order == 'asc':
+                stmt = stmt.order_by(asc(column))
+            elif order == 'desc':
+                stmt = stmt.order_by(desc(column))
 
 
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
     _classes = db.session.execute(stmt).all()
-    for x in _classes:
-        print(x)
-
-
-
-    # class_list = admin_services.get_class_list(_classes)
 
     return flask.render_template(
         'admin/class_report.html', 
@@ -308,6 +275,7 @@ def classes_get():
         page=page,
         per_page=per_page,
         )
+
 
 @bp.post('/report/classes')
 @flask_security.auth_required()
