@@ -126,7 +126,7 @@ def get_class_list(classes, sort_by=None, sort_order=None):
         }
         class_list.append(class_dict)
 
-    return sort_list(class_list, sort_by, sort_order)
+    return class_list
 
 
 def get_repertoire_list(repertoire, sort_by=None, sort_order=None):
