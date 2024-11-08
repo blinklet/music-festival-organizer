@@ -207,6 +207,7 @@ def classes_get():
     page = int(flask.request.args.get('page', 1))
     per_page = int(flask.request.args.get('per_page', 10))
 
+
     # fill in form fields with sort_by and sort_order values
     if sort_by:
         sort_criteria = zip(sort_by, sort_order)
@@ -216,6 +217,8 @@ def classes_get():
     else:
         form.sort1.data = 'number_suffix'
         form.order1.data = 'asc'
+
+    form.page_rows.data = str(per_page) if per_page else '10'
 
 
     class_entries = (
@@ -251,6 +254,8 @@ def classes_get():
             FestivalClass.discipline,
             FestivalClass.class_type,
             FestivalClass.fee,
+            FestivalClass.adjudication_time,
+            FestivalClass.move_time,
             class_entries.c.number_of_entries,
         )
         .having(func.count(Entry.id) > 0)
@@ -267,13 +272,21 @@ def classes_get():
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
     _classes = db.session.execute(stmt).all()
+    
+    total_classes = db.session.execute(
+        select(func.count(FestivalClass.id))
+        .where(FestivalClass.entries.any())
+    ).scalar()
 
     return flask.render_template(
         'admin/class_report.html', 
+        sort_by=sort_by,
+        sort_order=sort_order,
         classes=_classes, 
         form=form,
         page=page,
         per_page=per_page,
+        total_classes=total_classes,
         )
 
 
@@ -295,8 +308,10 @@ def classes_post():
                 if sort_field != 'none': # 'none' is defined in the form's field_choice for no input
                     sort_by.append(sort_field)
                     sort_order.append(order_field)
+            per_page = form.page_rows.data
+            page = flask.request.args.get('page')
             # Display table with new sort_by and sort_order values
-            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order))
+            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order, page=page, per_page=per_page))
     
 @bp.get('/info/class')
 @flask_security.auth_required()

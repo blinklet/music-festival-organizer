@@ -99,7 +99,7 @@ class ClassSortForm(FlaskForm):
     # these name of each label must match the key in the _classes dictionary
     field_choices = [
         ("none", ""),
-        ("number", "Class Number"),
+        ("number_suffix", "Class Number"),
         ("name", "Name"),
         ("discipline", "Discipline"),
         ("class_type", "Type"),
@@ -115,15 +115,15 @@ class ClassSortForm(FlaskForm):
     ]
 
     page_choices = [
-        ("short", "10"),
-        ("medium", "20"),
-        ("long", "50"),
-        ("all", "All"),
+        ("10", "10"),
+        ("20", "20"),
+        ("50", "50"),
+        ("100000", "All"),
     ]
 
     reset = SubmitField('Reset')
     submit = SubmitField('Sort')
-
+    page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
 
     sort1 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order1 = SelectField('Order:', choices=order_choices, validators=[Optional()])
