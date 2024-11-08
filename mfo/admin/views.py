@@ -5,7 +5,7 @@ import flask_security
 import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, asc
 from sqlalchemy.sql import exists, func
 from sqlalchemy.orm import selectinload
 import pandas as pd
@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 import mfo.admin.services.syllabus as syllabus
-from mfo.database.models import Entry, Profile, FestivalClass, Repertoire, profiles_roles
+from mfo.database.models import Entry, Profile, FestivalClass, Repertoire, profiles_roles, entry_repertoire
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
@@ -204,6 +204,9 @@ def classes_get():
 
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+    page = int(flask.request.args.get('page', 1))
+    per_page = int(flask.request.args.get('per_page', 10))
+
 
     # fill in form fields with sort_by and sort_order values
     if sort_by:
@@ -215,26 +218,77 @@ def classes_get():
         form.sort1.data = 'number_suffix'
         form.order1.data = 'asc'
 
-    stmt = (
-        select(FestivalClass)
-        .join(Entry, Entry.class_id == FestivalClass.id)
-        .group_by(FestivalClass.id)
-        .having(func.count(Entry.id) > 0)
-        .options(
-            selectinload(FestivalClass.entries).selectinload(Entry.repertoire)
-        )
-    )
-    _classes = db.session.execute(stmt).scalars().all()
+    form.page_rows.data = str(per_page) if per_page else '10'
 
-    class_list = admin_services.get_class_list(_classes, sort_by, sort_order)
+
+    class_entries = (
+        select(
+            Entry.class_id,
+            func.count(Entry.id).label('number_of_entries')
+        )
+        .group_by(Entry.class_id)
+    ).subquery()
+
+    stmt = (
+        select(
+            FestivalClass.id.label('id'),
+            func.concat(FestivalClass.number, FestivalClass.suffix).label('number_suffix'),
+            FestivalClass.name.label('name'),
+            FestivalClass.discipline.label('discipline'),
+            FestivalClass.class_type.label('class_type'),
+            class_entries.c.number_of_entries,
+            (FestivalClass.fee * class_entries.c.number_of_entries).label('total_fees'),
+            (func.sum(Repertoire.duration) +
+                (FestivalClass.adjudication_time * class_entries.c.number_of_entries) +
+                (FestivalClass.move_time * class_entries.c.number_of_entries)
+            ).label('total_time')
+        )
+        .join(FestivalClass.entries)
+        .join(Entry.repertoire)
+        .join(class_entries, FestivalClass.id == class_entries.c.class_id)
+        .group_by(
+            FestivalClass.id,
+            FestivalClass.number,
+            FestivalClass.suffix,
+            FestivalClass.name,
+            FestivalClass.discipline,
+            FestivalClass.class_type,
+            FestivalClass.fee,
+            FestivalClass.adjudication_time,
+            FestivalClass.move_time,
+            class_entries.c.number_of_entries,
+        )
+        .having(func.count(Entry.id) > 0)
+    )
+
+    if sort_by and sort_order:
+        for column, order in zip(sort_by, sort_order):
+            if order == 'asc':
+                stmt = stmt.order_by(asc(column))
+            elif order == 'desc':
+                stmt = stmt.order_by(desc(column))
+
+
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+
+    _classes = db.session.execute(stmt).all()
+    
+    total_classes = db.session.execute(
+        select(func.count(FestivalClass.id))
+        .where(FestivalClass.entries.any())
+    ).scalar()
 
     return flask.render_template(
         'admin/class_report.html', 
         sort_by=sort_by,
         sort_order=sort_order,
-        classes=class_list, 
-        form=form
+        classes=_classes, 
+        form=form,
+        page=page,
+        per_page=per_page,
+        total_classes=total_classes,
         )
+
 
 @bp.post('/report/classes')
 @flask_security.auth_required()
@@ -254,8 +308,10 @@ def classes_post():
                 if sort_field != 'none': # 'none' is defined in the form's field_choice for no input
                     sort_by.append(sort_field)
                     sort_order.append(order_field)
+            per_page = form.page_rows.data
+            page = flask.request.args.get('page')
             # Display table with new sort_by and sort_order values
-            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order))
+            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order, page=page, per_page=per_page))
     
 @bp.get('/info/class')
 @flask_security.auth_required()

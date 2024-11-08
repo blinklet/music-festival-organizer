@@ -1,3 +1,5 @@
+# mfo/admin/forms.py
+
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from wtforms import ValidationError, StringField, SubmitField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField
@@ -100,7 +102,7 @@ class ClassSortForm(FlaskForm):
         ("number_suffix", "Class Number"),
         ("name", "Name"),
         ("discipline", "Discipline"),
-        ("type", "Type"),
+        ("class_type", "Type"),
         ("number_of_entries", "Entries"),
         ("total_fees", "Total fees"),
         ("total_time", "Total time"),
@@ -113,15 +115,15 @@ class ClassSortForm(FlaskForm):
     ]
 
     page_choices = [
-        ("short", "10"),
-        ("medium", "20"),
-        ("long", "50"),
-        ("all", "All"),
+        ("10", "10"),
+        ("20", "20"),
+        ("50", "50"),
+        ("100000", "All"),
     ]
 
     reset = SubmitField('Reset')
     submit = SubmitField('Sort')
-
+    page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
 
     sort1 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order1 = SelectField('Order:', choices=order_choices, validators=[Optional()])
