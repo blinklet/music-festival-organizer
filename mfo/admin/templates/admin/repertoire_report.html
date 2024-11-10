@@ -7,49 +7,20 @@
 
 <div class="container pt-4">
     <h3>Repertoire</h3>
+    {% set form_action = url_for("admin.repertoire_post") %}
+    {% include "/admin/partials/sort_report_form.html" %}
+
     <table class="table">
         <thead>
             <tr>
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('title', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('title', sort_by[:], sort_order[:])) }}">Title</a>
-                </th>
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('composer', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('composer', sort_by[:], sort_order[:])) }}">Composer</a>
-                </th>
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get',
-                    sort_by=update_sort('discipline', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('discipline', sort_by[:], sort_order[:])) }}">Discipline</a>
-                </th>
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get',
-                    sort_by=update_sort('type', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('type', sort_by[:], sort_order[:])) }}">Type</a>
-                </th>
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('level', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('level', sort_by[:], sort_order[:])) }}">Level</a>
-                </th>
-                <th class="time-width">
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('duration', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('duration', sort_by[:], sort_order[:])) }}">Duration</a>
-                </th>
-                <!-- <th>
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('classes', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('classes', sort_by[:], sort_order[:])) }}">Classes</a>
-                </th> -->
-                <th>
-                    <a href="{{ url_for('admin.repertoire_get', 
-                    sort_by=update_sort('entries', sort_by[:], sort_order[:]), 
-                    sort_order=update_order('entries', sort_by[:], sort_order[:])) }}">Entries</a>
-                </th>
+                <th>Title</th>
+                <th>Composer</th>
+                <th>Discipline</th>
+                <th>Type</th>
+                <th>Level</th>
+                <th>Duration</th>
+                <!-- <th>Classes</th> -->
+                <th>Entries</th>
             </tr>
         </thead>
         <tbody>
@@ -61,12 +32,15 @@
                 <td>{{ piece.type }}</td>
                 <td>{{ piece.level }}</td>
                 <td>{{ format_time(piece.duration) }}</td>
-                <!-- <td class="text-center">{{ piece.classes }}</td> -->
-                <td class="text-center">{{ piece.entries }}</td>
+                <!-- <td class="text-center">{{ piece.number_of_classes }}</td> -->
+                <td class="text-center">{{ piece.number_of_entries }}</td>
             </tr>
-            
             {% endfor %}
         </tbody>
     </table>
+
+    {% set url_endpoint='admin.repertoire_get' %}
+    {% set total_items=total_repertoire %}
+    {% include "/admin/partials/pagination.html" %}
 
 {% endblock %}

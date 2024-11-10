@@ -131,3 +131,38 @@ class ClassSortForm(FlaskForm):
     order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
     sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+
+
+class RepertoireSortForm(FlaskForm):
+    field_choices = [
+        ("none", ""),
+        ("title", "Title"),
+        ("composer", "Composer"),
+        ("level", "Level"),
+        ("type", "Type"),
+        ("discipline", "Discipline"),
+        ("duration", "Duration"),
+        ("number_of_entries", "Entries"),
+    ]
+    order_choices = [
+        ("asc", "Ascending"),
+        ("desc", "Descending"),
+    ]
+
+    page_choices = [
+        ("10", "10"),
+        ("20", "20"),
+        ("50", "50"),
+        ("100000", "All"),
+    ]
+
+    reset = SubmitField('Reset')
+    submit = SubmitField('Sort')
+    page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
+
+    sort1 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order1 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    sort2 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
+    order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])

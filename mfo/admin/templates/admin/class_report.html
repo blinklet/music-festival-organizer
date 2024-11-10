@@ -1,4 +1,4 @@
-<!-- admin/templates/admin/class_report.html -->
+<!-- mfo/admin/templates/admin/class_report.html -->
 
 {% extends "/admin/_reports_base.html" %}
 {% block title %}Classes{% endblock %}
@@ -8,7 +8,8 @@
 <div class="container pt-4">
     <h3>Classes</h3>
 
-    {% include "/admin/partials/sort_classes_form.html" %}
+    {% set form_action = url_for("admin.classes_post") %}
+    {% include "/admin/partials/sort_report_form.html"  %}
     {% include "/admin/partials/class_table.html" %}
 
 {% endblock %}

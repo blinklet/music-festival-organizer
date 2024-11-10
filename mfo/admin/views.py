@@ -207,7 +207,6 @@ def classes_get():
     page = int(flask.request.args.get('page', 1))
     per_page = int(flask.request.args.get('per_page', 10))
 
-
     # fill in form fields with sort_by and sort_order values
     if sort_by:
         sort_criteria = zip(sort_by, sort_order)
@@ -217,9 +216,10 @@ def classes_get():
     else:
         form.sort1.data = 'number_suffix'
         form.order1.data = 'asc'
+        sort_by = ['number_suffix']
+        sort_order = ['asc']
 
     form.page_rows.data = str(per_page) if per_page else '10'
-
 
     class_entries = (
         select(
@@ -258,7 +258,7 @@ def classes_get():
             FestivalClass.move_time,
             class_entries.c.number_of_entries,
         )
-        .having(func.count(Entry.id) > 0)
+        .having(class_entries.c.number_of_entries > 0)
     )
 
     if sort_by and sort_order:
@@ -267,7 +267,6 @@ def classes_get():
                 stmt = stmt.order_by(asc(column))
             elif order == 'desc':
                 stmt = stmt.order_by(desc(column))
-
 
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
@@ -393,27 +392,116 @@ def edit_class_info_post():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def repertoire_get():
+    form = forms.RepertoireSortForm()
+
+    page = int(flask.request.args.get('page', 1))
+    per_page = int(flask.request.args.get('per_page', 10))
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
-    stmt = select(Repertoire).options(
-        selectinload(Repertoire.festival_classes).load_only(FestivalClass.id),
-        selectinload(Repertoire.used_in_entries).load_only(Entry.id)
+
+    if sort_by:
+        sort_criteria = zip(sort_by, sort_order)
+        for i, (sort_field, order_field) in enumerate(sort_criteria, start=1):
+            setattr(getattr(form, f'sort{i}'), 'data', sort_field)
+            setattr(getattr(form, f'order{i}'), 'data', order_field)
+    else:
+        form.sort1.data = 'title'
+        form.order1.data = 'asc'
+        sort_by = ['title']
+        sort_order = ['asc']
+
+    form.page_rows.data = str(per_page) if per_page else '10'
+
+    entries_count = (
+        select(
+            Repertoire.id,
+            func.count(Entry.id).label('number_of_entries')
+        )
+        .join(Repertoire.used_in_entries)
+        .group_by(Repertoire.id)
+    ).subquery()
+
+    classes_count = (
+        select(
+            Repertoire.id,
+            func.count(FestivalClass.id).label('number_of_classes')
+        )
+        .join(Repertoire.festival_classes)
+        .group_by(Repertoire.id)
+    ).subquery()
+
+    stmt = (
+        select(
+            Repertoire.id.label('id'),
+            Repertoire.title.label('title'),
+            Repertoire.composer.label('composer'),
+            Repertoire.level.label('level'),
+            Repertoire.type.label('type'),
+            Repertoire.discipline.label('discipline'),
+            Repertoire.duration.label('duration'),
+            entries_count.c.number_of_entries,
+            classes_count.c.number_of_classes
+        )
+        .join(entries_count, Repertoire.id == entries_count.c.id)
+        .join(classes_count, Repertoire.id == classes_count.c.id)
     )
 
-    repertoire = db.session.execute(stmt).scalars().all()
+    if sort_by and sort_order:
+        for column, order in zip(sort_by, sort_order):
+            if order == 'asc':
+                stmt = stmt.order_by(asc(column))
+            elif order == 'desc':
+                stmt = stmt.order_by(desc(column))
 
-    repertoire_list = admin_services.get_repertoire_list(
-        repertoire, 
-        sort_by,
-        sort_order,
-        )
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+
+    repertoire = db.session.execute(stmt).all()
     
+    # total_repertoire = db.session.execute(
+    #     select(func.count(Repertoire.id))
+    #     .where(Repertoire.used_in_entries.any())
+    # ).scalar()
+
+    total_repertoire = db.session.execute(
+            select(func.count(Repertoire.id))
+    ).scalar()
+                   
     return flask.render_template(
         'admin/repertoire_report.html', 
-        repertoire=repertoire_list, 
+        form=form,
+        repertoire=repertoire,
+        total_repertoire=total_repertoire, 
         sort_by=sort_by, 
-        sort_order=sort_order
+        sort_order=sort_order,
+        page=page,
+        per_page=per_page,
         )
+
+@bp.post('/report/repertoire')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def repertoire_post():
+    form = forms.RepertoireSortForm()
+    if form.validate_on_submit():
+        if form.reset.data:
+            return flask.redirect(flask.url_for('admin.repertoire_get'))
+        else:
+            sort_by = []
+            sort_order = []
+            for i in range(1, 4):
+                sort_field = getattr(form, f'sort{i}').data
+                order_field = getattr(form, f'order{i}').data
+                if sort_field != 'none': # 'none' is defined in the form's field_choice for no input
+                    sort_by.append(sort_field)
+                    sort_order.append(order_field)
+            per_page = form.page_rows.data
+            page = flask.request.args.get('page')
+            return flask.redirect(flask.url_for('admin.repertoire_get', 
+                                                sort_by=sort_by, 
+                                                sort_order=sort_order, 
+                                                page=page, 
+                                                per_page=per_page))
+    
 
 @bp.get('/info/repertoire')
 @flask_security.auth_required()
