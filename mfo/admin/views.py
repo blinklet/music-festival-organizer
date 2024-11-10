@@ -185,7 +185,16 @@ def profile_report_get():
     role = flask.request.args.get('role', None)
     report_name = flask.request.args.get('report_name', None)
 
-    profiles = admin_services.get_profiles(role, sort_by, sort_order)
+    stmt = select(Profile).where(Profile.roles.any(name=role))
+
+    if sort_by and sort_order:
+        for column, order in zip(sort_by, sort_order):
+            if order == 'asc':
+                stmt = stmt.order_by(asc(column))
+            elif order == 'desc':
+                stmt = stmt.order_by(desc(column))
+
+    profiles = db.session.execute(stmt).scalars().all()
 
     return flask.render_template(
         'admin/profile_report.html', 
@@ -195,6 +204,7 @@ def profile_report_get():
         sort_by=sort_by, 
         sort_order=sort_order,
         )
+
 
 @bp.get('/report/classes')
 @flask_security.auth_required()
