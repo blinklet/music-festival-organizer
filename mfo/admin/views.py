@@ -207,7 +207,6 @@ def classes_get():
     page = int(flask.request.args.get('page', 1))
     per_page = int(flask.request.args.get('per_page', 10))
 
-
     # fill in form fields with sort_by and sort_order values
     if sort_by:
         sort_criteria = zip(sort_by, sort_order)
@@ -217,9 +216,10 @@ def classes_get():
     else:
         form.sort1.data = 'number_suffix'
         form.order1.data = 'asc'
+        sort_by = ['number_suffix']
+        sort_order = ['asc']
 
     form.page_rows.data = str(per_page) if per_page else '10'
-
 
     class_entries = (
         select(
@@ -267,7 +267,6 @@ def classes_get():
                 stmt = stmt.order_by(asc(column))
             elif order == 'desc':
                 stmt = stmt.order_by(desc(column))
-
 
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
@@ -399,6 +398,19 @@ def repertoire_get():
     per_page = int(flask.request.args.get('per_page', 10))
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+
+    if sort_by:
+        sort_criteria = zip(sort_by, sort_order)
+        for i, (sort_field, order_field) in enumerate(sort_criteria, start=1):
+            setattr(getattr(form, f'sort{i}'), 'data', sort_field)
+            setattr(getattr(form, f'order{i}'), 'data', order_field)
+    else:
+        form.sort1.data = 'title'
+        form.order1.data = 'asc'
+        sort_by = ['title']
+        sort_order = ['asc']
+
+    form.page_rows.data = str(per_page) if per_page else '10'
 
     entries_count = (
         select(
