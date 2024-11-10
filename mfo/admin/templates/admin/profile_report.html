@@ -46,10 +46,10 @@
         <tbody>
             {% for profile in profiles %}
             <tr>
-                {% if profile.name %}
-                <td>{{ profile.name }}</td>
-                {% else %}
+                {% if role == 'Group' %}
                 <td>{{ profile.group_name }}</td>
+                {% else %}
+                <td>{{ profile.name }}</td>
                 {% endif %}
                 <td>{{ profile.email }}</td>
                 <td>{{ profile.phone }}</td>
