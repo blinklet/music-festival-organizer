@@ -17,6 +17,7 @@
                 "postal_code": "M2T 1T1",
                 "province": "BC",
                 "phone": "6133279929",
+                "email": "user@testmail.com",
                 "fees_paid": 0.0,
                 "comments": null,
                 "national_festival": true
