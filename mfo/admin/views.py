@@ -239,36 +239,42 @@ def classes_get():
         .group_by(Entry.class_id)
     ).subquery()
 
+    class_repertoire = (
+        select(
+            FestivalClass.id,
+            func.sum(Repertoire.duration).label('total_duration')
+        )
+        .join(FestivalClass.entries)
+        .join(Entry.repertoire)
+        .group_by(FestivalClass.id)
+    ).subquery()
+
+    class_numbers = (
+        select(
+            FestivalClass.id,
+            func.concat(FestivalClass.number, FestivalClass.suffix).label('number_suffix')
+        )
+        .group_by(FestivalClass.id)
+    ).subquery()
+
     stmt = (
         select(
             FestivalClass.id.label('id'),
-            func.concat(FestivalClass.number, FestivalClass.suffix).label('number_suffix'),
+            class_numbers.c.number_suffix,
             FestivalClass.name.label('name'),
             FestivalClass.discipline.label('discipline'),
             FestivalClass.class_type.label('class_type'),
             class_entries.c.number_of_entries,
             (FestivalClass.fee * class_entries.c.number_of_entries).label('total_fees'),
-            (func.sum(Repertoire.duration) +
+            (class_repertoire.c.total_duration +
                 (FestivalClass.adjudication_time * class_entries.c.number_of_entries) +
                 (FestivalClass.move_time * class_entries.c.number_of_entries)
             ).label('total_time')
         )
-        .join(FestivalClass.entries)
-        .join(Entry.repertoire)
         .join(class_entries, FestivalClass.id == class_entries.c.class_id)
-        .group_by(
-            FestivalClass.id,
-            FestivalClass.number,
-            FestivalClass.suffix,
-            FestivalClass.name,
-            FestivalClass.discipline,
-            FestivalClass.class_type,
-            FestivalClass.fee,
-            FestivalClass.adjudication_time,
-            FestivalClass.move_time,
-            class_entries.c.number_of_entries,
-        )
-        .having(class_entries.c.number_of_entries > 0)
+        .join(class_repertoire, FestivalClass.id == class_repertoire.c.id)
+        .join(class_numbers, FestivalClass.id == class_numbers.c.id)
+        .where(class_entries.c.number_of_entries > 0)
     )
 
     if sort_by and sort_order:
