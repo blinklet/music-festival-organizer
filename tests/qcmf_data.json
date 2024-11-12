@@ -1,0 +1,232 @@
+{
+    "DEFAULT_ADJUDICATION_TIME": {
+        "None": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Vocal": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Piano": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Organ": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Strings": {
+            "pre-junior": 300,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 480,
+            "advanced": 540
+        },
+        "Recorder": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Woodwinds": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Brass": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Percussion": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Instrumental": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        },
+        "Musical Theatre": {
+            "pre-junior": 240,
+            "junior": 300,
+            "intermediate": 360,
+            "senior": 420,
+            "advanced": 480
+        }
+    },
+    "DEFAULT_MOVE_TIME": {
+        "None": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Vocal": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Piano": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Organ": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Strings": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Recorder": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Woodwinds": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Brass": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Percussion": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Instrumental": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        },
+        "Musical Theatre": {
+            "Solo": 0,
+            "Recital": 0,
+            "Duet": 0,
+            "Trio": 0,
+            "Quartet": 0,
+            "Quintet": 0,
+            "Ensemble": 0,
+            "Composition": 0
+        }
+    },
+    "DEFAULT_FEE": {
+        "Solo": "12.00",
+        "Recital": "16.00",
+        "Duet": "12.00",
+        "Trio": "12.00",
+        "Quartet": "14.00",
+        "Quintet": "14.00",
+        "Ensemble": "25.00",
+        "Composition": "14.00"
+    },
+    "DISCIPLINES": [
+        "Vocal",
+        "Piano",
+        "Organ",
+        "Strings",
+        "Recorder",
+        "Woodwinds",
+        "Brass",
+        "Percussion",
+        "Instrumental",
+        "Musical Theatre"
+    ],
+    "TYPES": [
+        "Solo",
+        "Recital",
+        "Duet",
+        "Trio",
+        "Quartet",
+        "Quintet",
+        "Ensemble",
+        "Composition"
+    ],
+    "LEVELS": [
+        "Pre-Junior",
+        "Junior",
+        "Intermediate",
+        "Senior",
+        "Advanced"
+    ]
+}
