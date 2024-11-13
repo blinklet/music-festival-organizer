@@ -1,11 +1,13 @@
-# mfo/admin/services/data_services.py
+# mfo/admin/services/admin_services.py
 
 from sqlalchemy import select
 import pandas as pd
 
 from mfo.database.base import db
 from mfo.database.models import Profile
+from mfo.config import TEST_LEVEL_MAP
 
+level_map = pd.read_json(TEST_LEVEL_MAP, orient='records')
 
 def infer_discipline(class_number):
     """ Infer discipline based on class number """
@@ -86,4 +88,16 @@ def infer_attributes(row):
     else:
         class_type = "Solo"
 
-    return (suffix, class_type, discipline)
+    # Infer level based on class description and levels_map
+    level = None
+    for index, row in level_map.iterrows():
+        key = row['text'].lower()
+        desc = class_description.lower()
+        if key in desc:
+            level = row['level']
+            break
+
+    if level is None:
+        level = "none"
+
+    return (suffix, class_type, discipline, level)

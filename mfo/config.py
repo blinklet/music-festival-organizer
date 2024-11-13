@@ -117,10 +117,12 @@ if ENVIRONMENT == "development" or ENVIRONMENT == "lightweight":
     TEST_USERS_FILE = os.path.join(project_dir, TEST_USERS_FILE)
     TEST_DATA_FILE = os.environ.get("TEST_DATA_FILE")
     TEST_DATA_FILE = os.path.join(project_dir, TEST_DATA_FILE)
+    TEST_LEVEL_MAP = os.environ.get("TEST_LEVEL_MAP")
+    TEST_LEVEL_MAP = os.path.join(project_dir, TEST_LEVEL_MAP)
 else:
     TEST_USERS_FILE = os.environ.get("TEST_USERS_FILE")
     TEST_DATA_FILE = os.environ.get("TEST_DATA_FILE")
-
+    TEST_LEVEL_MAP = os.environ.get("TEST_LEVEL_MAP")
 
 # Class default data
 # see mfo/tests/qcmf_data.py
