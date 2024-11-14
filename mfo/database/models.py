@@ -192,6 +192,7 @@ class FestivalClass(db.Model):
 
     name: Mapped[Optional[str]] = mapped_column(nullable=True)
     class_type: Mapped[Optional[str]] = mapped_column(nullable=True)
+    level: Mapped[Optional[str]] = mapped_column(nullable=True)
     fee: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(precision=8, scale=2), nullable=True)
     discipline: Mapped[Optional[str]] = mapped_column(nullable=True)
     adjudication_time: Mapped[Optional[int]] = mapped_column(nullable=True)
@@ -223,7 +224,6 @@ class Entry(db.Model):
 
     class_id: Mapped[int] = mapped_column(Integer, ForeignKey('classes.id'))
     festival_class: Mapped["FestivalClass"] = relationship("FestivalClass", back_populates="entries")
-
 
 
 class Repertoire(db.Model):
@@ -267,5 +267,81 @@ class School(db.Model):
 
     teachers: Mapped[list[Profile]] = relationship(
         "Profile", secondary=schools_teachers, back_populates="teaches_at_schools"
+    )
+
+
+class Discipline(db.Model):
+    __tablename__ = 'disciplines'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    default_times: Mapped[List["DefaultTimes"]] = relationship("DefaultTimes", back_populates="discipline")
+
+    __table_args__ = (
+        UniqueConstraint('name', name='discipline_uc'),
+    )
+
+
+class PerformanceType(db.Model):
+    __tablename__ = 'performance_types'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    default_times: Mapped[List["DefaultTimes"]] = relationship("DefaultTimes", back_populates="performance_type")
+    default_fees: Mapped[List["DefaultFee"]] = relationship("DefaultFee", back_populates="performance_type")
+    __table_args__ = (
+        UniqueConstraint('name', name='performance_type_uc'),
+    )
+
+
+class Level(db.Model):
+    __tablename__ = 'levels'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+
+    default_times: Mapped[List["DefaultTimes"]] = relationship("DefaultTimes", back_populates="level")
+
+    __table_args__ = (
+        UniqueConstraint('name', name='level_uc'),
+    )
+
+
+class DefaultTimes(db.Model):
+    __tablename__ = 'default_times'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    discipline_id: Mapped[int] = mapped_column(ForeignKey('disciplines.id'), nullable=False)
+    performance_type_id: Mapped[Optional[int]] = mapped_column(ForeignKey('performance_types.id'), nullable=True)
+    level_id: Mapped[Optional[int]] = mapped_column(ForeignKey('levels.id'), nullable=True)
+    time_type: Mapped[str] = mapped_column(nullable=False)
+    time: Mapped[int] = mapped_column(nullable=False)
+
+    discipline: Mapped["Discipline"] = relationship("Discipline", back_populates="default_times")
+    performance_type: Mapped["PerformanceType"] = relationship("PerformanceType", back_populates="default_times")
+    level: Mapped["Level"] = relationship("Level", back_populates="default_times")
+
+    __table_args__ = (
+        UniqueConstraint('discipline_id', 'performance_type_id', 'level_id', 'time_type', name='default_times_uc'),
+    )
+
+class DefaultFee(db.Model):
+    __tablename__ = 'default_fees'
+    
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    performance_type_id = mapped_column(ForeignKey('performance_types.id'), nullable=False)
+    performance_type = relationship("PerformanceType", back_populates="default_fees")
+
+    fee: Mapped[Decimal] = mapped_column(DECIMAL(precision=8, scale=2), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('performance_type_id', name='default_fees_uc'),
     )
 

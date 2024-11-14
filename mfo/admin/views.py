@@ -264,17 +264,18 @@ def classes_get():
             FestivalClass.name.label('name'),
             FestivalClass.discipline.label('discipline'),
             FestivalClass.class_type.label('class_type'),
-            class_entries.c.number_of_entries,
-            (FestivalClass.fee * class_entries.c.number_of_entries).label('total_fees'),
-            (class_repertoire.c.total_duration +
-                (FestivalClass.adjudication_time * class_entries.c.number_of_entries) +
-                (FestivalClass.move_time * class_entries.c.number_of_entries)
+            FestivalClass.level.label('level'),
+            func.coalesce(class_entries.c.number_of_entries, 0).label('number_of_entries'),
+            (FestivalClass.fee * func.coalesce(class_entries.c.number_of_entries, 0)).label('total_fees'),
+            (func.coalesce(class_repertoire.c.total_duration, 0) +
+                (FestivalClass.adjudication_time * func.coalesce(class_entries.c.number_of_entries, 0)) +
+                (FestivalClass.move_time * func.coalesce(class_entries.c.number_of_entries, 0))
             ).label('total_time')
         )
-        .join(class_entries, FestivalClass.id == class_entries.c.class_id)
-        .join(class_repertoire, FestivalClass.id == class_repertoire.c.id)
-        .join(class_numbers, FestivalClass.id == class_numbers.c.id)
-        .where(class_entries.c.number_of_entries > 0)
+        .outerjoin(class_entries, FestivalClass.id == class_entries.c.class_id)
+        .outerjoin(class_repertoire, FestivalClass.id == class_repertoire.c.id)
+        .outerjoin(class_numbers, FestivalClass.id == class_numbers.c.id)
+        #.where(func.coalesce(class_entries.c.number_of_entries, 0) > 0)
     )
 
     if sort_by and sort_order:
@@ -290,9 +291,9 @@ def classes_get():
     
     total_classes = db.session.execute(
         select(func.count(FestivalClass.id))
-        .where(FestivalClass.entries.any())
+        #.where(FestivalClass.entries.any())
     ).scalar()
-
+    
     return flask.render_template(
         'admin/class_report.html', 
         sort_by=sort_by,
@@ -607,7 +608,20 @@ def delete_festival_data_post():
                     # Clear all remaining data except tables already cleared
                     meta = db.metadata
                     for table in reversed(meta.sorted_tables):
-                        if table.name not in ['user', 'role', 'profile', 'roles_users', 'profiles_roles']:
+                        do_not_delete = [
+                            'user', 
+                            'role', 
+                            'profile', 
+                            'roles_users', 
+                            'profiles_roles',
+                            'disciplines',
+                            'performance_types',
+                            'levels',
+                            'default_times',
+                            'default_fees',
+                            ]
+                        
+                        if table.name not in do_not_delete:
                             db.session.execute(table.delete())
                     
                     db.session.commit()
