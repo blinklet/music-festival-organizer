@@ -9,7 +9,7 @@ easier to read and maintain.
 
 import pandas as pd
 import io
-from sqlalchemy import select
+from sqlalchemy import select, and_, func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import flask
 from datetime import datetime
@@ -17,7 +17,7 @@ from datetime import datetime
 import mfo.admin.services.spreadsheet_columns
 import mfo.utilities
 from mfo.database.base import db
-from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry
+from mfo.database.models import Profile, FestivalClass, Repertoire, School, Entry, DefaultTimes, Discipline, DefaultFee, Level, PerformanceType
 from mfo.database.users import User, Role
 from mfo.admin.services.admin_services import infer_discipline
 from mfo.template_functions import format_time
@@ -523,11 +523,6 @@ def related_profiles(input_df, issues, info):
 
 def classes(input_df, issues, info):
 
-    # get DEFAULT_ADJUDICATION_TIME and DEFAULT_MOVE_TIME from environment variables
-    ADJUDICATION_TIME = flask.current_app.config['DEFAULT_ADJUDICATION_TIME']
-    MOVE_TIME = flask.current_app.config['DEFAULT_MOVE_TIME']
-    FEE = flask.current_app.config['DEFAULT_FEE']
-
     class_number_columns = [
         col for col in input_df.columns if col.startswith('class_number_')
     ]
@@ -542,7 +537,6 @@ def classes(input_df, issues, info):
             class_suffix_columns
         )
     )
-
 
     classes = []
     class_column_type = mfo.admin.services.spreadsheet_columns.class_column_type
@@ -654,16 +648,77 @@ def classes(input_df, issues, info):
                     issues.append(f"Row {index+2}: Class {number}{print_suffix} recorded in entry may have wrong type. In the Syllabus it is type: {festival_class.class_type} but the entry registered it as type: {type}. The Syllabus will remain unchanged")
                     type = festival_class.class_type
 
-            discipline = infer_discipline(int(number))
+            if pd.isna(festival_class.discipline):
+                festival_class.discipline = infer_discipline(int(number))
+
+            if pd.isna(festival_class.level):
+                festival_class.level = "none"           
 
             if pd.isna(festival_class.adjudication_time):
-                festival_class.adjudication_time = convert_to_seconds(ADJUDICATION_TIME[discipline][type])
+                discipline_subquery = (
+                    select(Discipline.id)
+                    .where(func.lower(Discipline.name) == festival_class.discipline.lower())
+                ).subquery()
+
+                level_subquery = (
+                    select(Level.id)
+                    .where(func.lower(Level.name) == festival_class.level.lower())
+                ).subquery()
+
+                adjudication_time = db.session.execute(
+                    select(DefaultTimes.time)
+                    .where(
+                        and_(
+                            DefaultTimes.time_type == "adjudication",
+                            DefaultTimes.discipline_id == discipline_subquery.c.id,
+                            DefaultTimes.level_id == level_subquery.c.id
+                        )
+                    )
+                ).scalar()
+
+                festival_class.adjudication_time = adjudication_time
             
             if pd.isna(festival_class.move_time):
-                festival_class.move_time = convert_to_seconds(MOVE_TIME[discipline][type])
+
+                discipline_subquery = (
+                    select(Discipline.id)
+                    .where(func.lower(Discipline.name) == festival_class.discipline.lower())
+                ).subquery()
+
+                type_subquery = (
+                    select(PerformanceType.id)
+                    .where(func.lower(PerformanceType.name) == type.lower())
+                ).subquery()
+
+                move_time = db.session.execute(
+                    select(DefaultTimes.time)
+                    .where(
+                        and_(
+                            DefaultTimes.time_type == "move",
+                            DefaultTimes.discipline_id == discipline_subquery.c.id,
+                            DefaultTimes.performance_type_id == type_subquery.c.id
+                        )
+                    )
+                ).scalar()
+
+                festival_class.move_time = move_time
 
             if pd.isna(festival_class.fee):
-                festival_class.fee = FEE[type]
+
+                type_subquery = (
+                    select(PerformanceType.id)
+                    .where(func.lower(PerformanceType.name) == type.lower())
+                ).subquery()
+
+                fee = db.session.execute(
+                    select(DefaultFee.fee)
+                    .where(
+                        DefaultFee.performance_type_id == type_subquery.c.id,
+                    )
+                ).scalar()
+
+                festival_class.fee = fee
+
                     
             existing_pieces = {(piece.title, piece.composer) for piece in festival_class.test_pieces}
             
@@ -696,15 +751,41 @@ def classes(input_df, issues, info):
                         info.append(f"** Row {index+2}: Created new test piece '{title}' by '{composer}' and added it to class '{number}{print_suffix}'")
 
         else:
+
+            level = "none"
+            adjudication_time = None,
+            move_time = None,
+            fee = None,
+
+            # If class/suffix does not exist, check for class number only
+            # and use the first instance found to populate the class
+            stmt = select(FestivalClass).where(
+                FestivalClass.number == number,
+            )
+
+            similar_festival_class = db.session.execute(stmt).scalar()
+
+            if similar_festival_class:
+                name = similar_festival_class.name
+                type = similar_festival_class.class_type
+                discipline = similar_festival_class.discipline
+                level = similar_festival_class.level
+                adjudication_time = similar_festival_class.adjudication_time
+                move_time = similar_festival_class.move_time
+                fee = similar_festival_class.fee
+
             discipline = infer_discipline(int(number))
 
             new_festival_class = FestivalClass(
-                number=number,
-                suffix=suffix,
-                class_type=type,
-                adjudication_time = convert_to_seconds(ADJUDICATION_TIME[discipline][type]),
-                move_time = convert_to_seconds(MOVE_TIME[discipline][type]),
-                fee = FEE[type],
+                number = number,
+                suffix = suffix,
+                name = name,
+                class_type = type,
+                discipline = discipline,
+                level = level,
+                adjudication_time = adjudication_time,
+                move_time = move_time,
+                fee = fee,
             )
             db.session.add(new_festival_class)
             issues.append(f"Row {index+2}: Class {number}{print_suffix}, type: {type}, found in entry but does not exist in Syllabus. If accepted, this class number and suffix will be added to Syllabus with no title, and may contain incorrect fee and performance type")
