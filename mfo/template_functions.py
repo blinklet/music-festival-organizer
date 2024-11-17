@@ -42,6 +42,7 @@ def update_order(column, sort_by, sort_order):
 # app.jinja_env.globals.update(update_sort=update_sort)
 # app.jinja_env.globals.update(update_order=update_order)
 
+
 @bp.app_template_global()
 def format_time(seconds, show_seconds=True):
 
@@ -53,7 +54,13 @@ def format_time(seconds, show_seconds=True):
     called_from_jinja = any('jinja2' in frame.filename for frame in stack)
 
     if seconds is None or seconds == 0:
-        return ""
+        minutes = 0
+        if called_from_jinja:
+            display_minutes = f"<span class='ms-1 me-1'>{minutes:2d}</span>min"
+        else:
+            display_minutes = f"{minutes:2d} min"
+
+        return Markup(f"{display_minutes}")
     
     if show_seconds:
         minutes, remaining_seconds = divmod(seconds, 60)
