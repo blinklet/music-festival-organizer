@@ -380,10 +380,12 @@ def edit_class_info_post():
         total_seconds = minutes * 60 + seconds
         _class.move_time = total_seconds
 
-        # If I want to use form.populate_obj(_class), I need
-        # to consistently make sure that the values in empty database 
-        # fields are set to whatever the form instance places in an 
-        # empty field. The loop, below, enters "None" in empty fields.
+        # if I want to use form.populate_obj(_class), 
+        # I need to consistently make sure that the values
+        # in empty database fields are set to whatever the form instance
+        # places in an empty field. So, instead of using the form.populate_obj()
+        # method, I will manually set the values of the database fields
+        # in the for loop below, which enters "None" in empty fields
         for fieldName, field in form._fields.items():
             # Check if the field is blank
             if field.data == '' or field.data is None:
@@ -562,8 +564,9 @@ def repertoire_edit_post():
         # if I want to use form.populate_obj(_class), 
         # I need to consistently make sure that the values
         # in empty database fields are set to whatever the form instance
-        # places in an empty field. The work below, enters 
-        # "None" in empty fields
+        # places in an empty field. So, instead of using the form.populate_obj()
+        # method, I will manually set the values of the database fields
+        # in the for loop below, which enters "None" in empty fields
         for fieldName, field in form._fields.items():
             # Check if the field is blank
             if field.data == '' or field.data is None:
