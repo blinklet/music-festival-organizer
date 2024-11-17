@@ -652,7 +652,7 @@ def classes(input_df, issues, info):
                 festival_class.discipline = infer_discipline(int(number))
 
             if pd.isna(festival_class.level):
-                festival_class.level = "none"           
+                festival_class.level = "None"           
 
             if pd.isna(festival_class.adjudication_time):
                 discipline_subquery = (
@@ -752,7 +752,7 @@ def classes(input_df, issues, info):
 
         else:
 
-            level = "none"
+            level = "None"
             adjudication_time = None,
             move_time = None,
             fee = None,

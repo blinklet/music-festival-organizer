@@ -19,7 +19,7 @@
             <td>{{ _class.name }}</td>
             <td>{{ _class.discipline }}</td>
             <td>{{ _class.class_type }}</td>
-            <td>{{ _class.level | capitalize }}</td>
+            <td>{{ _class.level }}</td>
             <td class="text-end">{{ _class.number_of_entries }}</td>
             <td class="text-end">${{ '%.2f' | format(_class.total_fees) }}</td>
             <td class="text-end">{{ format_time(_class.total_time, show_seconds=False) }}</td>

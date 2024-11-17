@@ -1,81 +1,81 @@
 {
     "DEFAULT_ADJUDICATION_TIME": {
         "None": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Vocal": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Piano": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Organ": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Strings": {
-            "pre-junior": 300,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 480,
-            "advanced": 540
+            "Pre-Junior": 300,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 480,
+            "Advanced": 540
         },
         "Recorder": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Woodwinds": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Brass": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Percussion": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Instrumental": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         },
         "Musical Theatre": {
-            "pre-junior": 240,
-            "junior": 300,
-            "intermediate": 360,
-            "senior": 420,
-            "advanced": 480
+            "Pre-Junior": 240,
+            "Junior": 300,
+            "Intermediate": 360,
+            "Senior": 420,
+            "Advanced": 480
         }
     },
     "DEFAULT_MOVE_TIME": {
