@@ -3,7 +3,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from flask import current_app
-from wtforms import ValidationError, StringField, SubmitField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField
+from wtforms import ValidationError, StringField, SubmitField, BooleanField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField
 from wtforms.validators import StopValidation, InputRequired, Length, Optional, NumberRange
 
 from mfo.database.models import Discipline, PerformanceType, Level
@@ -100,20 +100,6 @@ class ConfirmFestivalDataDelete(FlaskForm):
     submit = SubmitField('Delete Data')
 
 
-
-# these name of each label must match the key in the _classes dictionary
-field_choices = [
-    ("none", ""),
-    ("number_suffix", "Class Number"),
-    ("name", "Name"),
-    ("discipline", "Discipline"),
-    ("class_type", "Type"),
-    ("level", "Level"),
-    ("number_of_entries", "Entries"),
-    ("total_fees", "Total fees"),
-    ("total_time", "Total time"),
-]
-
 # these name of each label must the strings in the admin_services.sort_list() function
 order_choices = [
     ("asc", "Ascending"),
@@ -129,6 +115,18 @@ page_choices = [
 
 
 class ClassSortForm(FlaskForm):
+    field_choices = [
+        ("none", ""),
+        ("number_suffix", "Class Number"),
+        ("name", "Name"),
+        ("discipline", "Discipline"),
+        ("class_type", "Type"),
+        ("level", "Level"),
+        ("number_of_entries", "Entries"),
+        ("total_fees", "Total fees"),
+        ("total_time", "Total time"),
+    ]
+    
     reset = SubmitField('Reset')
     submit = SubmitField('Sort')
     page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
@@ -139,9 +137,22 @@ class ClassSortForm(FlaskForm):
     order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
     sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    hide_zero_entries = BooleanField('Hide rows with zero entries', validators=[Optional()])
 
 
 class RepertoireSortForm(FlaskForm):
+    # these name of each label must match the key in the repert dictionary
+    field_choices = [
+        ("none", ""),
+        ("title", "Title"),
+        ("composer", "Composer"),
+        ("level", "Level"),
+        ("type", "Type"),
+        ("discipline", "Discipline"),
+        ("duration", "Duration"),
+        ("number_of_entries", "Entries"),
+    ]
+
     reset = SubmitField('Reset')
     submit = SubmitField('Sort')
     page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
@@ -152,3 +163,4 @@ class RepertoireSortForm(FlaskForm):
     order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
     sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
+    hide_zero_entries = BooleanField('Hide rows with zero entries', validators=[Optional()])
