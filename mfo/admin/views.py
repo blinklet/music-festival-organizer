@@ -216,6 +216,10 @@ def classes_get():
     sort_order = flask.request.args.getlist('sort_order')
     page = int(flask.request.args.get('page', 1))
     per_page = int(flask.request.args.get('per_page', 10))
+    hide_zero_entries = flask.request.args.get(
+        'hide_zero_entries', 
+        'false'
+    ).lower() == 'true'
 
     # fill in form fields with sort_by and sort_order values
     if sort_by:
@@ -230,6 +234,7 @@ def classes_get():
         sort_order = ['asc']
 
     form.page_rows.data = str(per_page) if per_page else '10'
+    form.hide_zero_entries.data = hide_zero_entries
 
     class_entries = (
         select(
@@ -275,8 +280,10 @@ def classes_get():
         .outerjoin(class_entries, FestivalClass.id == class_entries.c.class_id)
         .outerjoin(class_repertoire, FestivalClass.id == class_repertoire.c.id)
         .outerjoin(class_numbers, FestivalClass.id == class_numbers.c.id)
-        #.where(func.coalesce(class_entries.c.number_of_entries, 0) > 0)
     )
+
+    if hide_zero_entries:
+        stmt = stmt.where(func.coalesce(class_entries.c.number_of_entries, 0) > 0)
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
@@ -289,10 +296,10 @@ def classes_get():
 
     _classes = db.session.execute(stmt).all()
     
-    total_classes = db.session.execute(
-        select(func.count(FestivalClass.id))
-        #.where(FestivalClass.entries.any())
-    ).scalar()
+    stmt2 = select(func.count(FestivalClass.id))
+    if hide_zero_entries:
+        stmt2 = stmt2.where(FestivalClass.entries.any())
+    total_classes = db.session.execute(stmt2).scalar()
     
     return flask.render_template(
         'admin/class_report.html', 
@@ -326,8 +333,18 @@ def classes_post():
                     sort_order.append(order_field)
             per_page = form.page_rows.data
             page = flask.request.args.get('page')
+            hide_zero_entries = form.hide_zero_entries.data
             # Display table with new sort_by and sort_order values
-            return flask.redirect(flask.url_for('admin.classes_get', sort_by=sort_by, sort_order=sort_order, page=page, per_page=per_page))
+            return flask.redirect(
+                flask.url_for(
+                    'admin.classes_get', 
+                    sort_by=sort_by, 
+                    sort_order=sort_order, 
+                    page=page, 
+                    per_page=per_page,
+                    hide_zero_entries=hide_zero_entries
+                )
+            )
     
 @bp.get('/info/class')
 @flask_security.auth_required()
@@ -417,6 +434,10 @@ def repertoire_get():
     per_page = int(flask.request.args.get('per_page', 10))
     sort_by = flask.request.args.getlist('sort_by')
     sort_order = flask.request.args.getlist('sort_order')
+    hide_zero_entries = flask.request.args.get(
+        'hide_zero_entries', 
+        'false'
+    ).lower() == 'true'
 
     if sort_by:
         sort_criteria = zip(sort_by, sort_order)
@@ -430,6 +451,7 @@ def repertoire_get():
         sort_order = ['asc']
 
     form.page_rows.data = str(per_page) if per_page else '10'
+    form.hide_zero_entries.data = hide_zero_entries
 
     entries_count = (
         select(
@@ -465,6 +487,9 @@ def repertoire_get():
         .join(classes_count, Repertoire.id == classes_count.c.id)
     )
 
+    if hide_zero_entries:
+        stmt = stmt.where(func.coalesce(entries_count.c.number_of_entries, 0) > 0)
+
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
             if order == 'asc':
@@ -476,15 +501,11 @@ def repertoire_get():
 
     repertoire = db.session.execute(stmt).all()
     
-    # total_repertoire = db.session.execute(
-    #     select(func.count(Repertoire.id))
-    #     .where(Repertoire.used_in_entries.any())
-    # ).scalar()
-
-    total_repertoire = db.session.execute(
-            select(func.count(Repertoire.id))
-    ).scalar()
-                   
+    stmt2 = select(func.count(Repertoire.id))
+    if hide_zero_entries:
+        stmt2 = stmt2.where(Repertoire.used_in_entries.any())
+    total_repertoire = db.session.execute(stmt2).scalar()
+          
     return flask.render_template(
         'admin/repertoire_report.html', 
         form=form,
@@ -515,11 +536,16 @@ def repertoire_post():
                     sort_order.append(order_field)
             per_page = form.page_rows.data
             page = flask.request.args.get('page')
-            return flask.redirect(flask.url_for('admin.repertoire_get', 
-                                                sort_by=sort_by, 
-                                                sort_order=sort_order, 
-                                                page=page, 
-                                                per_page=per_page))
+            hide_zero_entries = form.hide_zero_entries.data
+            return flask.redirect(
+                flask.url_for('admin.repertoire_get', 
+                    sort_by=sort_by, 
+                    sort_order=sort_order, 
+                    page=page, 
+                    per_page=per_page,
+                    hide_zero_entries=hide_zero_entries
+                )
+            )
     
 
 @bp.get('/info/repertoire')
