@@ -153,8 +153,6 @@ def load_database(combined_df):
 
                         db.session.add(festival_class)
 
-                        print(f"Added class {row.number}{suffix}   {row.description}  {class_type}  {discipline}  {level}")
-
                     existing_classes.append((row.number, suffix))
                     
             else:
@@ -223,8 +221,6 @@ def load_database(combined_df):
 
                                 db.session.add(db_class)
 
-                                print(f"Added class {row.number}{suffix}   {row.description}  {class_type}  {discipline}  {level}")
- 
                                 existing_classes.append((row.number, suffix))
 
                 # Update classes from the database that are not in the dataframe group, 
@@ -288,8 +284,6 @@ def load_database(combined_df):
                             db_class.move_time = move_time
 
                         db.session.add(db_class)
-
-                        print(f"Added class {row.number}{suffix}   {row.description}  {class_type}  {discipline}  {level}")
 
                         existing_classes.append((row.number, suffix))
 
