@@ -25,6 +25,7 @@ pip install -r requirements.txt
 ```
 flask --app mfo.app database create
 flask --app mfo.app database test_users
+flask --app mfo.app database test_data
 flask --app mfo.app run
 ```
 
