@@ -98,6 +98,6 @@ def infer_attributes(row):
             break
 
     if level is None:
-        level = "none"
+        level = "None"
 
     return (suffix, class_type, discipline, level)
