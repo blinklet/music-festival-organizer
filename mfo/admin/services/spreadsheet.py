@@ -726,6 +726,9 @@ def classes(input_df, issues, info):
                 title = test_piece['title']
                 duration = test_piece['duration']
                 composer = test_piece['composer']
+                level = festival_class.level
+                discipline = festival_class.discipline
+                type = festival_class.class_type
 
                 if (title, composer) in existing_pieces:
                     continue
@@ -739,12 +742,37 @@ def classes(input_df, issues, info):
                     if existing_piece:
                         festival_class.test_pieces.append(existing_piece)
                         info.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
+                    
+                        if existing_piece.discipline:
+                            if existing_piece.discipline != discipline:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' discipline '{existing_piece.discipline}' is in class '{number}{print_suffix}' but the class is discipline '{discipline}'")
+                        else:
+                            existing_piece.discipline = discipline
+                            info.append(f"** Row {index+2}: Added discipline '{discipline}' to test piece '{title}' by '{composer}'")
+
+                        if existing_piece.type:
+                            if existing_piece.type != type:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' type '{existing_piece.type}' is in class '{number}{print_suffix}' but the class is type '{type}'")
+                        else:
+                            existing_piece.type = type
+                            info.append(f"** Row {index+2}: Added type '{type}' to test piece '{title}' by '{composer}'")
+
+                        if existing_piece.level:
+                            if existing_piece.level != level:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' level '{existing_piece.level}' is in class '{number}{print_suffix}' but the class is level '{level}'")
+                        else:
+                            existing_piece.level = level
+                            info.append(f"** Row {index+2}: Added level '{level}' to test piece '{title}' by '{composer}'")
+
                     else:
                         # If the repertoire piece does not exist, create it and append
                         new_piece = Repertoire(
                             title=title,
                             duration=duration,
                             composer=composer,
+                            discipline=discipline,
+                            type=type,
+                            level=level,
                         )
                         db.session.add(new_piece)
                         festival_class.test_pieces.append(new_piece)
@@ -806,12 +834,37 @@ def classes(input_df, issues, info):
                     if existing_piece:
                         new_festival_class.test_pieces.append(existing_piece)
                         info.append(f"** Row {index+2}: Added test piece '{title}' by '{composer}' to class '{number}{print_suffix}'")
+                    
+                        if existing_piece.discipline:
+                            if existing_piece.discipline != discipline:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' discipline '{existing_piece.discipline}' is in class '{number}{print_suffix}' but the class is discipline '{discipline}'")
+                        else:
+                            existing_piece.discipline = discipline
+                            info.append(f"** Row {index+2}: Added discipline '{discipline}' to test piece '{title}' by '{composer}'")
+
+                        if existing_piece.type:
+                            if existing_piece.type != type:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' type '{existing_piece.type}' is in class '{number}{print_suffix}' but the class is type '{type}'")
+                        else:
+                            existing_piece.type = type
+                            info.append(f"** Row {index+2}: Added type '{type}' to test piece '{title}' by '{composer}'")
+
+                        if existing_piece.level:
+                            if existing_piece.level != level:
+                                issues.append(f"Row {index+2}: Test piece '{title}' by '{composer}' level '{existing_piece.level}' is in class '{number}{print_suffix}' but the class is level '{level}'")
+                        else:
+                            existing_piece.level = level
+                            info.append(f"** Row {index+2}: Added level '{level}' to test piece '{title}' by '{composer}'")
+
                     else:
                         # If the repertoire piece does not exist, create it and append
                         new_piece = Repertoire(
                             title=title,
                             duration=duration,
                             composer=composer,
+                            discipline=discipline,
+                            type=type,
+                            level=level,
                         )
                         db.session.add(new_piece)
                         new_festival_class.test_pieces.append(new_piece)
