@@ -40,22 +40,42 @@
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>
+                {% if role == 'Participant' or role == 'Group' %}
+                <th>
+                    <a href="{{ 
+                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
+                        sort_by=update_sort('school', sort_by[:], sort_order[:]), 
+                        sort_order=update_order('school', sort_by[:], sort_order[:])) 
+                    }}">School</a>
+                </th>
+                {% else %}
                 <th>Postal Code</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for profile in profiles %}
             <tr>
                 {% if role == 'Group' %}
-                <td>{{ profile.group_name }}</td>
+                <td class="text-wrap">{{ profile.group_name }}</td>
                 {% else %}
-                <td>{{ profile.name }}</td>
+                <td class="text-wrap">{{ profile.name }}</td>
                 {% endif %}
-                <td>{{ profile.email }}</td>
-                <td>{{ profile.phone }}</td>
-                <td>{{ profile.address }}</td>
-                <td>{{ profile.city }}</td>
-                <td>{{ profile.postal_code }}</td>
+                <td class="text-wrap" style="word-break: break-all">{{ profile.email }}</td>
+                <td class="text-nowrap">{{ profile.phone }}</td>
+                <td class="text-wrap">{{ profile.address }}</td>
+                <td class="text-wrap">{{ profile.city }}</td>
+                <td class="text-wrap">
+                {% if role == 'Participant' or role == 'Group' %}
+                    {% if profile.attends_school %}
+                        {{ profile.attends_school.name }}
+                    {% else %}
+                        None
+                    {% endif %}
+                {% else %}
+                    {{ profile.postal_code }}
+                {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

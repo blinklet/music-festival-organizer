@@ -46,12 +46,6 @@ schools_contacts = Table(
     Column('contact_id', ForeignKey('profile.id'), primary_key=True)
 )
 
-schools_participants = Table(
-    'schools_participants', db.metadata,
-    Column('school_id', ForeignKey('schools.id'), primary_key=True),
-    Column('participant_id', ForeignKey('profile.id'), primary_key=True)
-)
-
 schools_teachers = Table(
     'schools_teachers', db.metadata,
     Column('school_id', ForeignKey('schools.id'), primary_key=True),
@@ -142,9 +136,8 @@ class Profile(db.Model):
         "School", secondary=schools_contacts, back_populates="contacts"
     )
 
-    attends_schools: Mapped[list["School"]] = relationship(
-        "School", secondary=schools_participants, back_populates="students_or_groups"
-    )
+    school_id: Mapped[int]  = Column(Integer, ForeignKey('schools.id'))
+    attends_school: Mapped["School"] = relationship("School", back_populates="students_or_groups")
 
     teaches_at_schools: Mapped[list["School"]] = relationship(
         "School", secondary=schools_teachers, back_populates="teachers"
@@ -262,7 +255,7 @@ class School(db.Model):
     )
 
     students_or_groups: Mapped[list[Profile]] = relationship(
-        "Profile", secondary=schools_participants, back_populates="attends_schools"
+        "Profile", back_populates="attends_school"
     )
 
     teachers: Mapped[list[Profile]] = relationship(

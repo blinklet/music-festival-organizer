@@ -6,8 +6,8 @@ import mfo.admin.forms
 from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc, asc
-from sqlalchemy.sql import exists, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import exists, func, text
+from sqlalchemy.orm import selectinload, joinedload
 import pandas as pd
 import os
 import json
@@ -185,14 +185,23 @@ def profile_report_get():
     role = flask.request.args.get('role', None)
     report_name = flask.request.args.get('report_name', None)
 
-    stmt = select(Profile).where(Profile.roles.any(name=role))
+    stmt = (select(Profile)
+                .options(joinedload(Profile.attends_school, innerjoin=False))
+                .where(Profile.roles.any(name=role))
+    )
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
-            if order == 'asc':
-                stmt = stmt.order_by(asc(column))
-            elif order == 'desc':
-                stmt = stmt.order_by(desc(column))
+            if column == 'school':
+                if order == 'asc':
+                    stmt = stmt.outerjoin(Profile.attends_school).order_by(asc(text('schools.name')))
+                elif order == 'desc':
+                    stmt = stmt.outerjoin(Profile.attends_school).order_by(desc(text('schools.name')))
+            else:
+                if order == 'asc':
+                    stmt = stmt.order_by(asc(column))
+                elif order == 'desc':
+                    stmt = stmt.order_by(desc(column))
 
     profiles = db.session.execute(stmt).scalars().all()
 
