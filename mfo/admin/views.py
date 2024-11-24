@@ -179,16 +179,46 @@ def handle_forbidden(e):
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def profile_report_get():
-    sort_by = flask.request.args.getlist('sort_by')
-    sort_order = flask.request.args.getlist('sort_order')
 
     role = flask.request.args.get('role', None)
     report_name = flask.request.args.get('report_name', None)
+    form = forms.ParticipantSortForm(role)
+
+    sort_by = flask.request.args.getlist('sort_by')
+    sort_order = flask.request.args.getlist('sort_order')
+    page = int(flask.request.args.get('page', 1))
+    per_page = int(flask.request.args.get('per_page', 10))
+    hide_zero_entries = flask.request.args.get(
+        'hide_zero_entries', 
+        'false'
+    ).lower() == 'true'
+
+    if sort_by:
+        sort_criteria = zip(sort_by, sort_order)
+        for i, (sort_field, order_field) in enumerate(sort_criteria, start=1):
+            setattr(getattr(form, f'sort{i}'), 'data', sort_field)
+            setattr(getattr(form, f'order{i}'), 'data', order_field)
+    else:
+        if role == 'Group':
+            form.sort1.data = 'group_name'
+            sort_by = ['group_name']
+        else:
+            form.sort1.data = 'name'
+            sort_by = ['name']
+
+        form.order1.data = 'asc'
+        sort_order = ['asc']
+
+    form.page_rows.data = str(per_page) if per_page else '10'
+    form.hide_zero_entries.data = hide_zero_entries
+    # I don't do anything with hide_zero_entries yet, but I might in the future
 
     stmt = (select(Profile)
                 .options(joinedload(Profile.attends_school, innerjoin=False))
                 .where(Profile.roles.any(name=role))
     )
+
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
@@ -204,16 +234,57 @@ def profile_report_get():
                     stmt = stmt.order_by(desc(column))
 
     profiles = db.session.execute(stmt).scalars().all()
+    total_profiles = db.session.execute(select(func.count(Profile.id)).where(Profile.roles.any(name=role))).scalar()
 
     return flask.render_template(
         'admin/profile_report.html', 
+        form=form,
         report_name=report_name, 
         role=role, 
         profiles=profiles, 
         sort_by=sort_by, 
         sort_order=sort_order,
+        page=page,
+        per_page=per_page,
+        total_profiles=total_profiles,
         )
 
+@bp.post('/report')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def profile_report_post():
+    role = flask.request.args.get('role', None)
+    report_name = flask.request.args.get('report_name', None)
+    form = forms.ParticipantSortForm(role)
+
+    if form.validate_on_submit():
+        if form.reset.data:
+            return flask.redirect(flask.url_for('admin.profile_report_get', report_name=report_name, role=role))
+        else:
+            sort_by = []
+            sort_order = []
+            for i in range(1, 4):
+                sort_field = getattr(form, f'sort{i}').data
+                order_field = getattr(form, f'order{i}').data
+                if sort_field != 'none': # 'none' is defined in the form's field_choice for no input
+                    sort_by.append(sort_field)
+                    sort_order.append(order_field)
+            per_page = form.page_rows.data
+            page = flask.request.args.get('page')
+            hide_zero_entries = form.hide_zero_entries.data
+
+            return flask.redirect(
+                flask.url_for(
+                    'admin.profile_report_get', 
+                    report_name=report_name,
+                    role=role,
+                    sort_by=sort_by, 
+                    sort_order=sort_order, 
+                    page=page, 
+                    per_page=per_page,
+                    hide_zero_entries=hide_zero_entries
+                )
+            )
 
 @bp.get('/report/classes')
 @flask_security.auth_required()

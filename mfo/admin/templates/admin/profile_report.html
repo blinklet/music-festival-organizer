@@ -8,45 +8,27 @@
 
 <div class="container pt-4">
     <h3>{{ report_name }}</h3>
+
+    {% set form_action = url_for("admin.profile_report_post", report_name=report_name, role=role) %}
+    {% include "/admin/partials/sort_report_form.html"  %}
+
     <table class="table">
         <thead>
             <tr>
                 <th>
                     {% if role == 'Group' %}
-
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
-                        sort_by=update_sort('group_name', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('group_name', sort_by[:], sort_order[:])) 
-                    }}">Group</a>
-
+                        Group
                     {% else %}
-
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role,
-                        sort_by=update_sort('name', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('name', sort_by[:], sort_order[:]))
-                    }}">Name</a>
-
+                        Name
                     {% endif %}
                 </th>
-                <th>
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
-                        sort_by=update_sort('email', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('email', sort_by[:], sort_order[:])) 
-                    }}">Email</a>
-                </th>
+                <th>Email</th>
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>
                 {% if role == 'Participant' or role == 'Group' %}
                 <th>
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
-                        sort_by=update_sort('school', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('school', sort_by[:], sort_order[:])) 
-                    }}">School</a>
+                    School
                 </th>
                 {% else %}
                 <th>Postal Code</th>
@@ -80,5 +62,9 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% set url_endpoint='admin.profile_report_get' %}
+    {% set total_items=total_profiles %}
+    {% include "/admin/partials/pagination_participants.html" %}
 
 {% endblock %}
