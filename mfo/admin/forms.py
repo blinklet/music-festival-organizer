@@ -113,45 +113,8 @@ page_choices = [
     ("100000", "All"),
 ]
 
-
-class ClassSortForm(FlaskForm):
-    field_choices = [
-        ("none", ""),
-        ("number_suffix", "Class Number"),
-        ("name", "Name"),
-        ("discipline", "Discipline"),
-        ("class_type", "Type"),
-        ("level", "Level"),
-        ("number_of_entries", "Entries"),
-        ("total_fees", "Total fees"),
-        ("total_time", "Total time"),
-    ]
-    
-    reset = SubmitField('Reset')
-    submit = SubmitField('Sort')
-    page_rows = SelectField('Displayed rows:', choices=page_choices, validators=[InputRequired()])
-
-    sort1 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
-    order1 = SelectField('Order:', choices=order_choices, validators=[Optional()])
-    sort2 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
-    order2 = SelectField('Order:', choices=order_choices, validators=[Optional()])
-    sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
-    order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
-    hide_zero_entries = BooleanField('Hide rows with zero entries', validators=[Optional()])
-
-
-class RepertoireSortForm(FlaskForm):
-    # these name of each label must match the key in the repert dictionary
-    field_choices = [
-        ("none", ""),
-        ("title", "Title"),
-        ("composer", "Composer"),
-        ("level", "Level"),
-        ("type", "Type"),
-        ("discipline", "Discipline"),
-        ("duration", "Duration"),
-        ("number_of_entries", "Entries"),
-    ]
+class ReportSortForm(FlaskForm):
+    field_choices = []
 
     reset = SubmitField('Reset')
     submit = SubmitField('Sort')
@@ -164,3 +127,74 @@ class RepertoireSortForm(FlaskForm):
     sort3 = SelectField('Sort by:', choices=field_choices, validators=[Optional()])
     order3 = SelectField('Order:', choices=order_choices, validators=[Optional()])
     hide_zero_entries = BooleanField('Hide rows with zero entries', validators=[Optional()])
+
+
+class ClassSortForm(ReportSortForm):
+    def __init__(self):
+        super(ClassSortForm, self).__init__()
+
+        field_choices = [
+            ("none", ""),
+            ("number_suffix", "Class Number"),
+            ("name", "Name"),
+            ("discipline", "Discipline"),
+            ("class_type", "Type"),
+            ("level", "Level"),
+            ("number_of_entries", "Entries"),
+            ("total_fees", "Total fees"),
+            ("total_time", "Total time"),
+        ]
+
+        self.sort1.choices = field_choices
+        self.sort2.choices = field_choices
+        self.sort3.choices = field_choices
+
+
+class RepertoireSortForm(ReportSortForm):
+    def __init__(self):
+        super(RepertoireSortForm, self).__init__()
+
+        field_choices = [
+            ("none", ""),
+            ("title", "Title"),
+            ("composer", "Composer"),
+            ("level", "Level"),
+            ("type", "Type"),
+            ("discipline", "Discipline"),
+            ("duration", "Duration"),
+            ("number_of_entries", "Entries"),
+        ]
+
+        self.sort1.choices = field_choices
+        self.sort2.choices = field_choices
+        self.sort3.choices = field_choices
+
+
+class ParticipantSortForm(ReportSortForm):
+    def __init__(self, role):
+        super(ParticipantSortForm, self).__init__()
+
+        field_choices = [
+            ("none", ""),
+            ("name", "Name"),
+            ("email", "E-mail"),
+            ("phone", "Phone"),
+            ("address", "Address"),
+            ("city", "City"),
+            ("school", "School"),
+        ]
+        
+        if role == "Group":
+            field_choices[1] = ("group_name", "Group")
+        elif role == "Participant":
+            pass
+        elif role == "Teacher" or role == "Accompanist":
+            field_choices[6] = ("postal_code", "Postal Code")
+        else:
+            raise ValueError("Invalid participant type in ParticipantSortForm")
+
+        self.sort1.choices = field_choices
+        self.sort2.choices = field_choices
+        self.sort3.choices = field_choices
+
+

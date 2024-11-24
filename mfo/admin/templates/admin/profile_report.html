@@ -8,57 +8,63 @@
 
 <div class="container pt-4">
     <h3>{{ report_name }}</h3>
+
+    {% set form_action = url_for("admin.profile_report_post", report_name=report_name, role=role) %}
+    {% include "/admin/partials/sort_report_form.html"  %}
+
     <table class="table">
         <thead>
             <tr>
                 <th>
                     {% if role == 'Group' %}
-
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
-                        sort_by=update_sort('group_name', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('group_name', sort_by[:], sort_order[:])) 
-                    }}">Group</a>
-
+                        Group
                     {% else %}
-
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role,
-                        sort_by=update_sort('name', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('name', sort_by[:], sort_order[:]))
-                    }}">Name</a>
-
+                        Name
                     {% endif %}
                 </th>
-                <th>
-                    <a href="{{ 
-                        url_for('admin.profile_report_get', report_name=report_name, role=role, 
-                        sort_by=update_sort('email', sort_by[:], sort_order[:]), 
-                        sort_order=update_order('email', sort_by[:], sort_order[:])) 
-                    }}">Email</a>
-                </th>
+                <th>Email</th>
                 <th>Phone</th>
                 <th>Address</th>
                 <th>City</th>
+                {% if role == 'Participant' or role == 'Group' %}
+                <th>
+                    School
+                </th>
+                {% else %}
                 <th>Postal Code</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for profile in profiles %}
             <tr>
                 {% if role == 'Group' %}
-                <td>{{ profile.group_name }}</td>
+                <td class="text-wrap">{{ profile.group_name }}</td>
                 {% else %}
-                <td>{{ profile.name }}</td>
+                <td class="text-wrap">{{ profile.name }}</td>
                 {% endif %}
-                <td>{{ profile.email }}</td>
-                <td>{{ profile.phone }}</td>
-                <td>{{ profile.address }}</td>
-                <td>{{ profile.city }}</td>
-                <td>{{ profile.postal_code }}</td>
+                <td class="text-wrap" style="word-break: break-all">{{ profile.email }}</td>
+                <td class="text-nowrap">{{ profile.phone }}</td>
+                <td class="text-wrap">{{ profile.address }}</td>
+                <td class="text-wrap">{{ profile.city }}</td>
+                <td class="text-wrap">
+                {% if role == 'Participant' or role == 'Group' %}
+                    {% if profile.attends_school %}
+                        {{ profile.attends_school.name }}
+                    {% else %}
+                        None
+                    {% endif %}
+                {% else %}
+                    {{ profile.postal_code }}
+                {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    {% set url_endpoint='admin.profile_report_get' %}
+    {% set total_items=total_profiles %}
+    {% include "/admin/partials/pagination_participants.html" %}
 
 {% endblock %}

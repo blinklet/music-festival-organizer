@@ -1,0 +1,44 @@
+<!-- mfo/admin/templates/admin/partials/pagination_participants.html -->
+
+<div class="d-flex justify-content-center align-items-center mt-4 mb-4">
+    <nav>
+        <ul class="pagination mb-0">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(url_endpoint, report_name=report_name, role=role, sort_by=sort_by, sort_order=sort_order, page=page-1, per_page=per_page) }}">
+                    <span>&laquo;</span>
+                </a>
+            </li>
+            {% set total_pages = (total_items // per_page) + 1 %}
+            {% if total_pages > 1 %}
+                {% if page > 3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for(url_endpoint, report_name=report_name, role=role, sort_by=sort_by, sort_order=sort_order, page=1, per_page=per_page) }}">1</a>
+                    </li>
+                    {% if page > 4 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endif %}
+                {% for p in range([1, page-2]|max, [total_pages, page+2]|min + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for(url_endpoint, report_name=report_name, role=role, sort_by=sort_by, sort_order=sort_order, page=p, per_page=per_page) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                {% if page < total_pages - 2 %}
+                    {% if page < total_pages - 3 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for(url_endpoint, report_name=report_name, role=role, sort_by=sort_by, sort_order=sort_order, page=total_pages, per_page=per_page) }}">
+                            {{ total_pages }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endif %}
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(url_endpoint, report_name=report_name, role=role, sort_by=sort_by, sort_order=sort_order, page=page+1, per_page=per_page) }}">
+                    <span>&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
