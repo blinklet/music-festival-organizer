@@ -33,6 +33,7 @@
                 {% else %}
                 <th>Postal Code</th>
                 {% endif %}
+                <th>Entries</th>
             </tr>
         </thead>
         <tbody>
@@ -58,6 +59,7 @@
                     {{ profile.postal_code }}
                 {% endif %}
                 </td>
+                <td class="text-nowrap">{{ profile.number_of_entries }}</td>
             </tr>
             {% endfor %}
         </tbody>

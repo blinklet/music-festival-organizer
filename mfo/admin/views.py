@@ -7,7 +7,7 @@ from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc, asc
 from sqlalchemy.sql import exists, func, text
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload, joinedload, aliased
 import pandas as pd
 import os
 import json
@@ -213,9 +213,47 @@ def profile_report_get():
     form.hide_zero_entries.data = hide_zero_entries
     # I don't do anything with hide_zero_entries yet, but I might in the future
 
-    stmt = (select(Profile)
-                .options(joinedload(Profile.attends_school, innerjoin=False))
-                .where(Profile.roles.any(name=role))
+    
+    # Define aliases for Profile
+    student_alias = aliased(Profile)
+    entry_alias = aliased(Entry)
+
+    # Define subqueries for num_entries
+    if role == 'Teacher':
+        entries_subquery = (
+            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
+            .join(Profile.teaches_entries)
+            .group_by(Profile.id)
+            .subquery()
+        )
+        
+    elif role == 'Accompanist':
+        entries_subquery = (
+            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
+            .join(Profile.accompanies_entries)
+            .group_by(Profile.id)
+            .subquery()
+        )
+    elif role == 'Participant' or role == 'Group':
+        entries_subquery = (
+            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
+            .join(Profile.participates_in_entries)
+            .group_by(Profile.id)
+            .select_from(Profile)
+            .subquery()
+        )
+    else:
+        raise ValueError(f"Invalid role found in profile_report_get() function: {role}")
+
+    stmt = (
+        select(
+            Profile,
+            entries_subquery.c.number_of_entries
+        )
+        .select_from(Profile)
+        .outerjoin(entries_subquery, Profile.id == entries_subquery.c.id)
+        .options(joinedload(Profile.attends_school, innerjoin=False))
+        .where(Profile.roles.any(name=role))
     )
 
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
@@ -234,7 +272,9 @@ def profile_report_get():
                     stmt = stmt.order_by(desc(column))
 
     profiles = db.session.execute(stmt).scalars().all()
+
     total_profiles = db.session.execute(select(func.count(Profile.id)).where(Profile.roles.any(name=role))).scalar()
+
 
     return flask.render_template(
         'admin/profile_report.html', 
