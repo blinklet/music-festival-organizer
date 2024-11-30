@@ -216,14 +216,15 @@ def profile_report_get():
     
     # Define aliases for Profile
     student_alias = aliased(Profile)
+    teacher_alias = aliased(Profile)
     entry_alias = aliased(Entry)
 
     # Define subqueries for num_entries
     if role == 'Teacher':
         entries_subquery = (
-            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
-            .join(Profile.teaches_entries)
-            .group_by(Profile.id)
+            select(teacher_alias.id, func.count(student_alias.id).label('number_of_entries'))
+            .join(teacher_alias.students)
+            .group_by(student_alias.id)
             .subquery()
         )
         
