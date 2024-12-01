@@ -215,37 +215,46 @@ def profile_report_get():
 
     
     # Define aliases for Profile
-    student_alias = aliased(Profile)
-    teacher_alias = aliased(Profile)
-    accompanist_alias = aliased(Profile)
-    entry_alias = aliased(Entry)
+    student_profile = aliased(Profile)
+    teacher_profile = aliased(Profile)
+    accompanist_profile = aliased(Profile)
 
     # Define subqueries for num_entries
     if role == 'Teacher':
+        students_subquery = (
+            select(
+                teacher_profile.id.label("teacher_id"), 
+                student_profile.id.label("student_id")
+            ).outerjoin(student_profile, teacher_profile.students)
+            .group_by(teacher_profile.id, student_profile.id)
+        ).subquery()
+
         entries_subquery = (
             select(
-                teacher_alias.id.label("profile_id"), 
-                func.count(student_alias.id).label('number_of_entries')
-            ).outerjoin(teacher_alias.students
-            ).group_by(student_alias.id)
+                students_subquery.c.teacher_id.label("profile_id"),
+                func.count(Entry.id).label('number_of_entries')
+            )
+            .outerjoin(student_profile, student_profile.id == students_subquery.c.student_id)
+            .outerjoin(Entry, student_profile.participates_in_entries)
+            .group_by(students_subquery.c.teacher_id)
         ).subquery()
         
     elif role == 'Accompanist':
         entries_subquery = (
             select(
-                accompanist_alias.id.label("profile_id"), 
+                accompanist_profile.id.label("profile_id"), 
                 func.count(Entry.id).label('number_of_entries')
-            ).outerjoin(accompanist_alias.accompanies_entries
-            ).group_by(accompanist_alias.id)
+            ).outerjoin(accompanist_profile.accompanies_entries
+            ).group_by(accompanist_profile.id)
         ).subquery()
 
     elif role == 'Participant' or role == 'Group':
         entries_subquery = (
             select(
-                Profile.id.label("profile_id"),
+                student_profile.id.label("profile_id"),
                 func.count(Entry.id).label("number_of_entries")
-            ).join(Entry, Profile.participates_in_entries
-            ).group_by(Profile.id)
+            ).outerjoin(Entry, student_profile.participates_in_entries
+            ).group_by(student_profile.id)
         ).subquery()
 
     else:
@@ -270,17 +279,9 @@ def profile_report_get():
         ).filter(Profile.roles.any(name=role))
     )
 
-    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+    if hide_zero_entries:
+        stmt = stmt.filter(func.coalesce(entries_subquery.c.number_of_entries, 0) > 0)
 
-    # if role == 'Group' or role == 'Participant':
-    #     stmt = stmt.outerjoin(Profile.attends_school)
-    # elif role == 'Teacher':
-    #     stmt = stmt.outerjoin(Profile.students, Profile.teaches_students)
-    # elif role == 'Accompanist':
-    #     stmt = stmt.outerjoin(Profile.accompanies_entries)
-    # else:
-    #     raise ValueError(f"Invalid role in profile_report_get() function: {role}")
-    
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
             if column == 'school':
@@ -293,6 +294,8 @@ def profile_report_get():
                     stmt = stmt.order_by(asc(column))
                 elif order == 'desc':
                     stmt = stmt.order_by(desc(column))
+
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
     profiles = db.session.execute(stmt).all()
 
