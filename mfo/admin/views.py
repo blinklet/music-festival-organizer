@@ -217,7 +217,6 @@ def profile_report_get():
     # Define aliases for Profile
     student_profile = aliased(Profile)
     teacher_profile = aliased(Profile)
-    accompanist_profile = aliased(Profile)
 
     # Define subqueries for num_entries
     if role == 'Teacher':
@@ -225,36 +224,54 @@ def profile_report_get():
             select(
                 teacher_profile.id.label("teacher_id"), 
                 student_profile.id.label("student_id")
-            ).outerjoin(student_profile, teacher_profile.students)
-            .group_by(teacher_profile.id, student_profile.id)
+            ).outerjoin(
+                student_profile, 
+                teacher_profile.students
+            ).group_by(
+                teacher_profile.id, 
+                student_profile.id
+            )
         ).subquery()
 
         entries_subquery = (
             select(
                 students_subquery.c.teacher_id.label("profile_id"),
                 func.count(Entry.id).label('number_of_entries')
+            ).outerjoin(
+                student_profile, 
+                student_profile.id == students_subquery.c.student_id
+            ).outerjoin(
+                Entry, 
+                student_profile.participates_in_entries
+            ).group_by(
+                students_subquery.c.teacher_id
             )
-            .outerjoin(student_profile, student_profile.id == students_subquery.c.student_id)
-            .outerjoin(Entry, student_profile.participates_in_entries)
-            .group_by(students_subquery.c.teacher_id)
         ).subquery()
         
     elif role == 'Accompanist':
         entries_subquery = (
             select(
-                accompanist_profile.id.label("profile_id"), 
+                Profile.id.label("profile_id"), 
                 func.count(Entry.id).label('number_of_entries')
-            ).outerjoin(accompanist_profile.accompanies_entries
-            ).group_by(accompanist_profile.id)
+            ).outerjoin(
+                Entry, 
+                Profile.accompanies_entries
+            ).group_by(
+                Profile.id
+            )
         ).subquery()
 
     elif role == 'Participant' or role == 'Group':
         entries_subquery = (
             select(
-                student_profile.id.label("profile_id"),
+                Profile.id.label("profile_id"),
                 func.count(Entry.id).label("number_of_entries")
-            ).outerjoin(Entry, student_profile.participates_in_entries
-            ).group_by(student_profile.id)
+            ).outerjoin(
+                Entry, 
+                Profile.participates_in_entries
+            ).group_by(
+                Profile.id
+            )
         ).subquery()
 
     else:
