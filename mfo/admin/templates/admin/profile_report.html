@@ -51,7 +51,7 @@
                 <td class="text-wrap">
                 {% if role == 'Participant' or role == 'Group' %}
                     {% if profile.attends_school %}
-                        {{ profile.attends_school.name }}
+                        {{ profile.attends_school }}
                     {% else %}
                         None
                     {% endif %}
@@ -59,7 +59,7 @@
                     {{ profile.postal_code }}
                 {% endif %}
                 </td>
-                <td class="text-nowrap">{{ profile.number_of_entries }}</td>
+                <td class="text-nowrap">{{ profile.number_of_entries or 0}}</td>
             </tr>
             {% endfor %}
         </tbody>

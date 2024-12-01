@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 import mfo.admin.services.syllabus as syllabus
-from mfo.database.models import Entry, Profile, FestivalClass, Repertoire, profiles_roles, entry_repertoire
+from mfo.database.models import School, Entry, Profile, FestivalClass, Repertoire, profiles_roles, entry_repertoire, participants_entries
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
@@ -217,65 +217,86 @@ def profile_report_get():
     # Define aliases for Profile
     student_alias = aliased(Profile)
     teacher_alias = aliased(Profile)
+    accompanist_alias = aliased(Profile)
     entry_alias = aliased(Entry)
 
     # Define subqueries for num_entries
     if role == 'Teacher':
         entries_subquery = (
-            select(teacher_alias.id, func.count(student_alias.id).label('number_of_entries'))
-            .join(teacher_alias.students)
-            .group_by(student_alias.id)
-            .subquery()
-        )
+            select(
+                teacher_alias.id.label("profile_id"), 
+                func.count(student_alias.id).label('number_of_entries')
+            ).outerjoin(teacher_alias.students
+            ).group_by(student_alias.id)
+        ).subquery()
         
     elif role == 'Accompanist':
         entries_subquery = (
-            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
-            .join(Profile.accompanies_entries)
-            .group_by(Profile.id)
-            .subquery()
-        )
+            select(
+                accompanist_alias.id.label("profile_id"), 
+                func.count(Entry.id).label('number_of_entries')
+            ).outerjoin(accompanist_alias.accompanies_entries
+            ).group_by(accompanist_alias.id)
+        ).subquery()
+
     elif role == 'Participant' or role == 'Group':
         entries_subquery = (
-            select(Profile.id, func.count(Entry.id).label('number_of_entries'))
-            .join(Profile.participates_in_entries)
-            .group_by(Profile.id)
-            .select_from(Profile)
-            .subquery()
-        )
+            select(
+                Profile.id.label("profile_id"),
+                func.count(Entry.id).label("number_of_entries")
+            ).join(Entry, Profile.participates_in_entries
+            ).group_by(Profile.id)
+        ).subquery()
+
     else:
         raise ValueError(f"Invalid role found in profile_report_get() function: {role}")
 
     stmt = (
         select(
-            Profile,
+            Profile.name.label("name"),
+            Profile.group_name,
+            Profile.email,
+            Profile.phone,
+            Profile.address,
+            Profile.city,
+            Profile.province,
+            Profile.postal_code,
+            School.name.label("attends_school"),
             entries_subquery.c.number_of_entries
-        )
-        .select_from(Profile)
-        .outerjoin(entries_subquery, Profile.id == entries_subquery.c.id)
-        .options(joinedload(Profile.attends_school, innerjoin=False))
-        .where(Profile.roles.any(name=role))
+        ).outerjoin(
+            entries_subquery,
+            Profile.id == entries_subquery.c.profile_id
+        ).outerjoin(School, Profile.attends_school
+        ).filter(Profile.roles.any(name=role))
     )
 
     stmt = stmt.limit(per_page).offset((page - 1) * per_page)
 
+    # if role == 'Group' or role == 'Participant':
+    #     stmt = stmt.outerjoin(Profile.attends_school)
+    # elif role == 'Teacher':
+    #     stmt = stmt.outerjoin(Profile.students, Profile.teaches_students)
+    # elif role == 'Accompanist':
+    #     stmt = stmt.outerjoin(Profile.accompanies_entries)
+    # else:
+    #     raise ValueError(f"Invalid role in profile_report_get() function: {role}")
+    
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
             if column == 'school':
                 if order == 'asc':
-                    stmt = stmt.outerjoin(Profile.attends_school).order_by(asc(text('schools.name')))
+                    stmt = stmt.order_by(asc(text('schools.name')))
                 elif order == 'desc':
-                    stmt = stmt.outerjoin(Profile.attends_school).order_by(desc(text('schools.name')))
+                    stmt = stmt.order_by(desc(text('schools.name')))
             else:
                 if order == 'asc':
                     stmt = stmt.order_by(asc(column))
                 elif order == 'desc':
                     stmt = stmt.order_by(desc(column))
 
-    profiles = db.session.execute(stmt).scalars().all()
+    profiles = db.session.execute(stmt).all()
 
     total_profiles = db.session.execute(select(func.count(Profile.id)).where(Profile.roles.any(name=role))).scalar()
-
 
     return flask.render_template(
         'admin/profile_report.html', 
@@ -289,6 +310,7 @@ def profile_report_get():
         per_page=per_page,
         total_profiles=total_profiles,
         )
+
 
 @bp.post('/report')
 @flask_security.auth_required()
