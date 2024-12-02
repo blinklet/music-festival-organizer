@@ -316,7 +316,23 @@ def profile_report_get():
 
     profiles = db.session.execute(stmt).all()
 
-    total_profiles = db.session.execute(select(func.count(Profile.id)).where(Profile.roles.any(name=role))).scalar()
+    stmt2 = select(
+        func.count(Profile.id)
+    ).filter(Profile.roles.any(name=role))
+
+    if hide_zero_entries:
+        if role == 'Teacher':
+            stmt2 = stmt2.filter(
+                teacher_profile.students.any(
+                    student_profile.participates_in_entries.any()
+                )
+            )   
+        elif role == 'Accompanist':
+            stmt2 = stmt2.filter(Profile.accompanies_entries.any())
+        elif role == 'Participant' or role == 'Group':
+            stmt2 = stmt2.filter(Profile.participates_in_entries.any())
+
+    total_profiles = db.session.execute(stmt2).scalar()
 
     return flask.render_template(
         'admin/profile_report.html', 
@@ -446,7 +462,7 @@ def classes_get():
     )
 
     if hide_zero_entries:
-        stmt = stmt.where(func.coalesce(class_entries.c.number_of_entries, 0) > 0)
+        stmt = stmt.filter(func.coalesce(class_entries.c.number_of_entries, 0) > 0)
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
@@ -461,7 +477,7 @@ def classes_get():
     
     stmt2 = select(func.count(FestivalClass.id))
     if hide_zero_entries:
-        stmt2 = stmt2.where(FestivalClass.entries.any())
+        stmt2 = stmt2.filter(FestivalClass.entries.any())
     total_classes = db.session.execute(stmt2).scalar()
     
     return flask.render_template(
