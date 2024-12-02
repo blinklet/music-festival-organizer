@@ -182,6 +182,7 @@ class ParticipantSortForm(ReportSortForm):
             ("address", "Address"),
             ("city", "City"),
             ("school", "School"),
+            ("number_of_entries", "Entries"),
         ]
         
         if role == "Group":
