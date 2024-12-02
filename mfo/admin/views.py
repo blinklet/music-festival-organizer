@@ -7,7 +7,7 @@ from werkzeug.exceptions import Forbidden
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc, asc
 from sqlalchemy.sql import exists, func, text
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload, joinedload, aliased
 import pandas as pd
 import os
 import json
@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash
 from mfo.database.base import db
 import mfo.admin.services.spreadsheet as spreadsheet
 import mfo.admin.services.syllabus as syllabus
-from mfo.database.models import Entry, Profile, FestivalClass, Repertoire, profiles_roles, entry_repertoire
+from mfo.database.models import School, Entry, Profile, FestivalClass, Repertoire, profiles_roles, entry_repertoire, participants_entries
 from mfo.database.users import User, Role
 import mfo.admin.services.admin_services as admin_services
 import mfo.admin.forms as forms
@@ -213,27 +213,109 @@ def profile_report_get():
     form.hide_zero_entries.data = hide_zero_entries
     # I don't do anything with hide_zero_entries yet, but I might in the future
 
-    stmt = (select(Profile)
-                .options(joinedload(Profile.attends_school, innerjoin=False))
-                .where(Profile.roles.any(name=role))
+    
+    # Define aliases for Profile
+    student_profile = aliased(Profile)
+    teacher_profile = aliased(Profile)
+
+    # Define subqueries for num_entries
+    if role == 'Teacher':
+        students_subquery = (
+            select(
+                teacher_profile.id.label("teacher_id"), 
+                student_profile.id.label("student_id")
+            ).outerjoin(
+                student_profile, 
+                teacher_profile.students
+            ).group_by(
+                teacher_profile.id, 
+                student_profile.id
+            )
+        ).subquery()
+
+        entries_subquery = (
+            select(
+                students_subquery.c.teacher_id.label("profile_id"),
+                func.count(Entry.id).label('number_of_entries')
+            ).outerjoin(
+                student_profile, 
+                student_profile.id == students_subquery.c.student_id
+            ).outerjoin(
+                Entry, 
+                student_profile.participates_in_entries
+            ).group_by(
+                students_subquery.c.teacher_id
+            )
+        ).subquery()
+        
+    elif role == 'Accompanist':
+        entries_subquery = (
+            select(
+                Profile.id.label("profile_id"), 
+                func.count(Entry.id).label('number_of_entries')
+            ).outerjoin(
+                Entry, 
+                Profile.accompanies_entries
+            ).group_by(
+                Profile.id
+            )
+        ).subquery()
+
+    elif role == 'Participant' or role == 'Group':
+        entries_subquery = (
+            select(
+                Profile.id.label("profile_id"),
+                func.count(Entry.id).label("number_of_entries")
+            ).outerjoin(
+                Entry, 
+                Profile.participates_in_entries
+            ).group_by(
+                Profile.id
+            )
+        ).subquery()
+
+    else:
+        raise ValueError(f"Invalid role found in profile_report_get() function: {role}")
+
+    stmt = (
+        select(
+            Profile.name.label("name"),
+            Profile.group_name,
+            Profile.email,
+            Profile.phone,
+            Profile.address,
+            Profile.city,
+            Profile.province,
+            Profile.postal_code,
+            School.name.label("attends_school"),
+            entries_subquery.c.number_of_entries
+        ).outerjoin(
+            entries_subquery,
+            Profile.id == entries_subquery.c.profile_id
+        ).outerjoin(School, Profile.attends_school
+        ).filter(Profile.roles.any(name=role))
     )
 
-    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+    if hide_zero_entries:
+        stmt = stmt.filter(func.coalesce(entries_subquery.c.number_of_entries, 0) > 0)
 
     if sort_by and sort_order:
         for column, order in zip(sort_by, sort_order):
             if column == 'school':
                 if order == 'asc':
-                    stmt = stmt.outerjoin(Profile.attends_school).order_by(asc(text('schools.name')))
+                    stmt = stmt.order_by(asc(text('schools.name')))
                 elif order == 'desc':
-                    stmt = stmt.outerjoin(Profile.attends_school).order_by(desc(text('schools.name')))
+                    stmt = stmt.order_by(desc(text('schools.name')))
             else:
                 if order == 'asc':
                     stmt = stmt.order_by(asc(column))
                 elif order == 'desc':
                     stmt = stmt.order_by(desc(column))
 
-    profiles = db.session.execute(stmt).scalars().all()
+    stmt = stmt.limit(per_page).offset((page - 1) * per_page)
+
+    profiles = db.session.execute(stmt).all()
+
     total_profiles = db.session.execute(select(func.count(Profile.id)).where(Profile.roles.any(name=role))).scalar()
 
     return flask.render_template(
@@ -248,6 +330,7 @@ def profile_report_get():
         per_page=per_page,
         total_profiles=total_profiles,
         )
+
 
 @bp.post('/report')
 @flask_security.auth_required()
