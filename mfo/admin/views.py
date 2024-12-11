@@ -844,3 +844,41 @@ def delete_festival_data_post():
             flask.flash('Invalid password.', 'danger')
 
     return flask.render_template('admin/delete_festival_data.html', form=form)
+
+@bp.get('/profile_info')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def profile_info_get():
+    profile_id = int(flask.request.args.get('id', None))
+
+    role_names = (
+        select(
+            Profile.id,
+            func.string_agg(Role.name.label('role_name'), ', ').label('roles')
+        ).join(Profile.roles
+        ).group_by(
+            Profile.id
+        )
+    ).subquery()
+    
+    stmt = (
+        select(
+            Profile.id,
+            Profile.name.label("name"),
+            Profile.group_name,
+            Profile.email,
+            Profile.phone,
+            Profile.address,
+            Profile.city,
+            Profile.province,
+            Profile.postal_code,
+            School.name.label("attends_school"),
+            role_names.c.roles
+        ).outerjoin(Profile.attends_school
+        ).outerjoin(role_names, Profile.id == role_names.c.id
+        ).filter(Profile.id == profile_id)
+    )
+
+    profile = db.session.execute(stmt).fetchone()
+    
+    return flask.render_template('/admin/profile_info.html', profile=profile)
