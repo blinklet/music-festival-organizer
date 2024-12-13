@@ -40,9 +40,9 @@
             {% for profile in profiles %}
             <tr>
                 {% if role == 'Group' %}
-                <td class="text-wrap">{{ profile.group_name }}</td>
+                <td class="text-wrap"><a href="{{ url_for('admin.profile_info_get', id=profile.id) }}">{{ profile.group_name }}</a></td>
                 {% else %}
-                <td class="text-wrap">{{ profile.name }}</td>
+                <td class="text-wrap"><a href="{{ url_for('admin.profile_info_get', id=profile.id) }}">{{ profile.name }}</a></td>
                 {% endif %}
                 <td class="text-wrap" style="word-break: break-all">{{ profile.email }}</td>
                 <td class="text-nowrap">{{ profile.phone }}</td>

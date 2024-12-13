@@ -10,7 +10,13 @@
         <div class="col">
             <div class="card bg-white border border-secondary rounded h-100 ">
                 <div class="card-header bg-secondary pt-3 pb-2 text-center">
-                    <h1 class="text-white">{{ profile.name }}</h1>
+                    {% if profile.group_name %}
+                        <h1 class="text-white">{{ profile.group_name }}</h1>
+                    {% elif profile.name %}
+                        <h1 class="text-white">{{ profile.name }}</h1>
+                    {% else %}
+                        <h1 class="text-white">Error</h1>
+                    {% endif %}
                     <p class="text-light fs-5">
                         <span class="mx-2">{{ profile.roles }}</span>
                     </p>
@@ -65,7 +71,7 @@
     </div>
     <div class="row justify-content-between gap-2">
         <div class="col">
-            <a class="btn btn-primary d-block btn-lg mt-3" href={{ url_for("account.edit_profile_get") }}>Edit profile</a>
+            <a class="btn btn-primary d-block btn-lg mt-3" href={{ url_for("admin.edit_profile_info_get", id=profile.id) }}>Edit profile</a>
         </div>
     </div>
 </div>

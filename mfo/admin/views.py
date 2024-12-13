@@ -279,6 +279,7 @@ def profile_report_get():
 
     stmt = (
         select(
+            Profile.id.label("id"),
             Profile.name.label("name"),
             Profile.group_name,
             Profile.email,
@@ -849,7 +850,7 @@ def delete_festival_data_post():
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def profile_info_get():
-    profile_id = int(flask.request.args.get('id', None))
+    profile_id = flask.request.args.get('id', None)
 
     role_names = (
         select(
@@ -882,3 +883,14 @@ def profile_info_get():
     profile = db.session.execute(stmt).fetchone()
     
     return flask.render_template('/admin/profile_info.html', profile=profile)
+
+
+@bp.get('/edit_profile_info')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def edit_profile_info_get():
+    profile_id = int(flask.request.args.get('id', None))
+    profile = Profile.query.get(profile_id)
+    # form = forms.EditProfileForm(obj=profile)
+    # return flask.render_template('/admin/edit_profile_info.html', form=form, profile=profile)
+    return f"Edit profile info for profile {profile.name} with id {profile.id}"
