@@ -1,3 +1,5 @@
+# mfo/account/forms/edit_profile.py
+
 import wtforms
 import phonenumbers
 import datetime
@@ -7,6 +9,10 @@ from flask_wtf import FlaskForm
 def validate_at_least_one_role(form, field):
     if not field.data or len(field.data) == 0:
         raise wtforms.ValidationError("At least one role must be selected")
+    
+def validate_group_or_participant(form, field):
+    if 'Group' in form.rolenames.data and 'Participant' in form.rolenames.data:
+        raise wtforms.ValidationError("Profile can be a 'Group' or a 'participant', but not both")
 
 class ProfileEdit(FlaskForm):
 
@@ -44,7 +50,7 @@ class ProfileEdit(FlaskForm):
         'Full Name', 
         [wtforms.validators.InputRequired()]
         )
-    birthdate = wtforms.DateField('Birth Date', [validate_birthday])
+    birthdate = wtforms.DateField('Birth Date',  validators=[validate_birthday])
 
     address = wtforms.StringField('Street Address')
     city = wtforms.StringField('City')

@@ -1,0 +1,73 @@
+<!-- mfo/admin/templates/admin/partials/edit_individual.html -->
+ 
+<form method="POST" action="{{ url_for('admin.edit_profile_info_post', id=profile.id) }}">
+    {% from 'bootstrap5/form.html' import render_form_row, render_field %}
+    {{ form.csrf_token() }}
+    
+    {{ render_form_row(
+        [form.name], 
+        col_map={'name':'col-md-12' }, 
+        form_type='basic') 
+    }}
+    <div class="mb-3">
+        <label class="form-label">{{ form.rolenames.label }}</label>
+        <div class="row">
+            {% for subfield in form.rolenames %}
+                {% if subfield.data != 'Admin' %}
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ subfield(class_="form-check-input") }}
+                            {{ subfield.label(class_="form-check-label") }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% if 'Admin' in form.rolenames.data %}
+                <input type="hidden" name="rolenames" value="Admin" checked>
+            {% endif %}
+        </div>
+    </div>
+    {% if form.rolenames.errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in form.rolenames.errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    {{ render_form_row(
+        [form.address, form.city, form.province], 
+        col_map={'address':'col-md-6','city':'col-md-4',
+                 'province':'col-md-2' }, 
+        form_type='basic') 
+    }}
+    {{ render_form_row(
+        [form.postal_code, form.phone, form.email, form.birthdate], 
+        col_map={'postal_code':'col-md-2','phone':'col-md-3',
+                 'email':'col-md-4','birthdate':'col-md-3' }, 
+        form_type='basic') 
+    }}
+    {{ render_form_row(
+        [form.attends_school, form.teacher], 
+        col_map={'school':'col-md-6','teacher':'col-md-6'}, 
+        form_type='basic') 
+    }}
+    {{
+        render_form_row([form.comments],
+        col_map={'comments':'col-md-12'},
+        form_type='basic')
+    }}
+    {{
+        render_form_row(
+        [form.national_festival], 
+        col_map={'national_festival':'col-md-6'}, 
+        form_type='basic')
+    }}
+    <div class="form-group justify-content-center row">
+        <div class="col-7 d-flex justify-content-center gap-1 pt-3">
+            {{ form.submit(class="btn btn-primary") }}
+            {{ form.cancel(class="btn btn-secondary ms-3") }}
+        </div>
+    </div>
+
+
+</form>
