@@ -1,0 +1,47 @@
+<!-- mfo/admin/templates/admin/partials/edit_group.html -->
+ 
+<form method="POST" action="{{ url_for('admin.edit_profile_info_post', id=profile.id) }}">
+    {% from 'bootstrap5/form.html' import render_form_row, render_field %}
+    {{ form.csrf_token() }}
+    
+    {{ render_form_row(
+        [form.group_name], 
+        col_map={'group_name':'col-md-12' }, 
+        form_type='basic') 
+    }}
+    
+    {{ render_form_row(
+        [form.address, form.city, form.province], 
+        col_map={'address':'col-md-6','city':'col-md-4',
+                 'province':'col-md-2' }, 
+        form_type='basic') 
+    }}
+    {{ render_form_row(
+        [form.postal_code, form.email, form.phone], 
+        col_map={'postal_code':'col-md-4','email':'col-md-4','phone':'col-md-4'}, 
+        form_type='basic') 
+    }}
+    {{ render_form_row(
+        [form.attends_school, form.teacher], 
+        col_map={'school':'col-md-6','teacher':'col-md-6'}, 
+        form_type='basic')
+    }}
+    {{
+        render_form_row([form.comments],
+        col_map={'comments':'col-md-12'},
+        form_type='basic')
+    }}
+    {{
+        render_form_row(
+        [form.national_festival], 
+        col_map={'national_festival':'col-md-6'}, 
+        form_type='basic')
+    }}
+    <div class="form-group justify-content-center row">
+        <div class="col-7 d-flex justify-content-center gap-1 pt-3">
+            {{ form.submit(class="btn btn-primary") }}
+            {{ form.cancel(class="btn btn-secondary ms-3") }}
+        </div>
+    </div>
+
+</form>

@@ -3,10 +3,13 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
 from flask import current_app
-from wtforms import ValidationError, StringField, SubmitField, BooleanField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField
+from wtforms import validators, widgets, ValidationError, StringField, SubmitField, BooleanField, HiddenField, IntegerField, DecimalField, SelectField, TextAreaField, PasswordField, SelectMultipleField, DateField
+from wtforms.fields import DateTimeLocalField
 from wtforms.validators import StopValidation, InputRequired, Length, Optional, NumberRange
+import phonenumbers
+import datetime
 
-from mfo.database.models import Discipline, PerformanceType, Level
+from mfo.database.models import Discipline, PerformanceType, Level, Profile, School
 from mfo.database.base import db
 from sqlalchemy import select
 
@@ -198,4 +201,116 @@ class ParticipantSortForm(ReportSortForm):
         self.sort2.choices = field_choices
         self.sort3.choices = field_choices
 
+
+def validate_phone(form, field):
+# https://stackoverflow.com/questions/36251149/validating-us-phone-number-in-wtforms
+    if field.data:
+        # check that number is all digits
+        if not field.data.isdigit():
+            raise ValidationError('Invalid phone number.')
+        if len(field.data) > 16:
+            raise ValidationError('Invalid phone number.')
+        try:
+            input_number = phonenumbers.parse(field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+        except:
+            input_number = phonenumbers.parse("+1"+field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+
+def validate_at_least_one_role(form, field):
+    if not field.data or len(field.data) == 0:
+        raise ValidationError("At least one role must be selected")
+            
+def validate_birthday(form, field):
+    # I used a the name "validate_birthday" instead of "validate_birthdate"
+    # because the field is named "birthdate" in the form. This avoids a
+    # doubled validation error message.
+    
+    if not field.data:
+        # It's OK to leave birthdate blank because the admin may not know the birthdate
+        # workaround for wtforms validation bug
+        # https://stackoverflow.com/questions/37026390/dont-want-to-validate-a-datefield-in-wtforms-but-want-to-keep-the-date-format
+        field.errors[:] = []
+        return
+    else:
+        # Check if the birthdate is in the future
+        if field.data > datetime.date.today():
+            raise ValidationError('Birthdate is in the future.')
+        
+def validate_teacher(form, field):
+    if field.data:
+        teacher_names = form.teacher.data.split('; ')
+        for teacher_name in teacher_names:
+            stmt = select(Profile).filter(Profile.name == teacher_name)
+            teacher = db.session.execute(stmt).scalar()
+            if teacher == None:
+                raise ValidationError(f'{teacher_name} not found in database')
+
+def validate_school(form, field):
+    if field.data:
+        stmt = select(School).filter(School.name == field.data)
+        school = db.session.execute(stmt).scalar()
+        if school:
+            pass
+        else:
+            raise ValidationError('School not found')
+        
+class ProfileIndivualEditForm(FlaskForm):
+    name = StringField(
+        'Full Name', 
+        [validators.InputRequired()]
+        )
+    birthdate = DateField('Birth Date', validators=[validate_birthday])
+    address = StringField('Street Address')
+    city = StringField('City')
+    province = StringField('Province')
+    postal_code = StringField('Postal Code')
+    phone = StringField('Phone', validators=[validate_phone])
+    email = StringField('Email', validators=[validators.Email()])
+    attends_school = StringField('School', validators=[validate_school])
+    teacher = StringField('Teacher', validators=[validate_teacher])
+    comments = TextAreaField('Comments')
+    national_festival  =  BooleanField(
+        'Eligible for the National Festival'
+        )
+    rolenames = SelectMultipleField(
+        'Roles',
+        choices=[
+            ('Participant', 'Participant'), 
+            ('Teacher', 'Teacher'), 
+            ('Guardian', 'Parent or Guardian'), 
+            ('Accompanist', 'Accompanist'), 
+            ('Adjudicator', 'Adjudicator'),
+            ('Admin', 'Admin'),
+            ],
+        default=['Participant'],
+        option_widget=widgets.CheckboxInput(),
+        widget=widgets.ListWidget(prefix_label=False),
+        validators=[validate_at_least_one_role]
+    )
+    submit = SubmitField('Save changes')
+    cancel = SubmitField('Cancel')  # Add a cancel button
+
+
+class ProfileGroupEditForm(FlaskForm):
+    group_name = StringField(
+        'Group Name', 
+        [validators.InputRequired()]
+        )
+    address = StringField('Street Address')
+    city = StringField('City')
+    province = StringField('Province')
+    postal_code = StringField('Postal Code')
+    phone = StringField('Phone')
+    email = StringField('Email', validators=[validators.Email()])
+    attends_school = StringField('School')
+    teacher = StringField('Teacher')
+    comments = TextAreaField('Comments')
+    national_festival  =  BooleanField(
+        'Eligible for the National Festival'
+        )
+    submit = SubmitField('Save changes')
+    cancel = SubmitField('Cancel')  # Add a cancel button
 

@@ -1,0 +1,28 @@
+<!-- admin/templates/admin/profile_info_edit.html -->
+
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid pt-4 pb-5 bg-light border-bottom">
+    <h1 class="text-center pb-2">Edit Profile</h1>
+
+    <div class="row justify-content-center align-items-center">
+        <div class="col-sm-1">
+        </div>
+        <div class="col-sm-10">
+            {% if "Group" in profile.roles %}
+                {% include 'admin/partials/edit_group.html' %}
+            {% else %}
+                {% include 'admin/partials/edit_individual.html' %}
+            {% endif %} 
+        </div>
+        <div class="col-sm-1">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block additional_css %}{% endblock %}

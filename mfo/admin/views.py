@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy import select, desc, asc
 from sqlalchemy.sql import exists, func, text
 from sqlalchemy.orm import selectinload, joinedload, aliased
+from datetime import datetime
 import pandas as pd
 import os
 import json
@@ -852,16 +853,25 @@ def delete_festival_data_post():
 def profile_info_get():
     profile_id = flask.request.args.get('id', None)
 
+    profile_alias = aliased(Profile)
+    teacher_alias = aliased(Profile)
+
     role_names = (
         select(
             Profile.id,
             func.string_agg(Role.name.label('role_name'), ', ').label('roles')
         ).join(Profile.roles
-        ).group_by(
-            Profile.id
-        )
+        ).group_by(Profile.id)
     ).subquery()
-    
+
+    teacher_names = (
+        select(
+            profile_alias.id,
+            func.string_agg(teacher_alias.name.label('teacher_name'), '; ').label('teacher')
+        ).outerjoin(teacher_alias, profile_alias.teachers
+        ).group_by(profile_alias.id)
+    ).subquery()
+
     stmt = (
         select(
             Profile.id,
@@ -873,15 +883,20 @@ def profile_info_get():
             Profile.city,
             Profile.province,
             Profile.postal_code,
+            Profile.birthdate,
+            Profile.comments,
+            Profile.national_festival,
             School.name.label("attends_school"),
+            teacher_names.c.teacher,
             role_names.c.roles
         ).outerjoin(Profile.attends_school
+        ).outerjoin(teacher_names, Profile.id == teacher_names.c.id
         ).outerjoin(role_names, Profile.id == role_names.c.id
         ).filter(Profile.id == profile_id)
     )
 
-    profile = db.session.execute(stmt).fetchone()
-    
+    profile = db.session.execute(stmt).first()
+
     return flask.render_template('/admin/profile_info.html', profile=profile)
 
 
@@ -890,7 +905,133 @@ def profile_info_get():
 @flask_security.roles_required('Admin')
 def edit_profile_info_get():
     profile_id = int(flask.request.args.get('id', None))
-    profile = Profile.query.get(profile_id)
-    # form = forms.EditProfileForm(obj=profile)
-    # return flask.render_template('/admin/edit_profile_info.html', form=form, profile=profile)
-    return f"Edit profile info for profile {profile.name} with id {profile.id}"
+    
+    stmt = select(Profile).options(
+        selectinload(Profile.roles),
+        selectinload(Profile.teachers),
+        joinedload(Profile.attends_school)
+    ).filter_by(id=profile_id)
+
+    profile = db.session.execute(stmt).scalar_one_or_none()
+
+    profile.rolenames = [role.name for role in profile.roles]
+
+    print(profile.rolenames)
+
+    if "Group" not in profile.rolenames:
+        form = forms.ProfileIndivualEditForm(obj=profile)
+        if profile.birthdate:
+            print()
+            print(type(profile.birthdate))
+            print(profile.birthdate)
+            print(profile.birthdate.strftime('%m/%d/%Y'))
+            print()
+            form.birthdate.data = profile.birthdate
+    else:
+        form = forms.ProfileGroupEditForm(obj=profile)
+
+    form.attends_school.data = (
+        profile.attends_school.name 
+        if profile.attends_school 
+        else None
+    )
+    form.teacher.data = '; '.join(
+        [teacher.name for teacher in profile.teachers]
+    )
+
+    return flask.render_template('/admin/profile_info_edit.html', form=form, profile=profile)
+
+@bp.post('/edit_profile_info')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def edit_profile_info_post():
+    profile_id = int(flask.request.args.get('id', None))
+    stmt = select(Profile).options(
+        selectinload(Profile.roles),
+        selectinload(Profile.teachers),
+        joinedload(Profile.attends_school)
+    ).filter_by(id=profile_id)
+
+    profile = db.session.execute(stmt).scalar_one_or_none()
+    
+    if not profile:
+        flask.flash("Profile not found.", 'danger')
+        return flask.redirect(flask.url_for('admin.profile_info_get', id=profile_id))
+    
+    profile.rolenames = [role.name for role in profile.roles]
+
+    if "Group" in profile.rolenames:
+        form = forms.ProfileGroupEditForm()
+    else:
+        form = forms.ProfileIndivualEditForm()
+
+    if form.cancel.data:
+        return flask.redirect(flask.url_for('admin.profile_info_get', id=profile_id))
+    
+    if form.validate_on_submit():
+        # I can't just use form.populate_obj(profile) because the form has fields that are not in the database
+        # I need to manually set the values of the database fields
+        if "Group" in profile.rolenames:
+            profile.group_name = form.group_name.data
+        else:
+            profile.name = form.name.data
+            profile.birthdate = form.birthdate.data if form.birthdate.data else None
+        profile.address = form.address.data if form.address.data else None
+        profile.city = form.city.data if form.city.data else None
+        profile.province = form.province.data if form.province.data else None
+        profile.postal_code = form.postal_code.data if form.postal_code.data else None
+        profile.phone = form.phone.data if form.phone.data else None
+        profile.email = form.email.data if form.email.data else None
+        profile.comments = form.comments.data if form.comments.data else None
+        profile.national_festival = form.national_festival.data if form.national_festival.data else None
+
+        # Update the school
+        school_name = form.attends_school.data
+        if school_name:
+            stmt = select(School).filter_by(name=school_name)
+            school = db.session.execute(stmt).scalar_one_or_none()
+            if school:
+                profile.attends_school = school
+            else:
+                flask.flash(f"School {school_name} not found in the database.")  
+        else:
+            profile.attends_school = None
+
+        # Update the teachers
+        teacher_names = form.teacher.data.split(';')
+        teachers = []
+        for teacher_name in teacher_names:
+            teacher = Profile.query.filter_by(name=teacher_name).one_or_none()
+            if teacher:
+                teachers.append(teacher)
+        profile.teachers = teachers
+
+        # Update the roles for individuals
+        if "Group" not in profile.rolenames:
+            roles = []
+            for role_name in form.rolenames.data:
+                role = db.session.execute(
+                    select(Role).filter_by(name=role_name)
+                ).scalar_one_or_none()
+                if role:
+                    roles.append(role)
+            profile.roles = roles
+
+        db.session.commit()
+        return flask.redirect(flask.url_for('admin.profile_info_get', id=profile_id))
+    
+    print(form.errors)
+    return flask.render_template('/admin/profile_info_edit.html', form=form, profile=profile)
+
+
+
+@bp.post('/edit_group_info')
+@flask_security.auth_required()
+@flask_security.roles_required('Admin')
+def edit_group_info_post():
+    profile_id = int(flask.request.args.get('id', None))
+    stmt = select(Profile).filter_by(id=profile_id)
+    profile = db.session.execute(stmt).scalar_one_or_none()
+    form = forms.ProfileGroupEditForm()
+
+    return("group post")
