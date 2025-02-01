@@ -11,7 +11,7 @@ level_map = pd.read_json(TEST_LEVEL_MAP, orient='records')
 
 def infer_discipline(class_number):
     """ Infer discipline based on class number """
-    if 200 <= class_number <= 706:
+    if 0 <= class_number <= 999:
         return "Vocal" # Ensemble
     elif 1000 <= class_number <= 1999:
         return "Vocal"
