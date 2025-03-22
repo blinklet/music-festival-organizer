@@ -31,6 +31,7 @@ bp = flask.Blueprint(
     url_prefix='/admin',
     )
 
+
 @bp.get ('/dashboard')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -38,12 +39,14 @@ def dashboard():
     # need to add some data gathering here
     return flask.render_template('admin/dashboard.html')
 
+
 @bp.get('/upload_syllabus')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def upload_syllabus_get():
     form = mfo.admin.forms.UploadSyllabusForm()
     return flask.render_template('admin/upload_syllabus.html', form=form)
+
 
 @bp.post('/upload_syllabus')
 @flask_security.auth_required()
@@ -64,6 +67,7 @@ def upload_syllabus_post():
                 'danger'
                 )
             return flask.redirect(flask.url_for('admin.upload_syllabus_get'))
+
 
 @bp.get('/upload_registrations')
 @flask_security.auth_required()
@@ -387,6 +391,7 @@ def profile_report_post():
                 )
             )
 
+
 @bp.get('/report/classes')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -527,6 +532,7 @@ def classes_post():
                 )
             )
     
+
 @bp.get('/info/class')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -535,6 +541,7 @@ def class_info_get():
     stmt = select(FestivalClass).where(FestivalClass.id == id)
     _class = db.session.execute(stmt).scalar()
     return flask.render_template('admin/class_info.html', _class=_class)
+
 
 @bp.get('/edit/class_info')
 @flask_security.auth_required()
@@ -557,6 +564,7 @@ def edit_class_info_get():
     form.move_mins.data = move_mins
     form.move_secs.data = move_secs
     return flask.render_template('admin/class_edit_info.html', form=form, _class=_class)
+
 
 @bp.post('/edit/class_info')
 @flask_security.auth_required()
@@ -604,6 +612,7 @@ def edit_class_info_post():
         form=form, 
         _class=_class
         )
+
 
 @bp.get('/report/repertoire')
 @flask_security.auth_required()
@@ -698,6 +707,7 @@ def repertoire_get():
         per_page=per_page,
         )
 
+
 @bp.post('/report/repertoire')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -738,6 +748,7 @@ def repertoire_info_get():
     repertoire = db.session.execute(stmt).scalar()
     return flask.render_template('admin/repertoire_info.html', repertoire=repertoire)
 
+
 @bp.get('/edit/repertoire')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -752,6 +763,7 @@ def repertoire_edit_get():
     form.duration_secs.data = duration_secs
 
     return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
+
 
 @bp.post('/edit/repertoire')
 @flask_security.auth_required()
@@ -786,12 +798,14 @@ def repertoire_edit_post():
         return flask.redirect(flask.url_for('admin.repertoire_info_get', id=id))
     return flask.render_template('admin/repertoire_edit.html', form=form, repertoire=repertoire)
 
+
 @bp.get('/delete/festival_data')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
 def delete_festival_data_get():
     form = forms.ConfirmFestivalDataDelete()
     return flask.render_template('admin/delete_festival_data.html', form=form)
+
 
 @bp.post('/delete/festival_data')
 @flask_security.auth_required()
@@ -846,6 +860,7 @@ def delete_festival_data_post():
             flask.flash('Invalid password.', 'danger')
 
     return flask.render_template('admin/delete_festival_data.html', form=form)
+
 
 @bp.get('/profile_info')
 @flask_security.auth_required()
@@ -941,6 +956,7 @@ def edit_profile_info_get():
 
     return flask.render_template('/admin/profile_info_edit.html', form=form, profile=profile)
 
+
 @bp.post('/edit_profile_info')
 @flask_security.auth_required()
 @flask_security.roles_required('Admin')
@@ -1022,7 +1038,6 @@ def edit_profile_info_post():
     
     print(form.errors)
     return flask.render_template('/admin/profile_info_edit.html', form=form, profile=profile)
-
 
 
 @bp.post('/edit_group_info')
